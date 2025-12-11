@@ -12,10 +12,12 @@ print("="*60)
 print("Iniciando Vercel serverless function...")
 print("="*60)
 
-# Verifica variáveis de ambiente
+# Verifica variáveis de ambiente ANTES de importar
 print(f"\nVerificando variaveis de ambiente:")
-print(f"  SUPABASE_URL: {'Sim' if os.getenv('SUPABASE_URL') else 'Nao'}")
-print(f"  SUPABASE_KEY: {'Sim' if os.getenv('SUPABASE_KEY') else 'Nao'}")
+supabase_url = os.getenv('SUPABASE_URL')
+supabase_key = os.getenv('SUPABASE_KEY')
+print(f"  SUPABASE_URL: {'Sim' if supabase_url else 'Nao'}")
+print(f"  SUPABASE_KEY: {'Sim' if supabase_key else 'Nao'}")
 
 # Importa o app Flask
 try:
@@ -39,38 +41,58 @@ except Exception as e:
     def error():
         return f'<h1>Erro ao importar aplicacao</h1><pre>{error_msg}</pre>', 500
 
-# Handler para Vercel
-# O Vercel Python runtime espera uma função handler
+# Handler para Vercel - versão simplificada
 def handler(request):
     """
     Handler function for Vercel serverless functions
+    Versão simplificada que funciona melhor com Vercel
     """
     try:
-        # Extrai informações da requisição do Vercel
-        method = request.method if hasattr(request, 'method') else 'GET'
-        path = request.path if hasattr(request, 'path') else '/'
-        query_string = getattr(request, 'query_string', '') or ''
-        
-        # Headers
+        # Tenta obter informações básicas da requisição
+        method = 'GET'
+        path = '/'
+        query_string = ''
         headers_dict = {}
+        body = b''
+        
+        # Extrai método
+        if hasattr(request, 'method'):
+            method = request.method
+        elif hasattr(request, 'get'):
+            method = request.get('method', 'GET')
+        
+        # Extrai path
+        if hasattr(request, 'path'):
+            path = request.path
+        elif hasattr(request, 'get'):
+            path = request.get('path', '/')
+        
+        # Extrai query string
+        if hasattr(request, 'query_string'):
+            query_string = request.query_string or ''
+        elif hasattr(request, 'get'):
+            query_string = request.get('query_string', '')
+        
+        # Extrai headers
         if hasattr(request, 'headers'):
             if isinstance(request.headers, dict):
                 headers_dict = {k.lower(): v for k, v in request.headers.items()}
-            else:
-                # Se for um objeto com items()
-                try:
-                    headers_dict = {k.lower(): v for k, v in request.headers.items()}
-                except:
-                    headers_dict = {}
+            elif hasattr(request.headers, 'items'):
+                headers_dict = {k.lower(): v for k, v in request.headers.items()}
+            elif hasattr(request.headers, 'get'):
+                # Se for um objeto com get()
+                headers_dict = {}
+                for key in ['host', 'content-type', 'content-length', 'x-forwarded-for', 'x-forwarded-proto']:
+                    val = request.headers.get(key)
+                    if val:
+                        headers_dict[key] = val
         
-        # Body
-        body = b''
+        # Extrai body
         if hasattr(request, 'body'):
             body = request.body
             if isinstance(body, str):
                 body = body.encode('utf-8')
         elif hasattr(request, 'get_json'):
-            # Tenta obter JSON
             try:
                 json_data = request.get_json()
                 if json_data:
@@ -83,14 +105,14 @@ def handler(request):
         from io import BytesIO
         
         environ = {
-            'REQUEST_METHOD': method,
+            'REQUEST_METHOD': str(method),
             'SCRIPT_NAME': '',
-            'PATH_INFO': path,
-            'QUERY_STRING': query_string,
+            'PATH_INFO': str(path),
+            'QUERY_STRING': str(query_string),
             'CONTENT_TYPE': headers_dict.get('content-type', ''),
             'CONTENT_LENGTH': str(len(body)),
-            'SERVER_NAME': headers_dict.get('host', 'localhost').split(':')[0] if headers_dict.get('host') else 'localhost',
-            'SERVER_PORT': headers_dict.get('host', 'localhost').split(':')[1] if ':' in headers_dict.get('host', '') else '80',
+            'SERVER_NAME': 'localhost',
+            'SERVER_PORT': '80',
             'wsgi.version': (1, 0),
             'wsgi.url_scheme': headers_dict.get('x-forwarded-proto', 'https'),
             'wsgi.input': BytesIO(body),
@@ -107,19 +129,22 @@ def handler(request):
                 environ[env_key] = str(value)
         
         # Variáveis adicionais
-        if headers_dict.get('host'):
-            environ['HTTP_HOST'] = headers_dict['host']
-        if headers_dict.get('x-forwarded-for'):
-            environ['HTTP_X_FORWARDED_FOR'] = headers_dict['x-forwarded-for']
-        if headers_dict.get('x-forwarded-proto'):
-            environ['HTTP_X_FORWARDED_PROTO'] = headers_dict['x-forwarded-proto']
+        if 'host' in headers_dict:
+            environ['HTTP_HOST'] = str(headers_dict['host'])
+        if 'x-forwarded-for' in headers_dict:
+            environ['HTTP_X_FORWARDED_FOR'] = str(headers_dict['x-forwarded-for'])
+        if 'x-forwarded-proto' in headers_dict:
+            environ['HTTP_X_FORWARDED_PROTO'] = str(headers_dict['x-forwarded-proto'])
         
         # Callback para capturar status e headers
         status_code = [200]
         response_headers = []
         
         def start_response(wsgi_status, wsgi_headers):
-            status_code[0] = int(wsgi_status.split()[0])
+            try:
+                status_code[0] = int(str(wsgi_status).split()[0])
+            except:
+                status_code[0] = 200
             response_headers[:] = list(wsgi_headers)
         
         # Executa app Flask
@@ -143,12 +168,15 @@ def handler(request):
             }
         
         # Converte resposta
-        body_str = b''.join(response_body).decode('utf-8')
+        try:
+            body_str = b''.join(response_body).decode('utf-8')
+        except:
+            body_str = str(b''.join(response_body))
         
         # Converte headers para dict
         headers_result = {}
         for key, value in response_headers:
-            headers_result[key] = str(value)
+            headers_result[str(key)] = str(value)
         
         return {
             'statusCode': status_code[0],
