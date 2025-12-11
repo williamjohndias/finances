@@ -32,6 +32,7 @@ def load_transactions():
     """Carrega transações do Supabase"""
     try:
         if supabase is None:
+            print("AVISO: Supabase não inicializado, retornando dados vazios")
             return {
                 'receitas': [],
                 'gastos_debito': [],
@@ -39,7 +40,17 @@ def load_transactions():
                 'gastos_nubank': []
             }
         # Busca todas as transações
-        response = supabase.table('transactions').select('*').order('data', desc=False).execute()
+        try:
+            response = supabase.table('transactions').select('*').order('data', desc=False).execute()
+        except Exception as db_error:
+            print(f"Erro ao buscar transações do Supabase: {db_error}")
+            # Retorna vazio em caso de erro
+            return {
+                'receitas': [],
+                'gastos_debito': [],
+                'gastos_mercado_pago': [],
+                'gastos_nubank': []
+            }
         
         transactions = {
             'receitas': [],
@@ -96,7 +107,12 @@ def add_transaction():
     """Adiciona uma nova transação"""
     try:
         if supabase is None:
-            return jsonify({'success': False, 'error': 'Supabase não inicializado. Verifique as variáveis de ambiente.'}), 500
+            error_msg = 'Supabase não inicializado. Verifique as variáveis de ambiente SUPABASE_URL e SUPABASE_KEY.'
+            print(f"ERRO: {error_msg}")
+            return jsonify({'success': False, 'error': error_msg}), 500
+        
+        if not request.json:
+            return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
         
         data = request.json
         
