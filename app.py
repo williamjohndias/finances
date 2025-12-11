@@ -207,10 +207,10 @@ def delete_transaction(tipo, transaction_id):
         if transaction_to_delete.get('parcelado') and transaction_to_delete.get('parcel_group_id'):
             parcel_group_id = transaction_to_delete.get('parcel_group_id')
             supabase.table('transactions').delete().eq('parcel_group_id', parcel_group_id).execute()
-            print(f"✓ Parcelas deletadas (grupo: {parcel_group_id})")
+            print(f"OK - Parcelas deletadas (grupo: {parcel_group_id})")
         else:
             supabase.table('transactions').delete().eq('id', transaction_id).execute()
-            print(f"✓ Transação deletada: {transaction_id}")
+            print(f"OK - Transacao deletada: {transaction_id}")
         
         return jsonify({'success': True})
     except Exception as e:
