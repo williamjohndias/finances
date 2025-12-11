@@ -21,20 +21,30 @@ except ImportError:
 
 # Inicializa Supabase
 supabase = None
+print(f"\n🔧 Tentando inicializar Supabase...")
+print(f"  URL: {SUPABASE_URL}")
+print(f"  Key presente: {'Sim' if SUPABASE_KEY else 'Não'} (tamanho: {len(SUPABASE_KEY) if SUPABASE_KEY else 0})")
+
 if SUPABASE_URL and SUPABASE_KEY:
     try:
+        print("  Importando biblioteca supabase...")
         from supabase import create_client, Client
+        print("  Criando cliente Supabase...")
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("✓ Supabase inicializado com sucesso")
+        print("✓ Supabase inicializado com sucesso!\n")
     except Exception as e:
-        print(f"✗ Erro ao inicializar Supabase: {e}")
+        print(f"✗ ERRO ao inicializar Supabase:")
+        print(f"  Tipo: {type(e).__name__}")
+        print(f"  Mensagem: {str(e)}")
         import traceback
+        print("\n📋 Traceback completo:")
         traceback.print_exc()
         supabase = None
+        print()
 else:
     print("✗ AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados")
     print(f"  SUPABASE_URL: {'Definido' if SUPABASE_URL else 'NÃO DEFINIDO'}")
-    print(f"  SUPABASE_KEY: {'Definido' if SUPABASE_KEY else 'NÃO DEFINIDO'}")
+    print(f"  SUPABASE_KEY: {'Definido' if SUPABASE_KEY else 'NÃO DEFINIDO'}\n")
 
 def load_transactions():
     """Carrega transações do Supabase"""
