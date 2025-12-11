@@ -10,14 +10,14 @@ app = Flask(__name__, template_folder=template_dir)
 # Importa configurações do Supabase
 try:
     from config import SUPABASE_URL, SUPABASE_KEY
-    print(f"✓ Configurações carregadas do config.py")
+    print(f"OK - Configuracoes carregadas do config.py")
     print(f"  URL: {SUPABASE_URL}")
     print(f"  Key presente: {'Sim' if SUPABASE_KEY else 'Não'}")
 except ImportError:
     # Se config.py não existir, tenta variáveis de ambiente
     SUPABASE_URL = os.getenv('SUPABASE_URL', '')
     SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
-    print("⚠️ config.py não encontrado, usando variáveis de ambiente")
+    print("AVISO: config.py nao encontrado, usando variaveis de ambiente")
 
 # Inicializa Supabase
 supabase = None
@@ -49,7 +49,7 @@ else:
 def load_transactions():
     """Carrega transações do Supabase"""
     if supabase is None:
-        print("⚠️ Supabase não inicializado, retornando dados vazios")
+        print("AVISO: Supabase nao inicializado, retornando dados vazios")
         return {
             'receitas': [],
             'gastos_debito': [],
@@ -92,7 +92,7 @@ def load_transactions():
         
         return transactions
     except Exception as e:
-        print(f"✗ Erro ao carregar transações: {e}")
+        print(f"ERRO ao carregar transacoes: {e}")
         import traceback
         traceback.print_exc()
         return {
@@ -169,9 +169,9 @@ def add_transaction():
         # Insere no Supabase
         try:
             response = supabase.table('transactions').insert(transactions_to_insert).execute()
-            print(f"✓ {len(transacoes_criadas)} transação(ões) inserida(s) com sucesso")
+            print(f"OK - {len(transacoes_criadas)} transacao(oes) inserida(s) com sucesso")
         except Exception as db_error:
-            print(f"✗ Erro ao inserir no Supabase: {db_error}")
+            print(f"ERRO ao inserir no Supabase: {db_error}")
             import traceback
             traceback.print_exc()
             return jsonify({
@@ -182,7 +182,7 @@ def add_transaction():
         
         return jsonify({'success': True, 'transactions': transacoes_criadas})
     except Exception as e:
-        print(f"✗ Erro ao adicionar transação: {e}")
+        print(f"ERRO ao adicionar transacao: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
@@ -214,7 +214,7 @@ def delete_transaction(tipo, transaction_id):
         
         return jsonify({'success': True})
     except Exception as e:
-        print(f"✗ Erro ao deletar transação: {e}")
+        print(f"ERRO ao deletar transacao: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -263,7 +263,7 @@ def get_monthly_summary():
         
         return jsonify(result)
     except Exception as e:
-        print(f"✗ Erro ao gerar resumo mensal: {e}")
+        print(f"ERRO ao gerar resumo mensal: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({
