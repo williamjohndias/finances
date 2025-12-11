@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Assistente Financeiro</title>
+    <title>Banco Financeiro - Controle Pessoal</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -13,53 +13,156 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: #000000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
             color: #ffffff;
-            padding: 20px;
             min-height: 100vh;
+            padding: 0;
         }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border-bottom: 2px solid #333;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
         }
 
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 2.5rem;
+        .header h1 {
+            font-size: 2rem;
             font-weight: 300;
             letter-spacing: 2px;
-        }
-
-        .assistant-message {
-            background-color: #1a1a1a;
-            border-left: 3px solid #fff;
-            padding: 15px 20px;
-            margin-bottom: 30px;
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #ccc;
-        }
-
-        .assistant-message strong {
             color: #fff;
         }
 
-        .form-section {
-            background-color: #1a1a1a;
-            padding: 30px;
-            margin-bottom: 30px;
-            border: 1px solid #333;
+        .header .subtitle {
+            font-size: 0.9rem;
+            color: #aaa;
+            margin-top: 5px;
         }
 
-        .form-section h2 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            font-weight: 300;
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 30px 40px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            font-size: 0.85rem;
+            color: #aaa;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: 500;
+        }
+
+        .card-icon {
+            font-size: 1.5rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+        }
+
+        .card-value.positive {
+            color: #4ade80;
+        }
+
+        .card-value.negative {
+            color: #f87171;
+        }
+
+        .card-footer {
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 10px;
+        }
+
+        .card.saldo {
+            background: linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 100%);
+            border-color: #3a5a7f;
+        }
+
+        .card.receitas {
+            border-left: 4px solid #4ade80;
+        }
+
+        .card.gastos {
+            border-left: 4px solid #f87171;
+        }
+
+        .section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            font-weight: 300;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 350px;
+            margin-top: 20px;
+        }
+
+        .form-section {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
         }
 
         .form-row {
@@ -80,252 +183,267 @@
         label {
             display: block;
             margin-bottom: 8px;
-            font-size: 0.9rem;
-            color: #ccc;
+            font-size: 0.85rem;
+            color: #aaa;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .help-text {
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 4px;
-            font-style: italic;
+            font-weight: 500;
         }
 
         input, select {
             width: 100%;
-            padding: 12px;
-            background-color: #000;
+            padding: 12px 15px;
+            background-color: #0a0a0a;
             border: 1px solid #333;
+            border-radius: 4px;
             color: #fff;
             font-size: 1rem;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: #fff;
-        }
-
-        .parcelas-info {
-            background-color: #0a0a0a;
-            padding: 10px;
-            margin-top: 10px;
-            font-size: 0.85rem;
-            color: #aaa;
-            border: 1px solid #222;
+            border-color: #4ade80;
+            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
         }
 
         button {
-            background-color: #fff;
+            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
             color: #000;
             border: none;
             padding: 12px 30px;
             font-size: 1rem;
+            font-weight: 600;
             cursor: pointer;
+            border-radius: 4px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            transition: background-color 0.3s;
-            font-weight: 500;
+            transition: all 0.3s;
         }
 
         button:hover {
-            background-color: #ccc;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
         }
 
-        .chart-section {
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            padding: 30px;
-            margin-bottom: 30px;
-        }
-
-        .chart-section h2 {
-            font-size: 1.3rem;
-            margin-bottom: 20px;
-            font-weight: 300;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 400px;
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .summary {
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            padding: 30px;
-            margin-bottom: 30px;
-            text-align: center;
-        }
-
-        .summary h2 {
-            font-size: 1.5rem;
-            margin-bottom: 20px;
-            font-weight: 300;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .summary-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .summary-item {
+        .transactions-table th {
+            background-color: #0a0a0a;
             padding: 15px;
-            border: 1px solid #333;
-        }
-
-        .summary-item h3 {
-            font-size: 0.9rem;
-            color: #888;
-            margin-bottom: 10px;
+            text-align: left;
+            font-size: 0.85rem;
+            color: #aaa;
             text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .summary-item .value {
-            font-size: 1.5rem;
-            font-weight: 300;
-        }
-
-        .saldo {
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #fff;
-        }
-
-        .saldo .value {
-            font-size: 2rem;
-        }
-
-        .transactions-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 40px;
-        }
-
-        .transaction-card {
-            background-color: #1a1a1a;
-            border: 1px solid #333;
-            padding: 20px;
-        }
-
-        .transaction-card h2 {
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            font-weight: 300;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-        }
-
-        .transaction-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #222;
-        }
-
-        .transaction-item:last-child {
-            border-bottom: none;
-        }
-
-        .transaction-info {
-            flex: 1;
-        }
-
-        .transaction-desc {
-            font-size: 0.9rem;
-            margin-bottom: 4px;
-        }
-
-        .transaction-meta {
-            font-size: 0.75rem;
-            color: #888;
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .parcela-badge {
-            background-color: #333;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.7rem;
-        }
-
-        .transaction-value {
-            font-size: 1.1rem;
             font-weight: 500;
-            margin-right: 10px;
+            border-bottom: 2px solid #333;
+        }
+
+        .transactions-table td {
+            padding: 15px;
+            border-bottom: 1px solid #222;
+            font-size: 0.9rem;
+        }
+
+        .transactions-table tr:hover {
+            background-color: #1a1a1a;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge.receita {
+            background-color: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .badge.debito {
+            background-color: rgba(248, 113, 113, 0.2);
+            color: #f87171;
+        }
+
+        .badge.mercado-pago {
+            background-color: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .badge.nubank {
+            background-color: rgba(168, 85, 247, 0.2);
+            color: #a855f7;
+        }
+
+        .badge.parcela {
+            background-color: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
         }
 
         .delete-btn {
-            background-color: transparent;
-            color: #fff;
-            border: 1px solid #333;
+            background: transparent;
+            color: #f87171;
+            border: 1px solid #f87171;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
+            border-radius: 4px;
             transition: all 0.3s;
         }
 
         .delete-btn:hover {
-            background-color: #333;
-            border-color: #fff;
+            background-color: #f87171;
+            color: #000;
         }
 
-        .total {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 2px solid #333;
-            font-size: 1.2rem;
-            font-weight: 500;
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
         }
 
-        .success-message {
-            background-color: #1a1a1a;
-            border: 1px solid #fff;
-            padding: 15px;
-            margin-top: 15px;
-            color: #fff;
-            display: none;
-            transition: all 0.3s;
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
-        
-        .success-message.error {
-            background-color: #3a1a1a;
-            border-color: #ff0000;
-            color: #ffaaaa;
+
+        .filter-group input, .filter-group select {
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background-color: #0a0a0a;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 300;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid;
+        }
+
+        .alert.success {
+            background-color: rgba(74, 222, 128, 0.1);
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        .alert.error {
+            background-color: rgba(248, 113, 113, 0.1);
+            border-color: #f87171;
+            color: #f87171;
+        }
+
+        .alert.info {
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>💰 Assistente Financeiro</h1>
+    <div class="header">
+        <h1>🏦 Banco Financeiro</h1>
+        <div class="subtitle">Controle Financeiro Pessoal Completo</div>
+    </div>
 
-        <div class="assistant-message" id="assistantMessage">
-            <strong>Olá! 👋</strong> Estou aqui para te ajudar a controlar suas finanças. 
-            Adicione suas receitas e gastos abaixo. Você pode parcelar compras no cartão de crédito 
-            e acompanhar tudo no gráfico mensal!
+    <div class="container">
+        <!-- Dashboard Cards -->
+        <div class="dashboard-grid">
+            <div class="card saldo">
+                <div class="card-header">
+                    <div class="card-title">Saldo Total</div>
+                    <div class="card-icon">💰</div>
+                </div>
+                <div class="card-value" id="saldoTotal">R$ 0,00</div>
+                <div class="card-footer">Receitas - Gastos</div>
+            </div>
+
+            <div class="card receitas">
+                <div class="card-header">
+                    <div class="card-title">Total Receitas</div>
+                    <div class="card-icon">📈</div>
+                </div>
+                <div class="card-value positive" id="totalReceitas">R$ 0,00</div>
+                <div class="card-footer" id="mediaReceitas">Média mensal: R$ 0,00</div>
+            </div>
+
+            <div class="card gastos">
+                <div class="card-header">
+                    <div class="card-title">Total Gastos</div>
+                    <div class="card-icon">📉</div>
+                </div>
+                <div class="card-value negative" id="totalGastos">R$ 0,00</div>
+                <div class="card-footer" id="mediaGastos">Média mensal: R$ 0,00</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">Transações</div>
+                    <div class="card-icon">📊</div>
+                </div>
+                <div class="card-value" id="totalTransacoes">0</div>
+                <div class="card-footer" id="parceladasInfo">0 compras parceladas</div>
+            </div>
         </div>
 
+        <!-- Formulário de Transação -->
         <div class="form-section">
-            <h2>➕ Adicionar Transação</h2>
+            <div class="section-header">
+                <h2 class="section-title">➕ Nova Transação</h2>
+            </div>
             <form id="transactionForm">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="tipo">Tipo</label>
+                        <label for="tipo">Tipo de Transação</label>
                         <select id="tipo" name="tipo" required>
                             <option value="">Selecione...</option>
                             <option value="receita">💰 Receita</option>
@@ -336,19 +454,17 @@
                     </div>
                     <div class="form-group">
                         <label for="valor">Valor Total (R$)</label>
-                        <input type="number" id="valor" name="valor" step="0.01" min="0" required>
-                        <div class="help-text">Valor total da transação</div>
+                        <input type="number" id="valor" name="valor" step="0.01" min="0" required placeholder="0.00">
                     </div>
                     <div class="form-group">
                         <label for="num_parcelas">Número de Parcelas</label>
                         <input type="number" id="num_parcelas" name="num_parcelas" min="1" value="1" required>
-                        <div class="help-text">1 = à vista</div>
                     </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group full-width">
                         <label for="descricao">Descrição</label>
-                        <input type="text" id="descricao" name="descricao" placeholder="Ex: Salário, Supermercado, Roupas..." required>
+                        <input type="text" id="descricao" name="descricao" required placeholder="Ex: Salário, Supermercado, Roupas...">
                     </div>
                 </div>
                 <div class="form-row">
@@ -357,75 +473,112 @@
                         <input type="date" id="data" name="data" required>
                     </div>
                     <div class="form-group" style="display: flex; align-items: flex-end;">
-                        <button type="submit">Adicionar</button>
+                        <button type="submit">Adicionar Transação</button>
                     </div>
                 </div>
-                <div id="parcelasInfo" class="parcelas-info" style="display: none;"></div>
-                <div class="success-message" id="successMessage">✓ Transação adicionada com sucesso!</div>
+                <div id="parcelasInfo" style="display: none; padding: 15px; background: #0a0a0a; border-radius: 4px; margin-top: 15px; color: #aaa; font-size: 0.9rem;"></div>
+                <div id="successMessage" class="alert" style="display: none;"></div>
             </form>
         </div>
 
-        <div class="summary" id="summary">
-            <h2>📊 Resumo Financeiro</h2>
-            <div class="summary-grid">
-                <div class="summary-item">
-                    <h3>Total Receitas</h3>
-                    <div class="value receita" id="totalReceitas">R$ 0,00</div>
+        <!-- Gráficos -->
+        <div class="charts-grid">
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">📈 Evolução Mensal</h2>
                 </div>
-                <div class="summary-item">
-                    <h3>Total Débito</h3>
-                    <div class="value gasto" id="totalDebito">R$ 0,00</div>
-                </div>
-                <div class="summary-item">
-                    <h3>Total Mercado Pago</h3>
-                    <div class="value gasto" id="totalMercadoPago">R$ 0,00</div>
-                </div>
-                <div class="summary-item">
-                    <h3>Total Nubank</h3>
-                    <div class="value gasto" id="totalNubank">R$ 0,00</div>
+                <div class="chart-container">
+                    <canvas id="monthlyChart"></canvas>
                 </div>
             </div>
-            <div class="saldo">
-                <h3>Saldo Total</h3>
-                <div class="value" id="saldo">R$ 0,00</div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">💳 Distribuição de Gastos</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="gastosChart"></canvas>
+                </div>
             </div>
         </div>
 
-        <div class="chart-section">
-            <h2>📈 Evolução Mensal</h2>
-            <div class="chart-container">
-                <canvas id="monthlyChart"></canvas>
+        <!-- Estatísticas -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📊 Estatísticas Detalhadas</h2>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-label">Gastos em Débito</div>
+                    <div class="stat-value" id="statDebito">R$ 0,00</div>
+                    <div style="font-size: 0.8rem; color: #888; margin-top: 5px;" id="pctDebito">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Gastos Mercado Pago</div>
+                    <div class="stat-value" id="statMercadoPago">R$ 0,00</div>
+                    <div style="font-size: 0.8rem; color: #888; margin-top: 5px;" id="pctMercadoPago">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Gastos Nubank</div>
+                    <div class="stat-value" id="statNubank">R$ 0,00</div>
+                    <div style="font-size: 0.8rem; color: #888; margin-top: 5px;" id="pctNubank">0%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Maior Transação</div>
+                    <div class="stat-value" style="font-size: 1.2rem;" id="maiorTransacao">-</div>
+                </div>
             </div>
         </div>
 
-        <div class="transactions-grid">
-            <div class="transaction-card">
-                <h2>💰 Receitas</h2>
-                <div id="receitas-list"></div>
-                <div class="total" id="receitas-total">Total: R$ 0,00</div>
+        <!-- Tabela de Transações -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">📋 Histórico de Transações</h2>
             </div>
-            <div class="transaction-card">
-                <h2>💳 Gastos - Débito</h2>
-                <div id="debito-list"></div>
-                <div class="total" id="debito-total">Total: R$ 0,00</div>
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="filterTipo" style="margin: 0;">Tipo:</label>
+                    <select id="filterTipo" style="width: auto; min-width: 150px;">
+                        <option value="">Todos</option>
+                        <option value="receita">Receitas</option>
+                        <option value="debito">Débito</option>
+                        <option value="mercado_pago">Mercado Pago</option>
+                        <option value="nubank">Nubank</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label for="filterBusca" style="margin: 0;">Buscar:</label>
+                    <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
+                </div>
             </div>
-            <div class="transaction-card">
-                <h2>🛒 Gastos - Mercado Pago</h2>
-                <div id="mercado-pago-list"></div>
-                <div class="total" id="mercado-pago-total">Total: R$ 0,00</div>
-            </div>
-            <div class="transaction-card">
-                <h2>💜 Gastos - Nubank</h2>
-                <div id="nubank-list"></div>
-                <div class="total" id="nubank-total">Total: R$ 0,00</div>
+            <div style="overflow-x: auto;">
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Parcela</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transactionsTableBody">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #888; padding: 40px;">Carregando transações...</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <script>
         let monthlyChart = null;
+        let gastosChart = null;
+        let allTransactions = [];
 
-        // Formata valor para exibição
+        // Formata valor
         function formatCurrency(value) {
             return new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
@@ -433,13 +586,13 @@
             }).format(value);
         }
 
-        // Formata data para exibição
+        // Formata data
         function formatDate(dateString) {
             const date = new Date(dateString + 'T00:00:00');
             return date.toLocaleDateString('pt-BR');
         }
 
-        // Atualiza informações de parcelas
+        // Atualiza info de parcelas
         function updateParcelasInfo() {
             const numParcelas = parseInt(document.getElementById('num_parcelas').value) || 1;
             const valorTotal = parseFloat(document.getElementById('valor').value) || 0;
@@ -447,42 +600,122 @@
             
             if (numParcelas > 1 && valorTotal > 0) {
                 const valorParcela = valorTotal / numParcelas;
-                infoDiv.innerHTML = `
-                    <strong>ℹ️ Informação das Parcelas:</strong><br>
-                    Valor por parcela: ${formatCurrency(valorParcela)}<br>
-                    Total: ${formatCurrency(valorTotal)} em ${numParcelas}x
-                `;
+                infoDiv.innerHTML = `<strong>ℹ️ Informação:</strong> ${numParcelas}x de ${formatCurrency(valorParcela)} = Total: ${formatCurrency(valorTotal)}`;
                 infoDiv.style.display = 'block';
             } else {
                 infoDiv.style.display = 'none';
             }
         }
 
-        // Carrega transações do servidor
+        // Carrega transações
         async function loadTransactions() {
             try {
                 const response = await fetch('/api/transactions');
                 const data = await response.json();
-                renderTransactions(data);
-                updateSummary(data);
-                await loadMonthlyChart();
+                
+                // Flatten todas as transações
+                allTransactions = [
+                    ...(data.receitas || []).map(t => ({...t, tipo: 'receita'})),
+                    ...(data.gastos_debito || []).map(t => ({...t, tipo: 'debito'})),
+                    ...(data.gastos_mercado_pago || []).map(t => ({...t, tipo: 'mercado_pago'})),
+                    ...(data.gastos_nubank || []).map(t => ({...t, tipo: 'nubank'}))
+                ].sort((a, b) => new Date(b.data) - new Date(a.data));
+                
+                renderTransactions();
+                updateDashboard(data);
+                await loadCharts();
+                await loadStatistics();
             } catch (error) {
                 console.error('Erro ao carregar transações:', error);
             }
         }
 
-        // Carrega gráfico mensal
-        async function loadMonthlyChart() {
+        // Renderiza tabela de transações
+        function renderTransactions() {
+            const tbody = document.getElementById('transactionsTableBody');
+            const filterTipo = document.getElementById('filterTipo').value;
+            const filterBusca = document.getElementById('filterBusca').value.toLowerCase();
+            
+            let filtered = allTransactions;
+            
+            if (filterTipo) {
+                filtered = filtered.filter(t => t.tipo === filterTipo);
+            }
+            
+            if (filterBusca) {
+                filtered = filtered.filter(t => 
+                    t.descricao.toLowerCase().includes(filterBusca)
+                );
+            }
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888; padding: 40px;">Nenhuma transação encontrada</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map(transaction => {
+                const tipoLabels = {
+                    'receita': '💰 Receita',
+                    'debito': '💳 Débito',
+                    'mercado_pago': '🛒 Mercado Pago',
+                    'nubank': '💜 Nubank'
+                };
+                
+                const tipoBadges = {
+                    'receita': 'receita',
+                    'debito': 'debito',
+                    'mercado_pago': 'mercado-pago',
+                    'nubank': 'nubank'
+                };
+                
+                const parcelaInfo = transaction.parcelado 
+                    ? `<span class="badge parcela">${transaction.parcela_atual}/${transaction.total_parcelas}</span>`
+                    : '-';
+                
+                return `
+                    <tr>
+                        <td>${formatDate(transaction.data)}</td>
+                        <td>${transaction.descricao}</td>
+                        <td><span class="badge ${tipoBadges[transaction.tipo]}">${tipoLabels[transaction.tipo]}</span></td>
+                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #4ade80;' : 'color: #f87171;'}">${formatCurrency(transaction.valor)}</td>
+                        <td>${parcelaInfo}</td>
+                        <td>
+                            <button class="delete-btn" onclick="deleteTransaction('${transaction.tipo}', '${transaction.id}')">Excluir</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Atualiza dashboard
+        function updateDashboard(data) {
+            const receitas = (data.receitas || []).reduce((sum, t) => sum + t.valor, 0);
+            const debito = (data.gastos_debito || []).reduce((sum, t) => sum + t.valor, 0);
+            const mercadoPago = (data.gastos_mercado_pago || []).reduce((sum, t) => sum + t.valor, 0);
+            const nubank = (data.gastos_nubank || []).reduce((sum, t) => sum + t.valor, 0);
+            const gastos = debito + mercadoPago + nubank;
+            const saldo = receitas - gastos;
+            
+            document.getElementById('saldoTotal').textContent = formatCurrency(saldo);
+            document.getElementById('saldoTotal').className = 'card-value ' + (saldo >= 0 ? 'positive' : 'negative');
+            
+            document.getElementById('totalReceitas').textContent = formatCurrency(receitas);
+            document.getElementById('totalGastos').textContent = formatCurrency(gastos);
+            
+            const totalTransacoes = allTransactions.length;
+            document.getElementById('totalTransacoes').textContent = totalTransacoes;
+        }
+
+        // Carrega gráficos
+        async function loadCharts() {
             try {
                 const response = await fetch('/api/transactions/monthly');
                 const data = await response.json();
                 
-                if (monthlyChart) {
-                    monthlyChart.destroy();
-                }
-
-                const ctx = document.getElementById('monthlyChart').getContext('2d');
-                monthlyChart = new Chart(ctx, {
+                // Gráfico mensal
+                if (monthlyChart) monthlyChart.destroy();
+                const ctx1 = document.getElementById('monthlyChart').getContext('2d');
+                monthlyChart = new Chart(ctx1, {
                     type: 'line',
                     data: {
                         labels: data.meses,
@@ -490,28 +723,27 @@
                             {
                                 label: 'Receitas',
                                 data: data.receitas,
-                                borderColor: '#ffffff',
-                                backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                                borderColor: '#4ade80',
+                                backgroundColor: 'rgba(74, 222, 128, 0.1)',
                                 tension: 0.4,
                                 fill: true
                             },
                             {
                                 label: 'Gastos',
                                 data: data.gastos,
-                                borderColor: '#888888',
-                                backgroundColor: 'rgba(136, 136, 136, 0.1)',
+                                borderColor: '#f87171',
+                                backgroundColor: 'rgba(248, 113, 113, 0.1)',
                                 tension: 0.4,
                                 fill: true
                             },
                             {
                                 label: 'Saldo',
                                 data: data.saldos,
-                                borderColor: '#ffffff',
+                                borderColor: '#3b82f6',
                                 backgroundColor: 'transparent',
                                 borderWidth: 2,
                                 borderDash: [5, 5],
-                                tension: 0.4,
-                                pointRadius: 4
+                                tension: 0.4
                             }
                         ]
                     },
@@ -519,161 +751,120 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                labels: {
-                                    color: '#ffffff'
-                                }
-                            },
+                            legend: { labels: { color: '#fff' } },
                             tooltip: {
                                 callbacks: {
-                                    label: function(context) {
-                                        return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
-                                    }
+                                    label: (ctx) => ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y)
                                 }
                             }
                         },
                         scales: {
-                            x: {
-                                ticks: {
-                                    color: '#ffffff'
-                                },
-                                grid: {
-                                    color: '#333333'
-                                }
-                            },
+                            x: { ticks: { color: '#fff' }, grid: { color: '#333' } },
                             y: {
                                 ticks: {
-                                    color: '#ffffff',
-                                    callback: function(value) {
-                                        return formatCurrency(value);
-                                    }
+                                    color: '#fff',
+                                    callback: (value) => formatCurrency(value)
                                 },
-                                grid: {
-                                    color: '#333333'
+                                grid: { color: '#333' }
+                            }
+                        }
+                    }
+                });
+                
+                // Gráfico de distribuição de gastos
+                if (gastosChart) gastosChart.destroy();
+                const ctx2 = document.getElementById('gastosChart').getContext('2d');
+                gastosChart = new Chart(ctx2, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Débito', 'Mercado Pago', 'Nubank'],
+                        datasets: [{
+                            data: [
+                                data.debito.reduce((a, b) => a + b, 0),
+                                data.mercado_pago.reduce((a, b) => a + b, 0),
+                                data.nubank.reduce((a, b) => a + b, 0)
+                            ],
+                            backgroundColor: ['#f87171', '#fbbf24', '#a855f7']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { labels: { color: '#fff' }, position: 'bottom' },
+                            tooltip: {
+                                callbacks: {
+                                    label: (ctx) => {
+                                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                        const percent = ((ctx.parsed / total) * 100).toFixed(1);
+                                        return ctx.label + ': ' + formatCurrency(ctx.parsed) + ' (' + percent + '%)';
+                                    }
                                 }
                             }
                         }
                     }
                 });
             } catch (error) {
-                console.error('Erro ao carregar gráfico:', error);
+                console.error('Erro ao carregar gráficos:', error);
             }
         }
 
-        // Renderiza transações
-        function renderTransactions(data) {
-            renderTransactionList('receitas-list', data.receitas || [], 'receita');
-            renderTransactionList('debito-list', data.gastos_debito || [], 'debito');
-            renderTransactionList('mercado-pago-list', data.gastos_mercado_pago || [], 'mercado_pago');
-            renderTransactionList('nubank-list', data.gastos_nubank || [], 'nubank');
-
-            // Atualiza totais
-            document.getElementById('receitas-total').textContent = 
-                'Total: ' + formatCurrency(calculateTotal(data.receitas || []));
-            document.getElementById('debito-total').textContent = 
-                'Total: ' + formatCurrency(calculateTotal(data.gastos_debito || []));
-            document.getElementById('mercado-pago-total').textContent = 
-                'Total: ' + formatCurrency(calculateTotal(data.gastos_mercado_pago || []));
-            document.getElementById('nubank-total').textContent = 
-                'Total: ' + formatCurrency(calculateTotal(data.gastos_nubank || []));
-        }
-
-        // Renderiza lista de transações
-        function renderTransactionList(containerId, transactions, tipo) {
-            const container = document.getElementById(containerId);
-            if (transactions.length === 0) {
-                container.innerHTML = '<div style="color: #888; font-size: 0.9rem;">Nenhuma transação</div>';
-                return;
-            }
-
-            container.innerHTML = transactions.map(transaction => {
-                const parcelaInfo = transaction.parcelado 
-                    ? `<span class="parcela-badge">${transaction.parcela_atual}/${transaction.total_parcelas}</span>`
-                    : '';
+        // Carrega estatísticas
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/api/statistics');
+                const stats = await response.json();
                 
-                return `
-                    <div class="transaction-item">
-                        <div class="transaction-info">
-                            <div class="transaction-desc">${transaction.descricao}</div>
-                            <div class="transaction-meta">
-                                <span>${formatDate(transaction.data)}</span>
-                                ${parcelaInfo}
-                            </div>
-                        </div>
-                        <div style="display: flex; align-items: center;">
-                            <span class="transaction-value">${formatCurrency(transaction.valor)}</span>
-                            <button class="delete-btn" onclick="deleteTransaction('${tipo}', '${transaction.id}')">×</button>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // Calcula total de uma lista
-        function calculateTotal(transactions) {
-            return transactions.reduce((sum, t) => sum + t.valor, 0);
-        }
-
-        // Atualiza resumo
-        function updateSummary(data) {
-            const receitas = calculateTotal(data.receitas || []);
-            const debito = calculateTotal(data.gastos_debito || []);
-            const mercadoPago = calculateTotal(data.gastos_mercado_pago || []);
-            const nubank = calculateTotal(data.gastos_nubank || []);
-
-            document.getElementById('totalReceitas').textContent = formatCurrency(receitas);
-            document.getElementById('totalDebito').textContent = formatCurrency(debito);
-            document.getElementById('totalMercadoPago').textContent = formatCurrency(mercadoPago);
-            document.getElementById('totalNubank').textContent = formatCurrency(nubank);
-
-            const saldo = receitas - debito - mercadoPago - nubank;
-            const saldoElement = document.getElementById('saldo');
-            saldoElement.textContent = formatCurrency(saldo);
-            
-            // Atualiza mensagem do assistente
-            updateAssistantMessage(saldo);
-        }
-
-        // Atualiza mensagem do assistente
-        function updateAssistantMessage(saldo) {
-            const messageDiv = document.getElementById('assistantMessage');
-            if (saldo > 0) {
-                messageDiv.innerHTML = `
-                    <strong>Ótimo! 🎉</strong> Seu saldo está positivo em ${formatCurrency(saldo)}. 
-                    Continue controlando seus gastos para manter essa situação!
-                `;
-            } else if (saldo < 0) {
-                messageDiv.innerHTML = `
-                    <strong>Atenção! ⚠️</strong> Seu saldo está negativo em ${formatCurrency(Math.abs(saldo))}. 
-                    Tente reduzir gastos ou aumentar receitas para equilibrar suas finanças.
-                `;
-            } else {
-                messageDiv.innerHTML = `
-                    <strong>Equilíbrio! ⚖️</strong> Suas receitas e gastos estão equilibrados. 
-                    Continue monitorando para manter esse controle!
-                `;
+                document.getElementById('statDebito').textContent = formatCurrency(stats.total_debito);
+                document.getElementById('statMercadoPago').textContent = formatCurrency(stats.total_mercado_pago);
+                document.getElementById('statNubank').textContent = formatCurrency(stats.total_nubank);
+                
+                document.getElementById('pctDebito').textContent = stats.pct_debito.toFixed(1) + '% do total';
+                document.getElementById('pctMercadoPago').textContent = stats.pct_mercado_pago.toFixed(1) + '% do total';
+                document.getElementById('pctNubank').textContent = stats.pct_nubank.toFixed(1) + '% do total';
+                
+                if (stats.maior_transacao) {
+                    document.getElementById('maiorTransacao').textContent = 
+                        formatCurrency(stats.maior_transacao.valor) + ' - ' + stats.maior_transacao.descricao;
+                }
+                
+                document.getElementById('mediaReceitas').textContent = 
+                    'Média mensal: ' + formatCurrency(stats.media_mensal_receitas);
+                document.getElementById('mediaGastos').textContent = 
+                    'Média mensal: ' + formatCurrency(stats.media_mensal_gastos);
+                document.getElementById('parceladasInfo').textContent = 
+                    stats.compras_parceladas + ' compras parceladas';
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
             }
         }
 
         // Deleta transação
         async function deleteTransaction(tipo, id) {
-            if (!confirm('Deseja realmente excluir esta transação?')) {
-                return;
-            }
-
+            if (!confirm('Deseja realmente excluir esta transação?')) return;
+            
             try {
-                const response = await fetch(`/api/transactions/${tipo}/${id}`, {
-                    method: 'DELETE'
-                });
+                const response = await fetch(`/api/transactions/${tipo}/${id}`, { method: 'DELETE' });
                 if (response.ok) {
                     loadTransactions();
+                    showMessage('Transação excluída com sucesso!', 'success');
                 }
             } catch (error) {
-                console.error('Erro ao deletar transação:', error);
+                console.error('Erro ao deletar:', error);
+                showMessage('Erro ao excluir transação', 'error');
             }
         }
 
-        // Adiciona transação
+        // Mostra mensagem
+        function showMessage(text, type) {
+            const msg = document.getElementById('successMessage');
+            msg.textContent = text;
+            msg.className = 'alert ' + type;
+            msg.style.display = 'block';
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        // Submit do formulário
         document.getElementById('transactionForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -684,70 +875,41 @@
                 data: document.getElementById('data').value,
                 num_parcelas: parseInt(document.getElementById('num_parcelas').value) || 1
             };
-
+            
             try {
                 const response = await fetch('/api/transactions', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 });
-
+                
                 const result = await response.json();
-
+                
                 if (response.ok && result.success) {
                     document.getElementById('transactionForm').reset();
                     document.getElementById('num_parcelas').value = 1;
                     document.getElementById('data').valueAsDate = new Date();
                     document.getElementById('parcelasInfo').style.display = 'none';
-                    
-                    // Mostra mensagem de sucesso
-                    const successMsg = document.getElementById('successMessage');
-                    successMsg.style.display = 'block';
-                    successMsg.textContent = '✓ Transação adicionada com sucesso!';
-                    setTimeout(() => {
-                        successMsg.style.display = 'none';
-                    }, 3000);
-                    
+                    showMessage('✓ Transação adicionada com sucesso!', 'success');
                     loadTransactions();
                 } else {
-                    // Mostra mensagem de erro
-                    const successMsg = document.getElementById('successMessage');
-                    successMsg.style.display = 'block';
-                    successMsg.style.backgroundColor = '#ff0000';
-                    successMsg.style.borderColor = '#ff0000';
-                    successMsg.textContent = '✗ Erro: ' + (result.error || 'Erro ao adicionar transação');
-                    console.error('Erro do servidor:', result);
-                    setTimeout(() => {
-                        successMsg.style.display = 'none';
-                        successMsg.style.backgroundColor = '';
-                        successMsg.style.borderColor = '';
-                    }, 5000);
+                    showMessage('✗ Erro: ' + (result.error || 'Erro ao adicionar'), 'error');
                 }
             } catch (error) {
-                console.error('Erro ao adicionar transação:', error);
-                const successMsg = document.getElementById('successMessage');
-                successMsg.style.display = 'block';
-                successMsg.style.backgroundColor = '#ff0000';
-                successMsg.style.borderColor = '#ff0000';
-                successMsg.textContent = '✗ Erro de conexão: ' + error.message;
-                setTimeout(() => {
-                    successMsg.style.display = 'none';
-                    successMsg.style.backgroundColor = '';
-                    successMsg.style.borderColor = '';
-                }, 5000);
+                showMessage('✗ Erro de conexão: ' + error.message, 'error');
             }
         });
 
-        // Event listeners para atualizar info de parcelas
+        // Filtros
+        document.getElementById('filterTipo').addEventListener('change', renderTransactions);
+        document.getElementById('filterBusca').addEventListener('input', renderTransactions);
+
+        // Event listeners
         document.getElementById('num_parcelas').addEventListener('input', updateParcelasInfo);
         document.getElementById('valor').addEventListener('input', updateParcelasInfo);
-
-        // Define data padrão como hoje
         document.getElementById('data').valueAsDate = new Date();
 
-        // Carrega transações ao carregar a página
+        // Carrega dados iniciais
         loadTransactions();
     </script>
 </body>

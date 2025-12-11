@@ -234,13 +234,22 @@ def get_monthly_summary():
                 if mes_ano not in monthly_data:
                     monthly_data[mes_ano] = {
                         'receitas': 0,
-                        'gastos': 0
+                        'gastos': 0,
+                        'debito': 0,
+                        'mercado_pago': 0,
+                        'nubank': 0
                     }
                 
                 if tipo == 'receitas':
                     monthly_data[mes_ano]['receitas'] += transaction['valor']
                 else:
                     monthly_data[mes_ano]['gastos'] += transaction['valor']
+                    if tipo == 'debito':
+                        monthly_data[mes_ano]['debito'] += transaction['valor']
+                    elif tipo == 'mercado_pago':
+                        monthly_data[mes_ano]['mercado_pago'] += transaction['valor']
+                    elif tipo == 'nubank':
+                        monthly_data[mes_ano]['nubank'] += transaction['valor']
         
         sorted_months = sorted(monthly_data.keys())
         meses_nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
@@ -250,7 +259,10 @@ def get_monthly_summary():
             'meses': [],
             'receitas': [],
             'gastos': [],
-            'saldos': []
+            'saldos': [],
+            'debito': [],
+            'mercado_pago': [],
+            'nubank': []
         }
         
         for m in sorted_months:
@@ -260,6 +272,9 @@ def get_monthly_summary():
             result['receitas'].append(monthly_data[m]['receitas'])
             result['gastos'].append(monthly_data[m]['gastos'])
             result['saldos'].append(monthly_data[m]['receitas'] - monthly_data[m]['gastos'])
+            result['debito'].append(monthly_data[m]['debito'])
+            result['mercado_pago'].append(monthly_data[m]['mercado_pago'])
+            result['nubank'].append(monthly_data[m]['nubank'])
         
         return jsonify(result)
     except Exception as e:
@@ -270,8 +285,91 @@ def get_monthly_summary():
             'meses': [],
             'receitas': [],
             'gastos': [],
-            'saldos': []
+            'saldos': [],
+            'debito': [],
+            'mercado_pago': [],
+            'nubank': []
         })
+
+@app.route('/api/statistics', methods=['GET'])
+def get_statistics():
+    """Retorna estatísticas financeiras"""
+    try:
+        transactions = load_transactions()
+        
+        # Calcula totais
+        total_receitas = sum(t['valor'] for t in transactions['receitas'])
+        total_debito = sum(t['valor'] for t in transactions['gastos_debito'])
+        total_mercado_pago = sum(t['valor'] for t in transactions['gastos_mercado_pago'])
+        total_nubank = sum(t['valor'] for t in transactions['gastos_nubank'])
+        total_gastos = total_debito + total_mercado_pago + total_nubank
+        saldo = total_receitas - total_gastos
+        
+        # Média mensal
+        monthly_data = {}
+        for tipo, lista in transactions.items():
+            for transaction in lista:
+                data_trans = datetime.strptime(transaction['data'], '%Y-%m-%d')
+                mes_ano = data_trans.strftime('%Y-%m')
+                if mes_ano not in monthly_data:
+                    monthly_data[mes_ano] = {'receitas': 0, 'gastos': 0}
+                if tipo == 'receitas':
+                    monthly_data[mes_ano]['receitas'] += transaction['valor']
+                else:
+                    monthly_data[mes_ano]['gastos'] += transaction['valor']
+        
+        num_meses = len(monthly_data) if monthly_data else 1
+        media_receitas = total_receitas / num_meses if num_meses > 0 else 0
+        media_gastos = total_gastos / num_meses if num_meses > 0 else 0
+        
+        # Maior e menor transação
+        all_transactions = []
+        for tipo, lista in transactions.items():
+            all_transactions.extend(lista)
+        
+        if all_transactions:
+            maior_transacao = max(all_transactions, key=lambda x: x['valor'])
+            menor_transacao = min(all_transactions, key=lambda x: x['valor'])
+        else:
+            maior_transacao = None
+            menor_transacao = None
+        
+        # Percentual de gastos por tipo
+        if total_gastos > 0:
+            pct_debito = (total_debito / total_gastos) * 100
+            pct_mercado_pago = (total_mercado_pago / total_gastos) * 100
+            pct_nubank = (total_nubank / total_gastos) * 100
+        else:
+            pct_debito = pct_mercado_pago = pct_nubank = 0
+        
+        # Transações parceladas
+        parceladas = sum(1 for t in all_transactions if t.get('parcelado', False))
+        total_parceladas = len(set(t.get('parcel_group_id') for t in all_transactions if t.get('parcel_group_id')))
+        
+        return jsonify({
+            'total_receitas': total_receitas,
+            'total_gastos': total_gastos,
+            'saldo': saldo,
+            'media_mensal_receitas': media_receitas,
+            'media_mensal_gastos': media_gastos,
+            'total_debito': total_debito,
+            'total_mercado_pago': total_mercado_pago,
+            'total_nubank': total_nubank,
+            'pct_debito': pct_debito,
+            'pct_mercado_pago': pct_mercado_pago,
+            'pct_nubank': pct_nubank,
+            'maior_transacao': maior_transacao,
+            'menor_transacao': menor_transacao,
+            'total_transacoes': len(all_transactions),
+            'transacoes_parceladas': parceladas,
+            'compras_parceladas': total_parceladas,
+            'num_meses': num_meses
+        })
+    except Exception as e:
+        print(f"ERRO ao gerar estatisticas: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     print("\n" + "="*50)
