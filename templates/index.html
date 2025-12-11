@@ -750,8 +750,11 @@
                     ...(data.gastos_nubank || []).map(t => ({...t, tipo: 'nubank'}))
                 ].sort((a, b) => new Date(b.data) - new Date(a.data));
                 
+                // Obtém o mês atual do filtro
+                const filterMonth = document.getElementById('filterMes').value;
+                
                 renderTransactions();
-                updateDashboard(data);
+                updateDashboard(data, filterMonth);
                 await loadCharts();
                 await loadStatistics();
             } catch (error) {
@@ -830,11 +833,40 @@
         }
 
         // Atualiza dashboard
-        function updateDashboard(data) {
-            const receitas = (data.receitas || []).reduce((sum, t) => sum + t.valor, 0);
-            const debito = (data.gastos_debito || []).reduce((sum, t) => sum + t.valor, 0);
-            const mercadoPago = (data.gastos_mercado_pago || []).reduce((sum, t) => sum + t.valor, 0);
-            const nubank = (data.gastos_nubank || []).reduce((sum, t) => sum + t.valor, 0);
+        function updateDashboard(data, filterMonth = null) {
+            // Filtra transações por mês se especificado
+            let receitasList = data.receitas || [];
+            let debitoList = data.gastos_debito || [];
+            let mercadoPagoList = data.gastos_mercado_pago || [];
+            let nubankList = data.gastos_nubank || [];
+            
+            if (filterMonth) {
+                receitasList = receitasList.filter(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    return transMonth === filterMonth;
+                });
+                debitoList = debitoList.filter(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    return transMonth === filterMonth;
+                });
+                mercadoPagoList = mercadoPagoList.filter(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    return transMonth === filterMonth;
+                });
+                nubankList = nubankList.filter(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    return transMonth === filterMonth;
+                });
+            }
+            
+            const receitas = receitasList.reduce((sum, t) => sum + t.valor, 0);
+            const debito = debitoList.reduce((sum, t) => sum + t.valor, 0);
+            const mercadoPago = mercadoPagoList.reduce((sum, t) => sum + t.valor, 0);
+            const nubank = nubankList.reduce((sum, t) => sum + t.valor, 0);
             const gastos = debito + mercadoPago + nubank;
             const saldo = receitas - gastos;
             
@@ -844,8 +876,37 @@
             document.getElementById('totalReceitas').textContent = formatCurrency(receitas);
             document.getElementById('totalGastos').textContent = formatCurrency(gastos);
             
-            const totalTransacoes = allTransactions.length;
+            // Conta transações do mês filtrado
+            const filteredTransactions = filterMonth 
+                ? allTransactions.filter(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    return transMonth === filterMonth;
+                })
+                : allTransactions;
+            
+            const totalTransacoes = filteredTransactions.length;
             document.getElementById('totalTransacoes').textContent = totalTransacoes;
+            
+            // Atualiza média mensal (só faz sentido se não estiver filtrado por mês)
+            if (!filterMonth) {
+                // Calcula média baseada em todos os meses disponíveis
+                const monthlyData = {};
+                [...receitasList, ...debitoList, ...mercadoPagoList, ...nubankList].forEach(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    if (!monthlyData[monthKey]) monthlyData[monthKey] = true;
+                });
+                const numMonths = Object.keys(monthlyData).length || 1;
+                document.getElementById('mediaReceitas').textContent = 
+                    'Média mensal: ' + formatCurrency(receitas / numMonths);
+                document.getElementById('mediaGastos').textContent = 
+                    'Média mensal: ' + formatCurrency(gastos / numMonths);
+            } else {
+                // Se está filtrado por mês, mostra apenas os valores do mês
+                document.getElementById('mediaReceitas').textContent = 'Mês atual';
+                document.getElementById('mediaGastos').textContent = 'Mês atual';
+            }
         }
 
         // Carrega gráficos
@@ -1146,8 +1207,21 @@
         const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
         document.getElementById('filterMes').value = currentMonth;
 
+        // Função para atualizar tudo quando o filtro muda
+        function updateOnFilterChange() {
+            renderTransactions();
+            // Recarrega dados para atualizar dashboard
+            fetch('/api/transactions')
+                .then(response => response.json())
+                .then(data => {
+                    const filterMonth = document.getElementById('filterMes').value;
+                    updateDashboard(data, filterMonth);
+                })
+                .catch(error => console.error('Erro ao atualizar dashboard:', error));
+        }
+
         // Filtros
-        document.getElementById('filterMes').addEventListener('change', renderTransactions);
+        document.getElementById('filterMes').addEventListener('change', updateOnFilterChange);
         document.getElementById('filterTipo').addEventListener('change', renderTransactions);
         document.getElementById('filterBusca').addEventListener('input', renderTransactions);
 
