@@ -1,37 +1,29 @@
 from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from supabase import create_client, Client
 import os
 
-# Configuração do Flask com caminho absoluto para templates (necessário para Vercel)
+# Configuração do Flask
 template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
 app = Flask(__name__, template_folder=template_dir)
 
-# Importa configurações - prioriza variáveis de ambiente (Vercel)
-SUPABASE_URL = os.getenv('SUPABASE_URL', '')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
+# Importa configurações do Supabase
+try:
+    from config import SUPABASE_URL, SUPABASE_KEY
+    print(f"✓ Configurações carregadas do config.py")
+    print(f"  URL: {SUPABASE_URL}")
+    print(f"  Key presente: {'Sim' if SUPABASE_KEY else 'Não'}")
+except ImportError:
+    # Se config.py não existir, tenta variáveis de ambiente
+    SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+    SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
+    print("⚠️ config.py não encontrado, usando variáveis de ambiente")
 
-# Se não encontrar nas variáveis de ambiente, tenta importar do config.py (desenvolvimento local)
-if not SUPABASE_URL or not SUPABASE_KEY:
-    try:
-        from config import SUPABASE_URL as config_url, SUPABASE_KEY as config_key
-        if not SUPABASE_URL:
-            SUPABASE_URL = config_url
-        if not SUPABASE_KEY:
-            SUPABASE_KEY = config_key
-        print("Configurações carregadas do config.py")
-    except ImportError:
-        print("config.py não encontrado, usando apenas variáveis de ambiente")
-
-# Log das configurações (sem mostrar a chave completa por segurança)
-print(f"SUPABASE_URL: {SUPABASE_URL}")
-print(f"SUPABASE_KEY presente: {'Sim' if SUPABASE_KEY else 'Não'} (tamanho: {len(SUPABASE_KEY) if SUPABASE_KEY else 0})")
-
-# Inicializa cliente Supabase com tratamento de erro
+# Inicializa Supabase
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
+        from supabase import create_client, Client
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
         print("✓ Supabase inicializado com sucesso")
     except Exception as e:
@@ -46,27 +38,17 @@ else:
 
 def load_transactions():
     """Carrega transações do Supabase"""
+    if supabase is None:
+        print("⚠️ Supabase não inicializado, retornando dados vazios")
+        return {
+            'receitas': [],
+            'gastos_debito': [],
+            'gastos_mercado_pago': [],
+            'gastos_nubank': []
+        }
+    
     try:
-        if supabase is None:
-            print("AVISO: Supabase não inicializado, retornando dados vazios")
-            return {
-                'receitas': [],
-                'gastos_debito': [],
-                'gastos_mercado_pago': [],
-                'gastos_nubank': []
-            }
-        # Busca todas as transações
-        try:
-            response = supabase.table('transactions').select('*').order('data', desc=False).execute()
-        except Exception as db_error:
-            print(f"Erro ao buscar transações do Supabase: {db_error}")
-            # Retorna vazio em caso de erro
-            return {
-                'receitas': [],
-                'gastos_debito': [],
-                'gastos_mercado_pago': [],
-                'gastos_nubank': []
-            }
+        response = supabase.table('transactions').select('*').order('data', desc=False).execute()
         
         transactions = {
             'receitas': [],
@@ -75,7 +57,6 @@ def load_transactions():
             'gastos_nubank': []
         }
         
-        # Organiza por tipo
         for row in response.data:
             transaction = {
                 'id': row['id'],
@@ -101,7 +82,9 @@ def load_transactions():
         
         return transactions
     except Exception as e:
-        print(f"Erro ao carregar transações: {e}")
+        print(f"✗ Erro ao carregar transações: {e}")
+        import traceback
+        traceback.print_exc()
         return {
             'receitas': [],
             'gastos_debito': [],
@@ -121,16 +104,16 @@ def get_transactions():
 @app.route('/api/transactions', methods=['POST'])
 def add_transaction():
     """Adiciona uma nova transação"""
+    if supabase is None:
+        return jsonify({
+            'success': False, 
+            'error': 'Supabase não inicializado. Verifique o config.py ou variáveis de ambiente.'
+        }), 500
+    
     try:
-        if supabase is None:
-            error_msg = 'Supabase não inicializado. Verifique as variáveis de ambiente SUPABASE_URL e SUPABASE_KEY.'
-            print(f"ERRO: {error_msg}")
-            return jsonify({'success': False, 'error': error_msg}), 500
-        
-        if not request.json:
-            return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
-        
         data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
         
         tipo = data.get('tipo')
         num_parcelas = int(data.get('num_parcelas', 1))
@@ -138,12 +121,10 @@ def add_transaction():
         valor_parcela = valor_total / num_parcelas
         data_inicial = datetime.strptime(data.get('data', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d')
         
-        # Se for parcelado, cria múltiplas transações
         transacoes_criadas = []
         base_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
         parcel_group_id = base_id if num_parcelas > 1 else None
         
-        # Prepara dados para inserção em lote
         transactions_to_insert = []
         
         for i in range(num_parcelas):
@@ -175,40 +156,37 @@ def add_transaction():
                 'parcel_group_id': transaction_data['parcel_group_id']
             })
         
-        # Insere todas as transações de uma vez
+        # Insere no Supabase
         try:
             response = supabase.table('transactions').insert(transactions_to_insert).execute()
-            print(f"Transações inseridas: {len(transacoes_criadas)}")
+            print(f"✓ {len(transacoes_criadas)} transação(ões) inserida(s) com sucesso")
         except Exception as db_error:
-            print(f"Erro ao inserir no Supabase: {db_error}")
+            print(f"✗ Erro ao inserir no Supabase: {db_error}")
             import traceback
             traceback.print_exc()
             return jsonify({
                 'success': False, 
-                'error': f'Erro ao salvar no banco de dados: {str(db_error)}',
+                'error': f'Erro ao salvar no banco: {str(db_error)}',
                 'details': 'Verifique se a tabela transactions existe no Supabase'
             }), 500
         
         return jsonify({'success': True, 'transactions': transacoes_criadas})
     except Exception as e:
+        print(f"✗ Erro ao adicionar transação: {e}")
         import traceback
-        error_trace = traceback.format_exc()
-        print(f"Erro ao adicionar transação: {e}")
-        print(f"Traceback: {error_trace}")
+        traceback.print_exc()
         return jsonify({
             'success': False, 
-            'error': str(e),
-            'traceback': error_trace if app.debug else None
+            'error': str(e)
         }), 500
 
 @app.route('/api/transactions/<tipo>/<transaction_id>', methods=['DELETE'])
 def delete_transaction(tipo, transaction_id):
     """Remove uma transação"""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase não inicializado'}), 500
+    
     try:
-        if supabase is None:
-            return jsonify({'success': False, 'error': 'Supabase não inicializado. Verifique as variáveis de ambiente.'}), 500
-        
-        # Busca a transação para verificar se é parcelada
         response = supabase.table('transactions').select('*').eq('id', transaction_id).execute()
         
         if not response.data:
@@ -216,18 +194,19 @@ def delete_transaction(tipo, transaction_id):
         
         transaction_to_delete = response.data[0]
         
-        # Se for parcelado, remove todas as parcelas relacionadas
         if transaction_to_delete.get('parcelado') and transaction_to_delete.get('parcel_group_id'):
             parcel_group_id = transaction_to_delete.get('parcel_group_id')
-            # Remove todas as parcelas do mesmo grupo
             supabase.table('transactions').delete().eq('parcel_group_id', parcel_group_id).execute()
+            print(f"✓ Parcelas deletadas (grupo: {parcel_group_id})")
         else:
-            # Remove apenas a transação específica
             supabase.table('transactions').delete().eq('id', transaction_id).execute()
+            print(f"✓ Transação deletada: {transaction_id}")
         
         return jsonify({'success': True})
     except Exception as e:
-        print(f"Erro ao deletar transação: {e}")
+        print(f"✗ Erro ao deletar transação: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
 @app.route('/api/transactions/monthly', methods=['GET'])
@@ -237,7 +216,6 @@ def get_monthly_summary():
         transactions = load_transactions()
         monthly_data = {}
         
-        # Processa todas as transações
         for tipo, lista in transactions.items():
             for transaction in lista:
                 data_trans = datetime.strptime(transaction['data'], '%Y-%m-%d')
@@ -254,15 +232,9 @@ def get_monthly_summary():
                 else:
                     monthly_data[mes_ano]['gastos'] += transaction['valor']
         
-        # Ordena por mês
         sorted_months = sorted(monthly_data.keys())
-        
-        # Formata meses para português
-        meses_pt = {
-            'Jan': 'Jan', 'Feb': 'Fev', 'Mar': 'Mar', 'Apr': 'Abr',
-            'May': 'Mai', 'Jun': 'Jun', 'Jul': 'Jul', 'Aug': 'Ago',
-            'Sep': 'Set', 'Oct': 'Out', 'Nov': 'Nov', 'Dec': 'Dez'
-        }
+        meses_nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
+                      'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
         
         result = {
             'meses': [],
@@ -273,9 +245,6 @@ def get_monthly_summary():
         
         for m in sorted_months:
             dt = datetime.strptime(m, '%Y-%m')
-            # Formata como "Mês/Ano" em português
-            meses_nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
-                          'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez']
             mes_formatado = f"{meses_nomes[dt.month - 1]}/{dt.year}"
             result['meses'].append(mes_formatado)
             result['receitas'].append(monthly_data[m]['receitas'])
@@ -284,7 +253,9 @@ def get_monthly_summary():
         
         return jsonify(result)
     except Exception as e:
-        print(f"Erro ao gerar resumo mensal: {e}")
+        print(f"✗ Erro ao gerar resumo mensal: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({
             'meses': [],
             'receitas': [],
@@ -292,6 +263,13 @@ def get_monthly_summary():
             'saldos': []
         })
 
-# Para desenvolvimento local
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    print("\n" + "="*50)
+    print("🚀 Iniciando servidor Flask...")
+    print("="*50)
+    print(f"📁 Diretório de templates: {template_dir}")
+    print(f"🗄️  Supabase: {'Conectado ✓' if supabase else 'Não conectado ✗'}")
+    print("="*50)
+    print("🌐 Servidor rodando em: http://localhost:5000")
+    print("="*50 + "\n")
+    app.run(debug=True, port=5000, host='127.0.0.1')
