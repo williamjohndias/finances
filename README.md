@@ -83,10 +83,22 @@ O sistema usa **Supabase** como banco de dados. Para configurar:
      - Project URL → `SUPABASE_URL`
      - Secret Key → `SUPABASE_KEY`
 
+## Deploy no Vercel
+
+O projeto está configurado para deploy no Vercel. Veja o arquivo `VERCEL_DEPLOY.md` para instruções detalhadas.
+
+**Passos rápidos:**
+1. Conecte o repositório GitHub ao Vercel
+2. Configure as variáveis de ambiente no Vercel:
+   - `SUPABASE_URL`
+   - `SUPABASE_KEY`
+3. O Vercel detectará automaticamente o `vercel.json` e fará o deploy
+
 ## Notas
 
 - Os dados são armazenados no Supabase (PostgreSQL)
 - Parcelas são agrupadas e excluídas juntas
 - O assistente fornece feedback baseado no seu saldo atual
 - As credenciais estão em `config.py` (não versionado por segurança)
+- Para produção, use variáveis de ambiente no Vercel
 
