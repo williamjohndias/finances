@@ -219,6 +219,77 @@ def delete_transaction(tipo, transaction_id):
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/transactions/<tipo>/<transaction_id>', methods=['PUT'])
+def update_transaction(tipo, transaction_id):
+    """Atualiza uma transação"""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase não inicializado'}), 500
+    
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
+        
+        # Busca a transação atual
+        response = supabase.table('transactions').select('*').eq('id', transaction_id).execute()
+        
+        if not response.data:
+            return jsonify({'success': False, 'error': 'Transação não encontrada'}), 404
+        
+        transaction = response.data[0]
+        
+        # Se for parcelada, atualiza todas as parcelas do grupo
+        if transaction.get('parcelado') and transaction.get('parcel_group_id'):
+            parcel_group_id = transaction.get('parcel_group_id')
+            num_parcelas = int(data.get('num_parcelas', transaction.get('total_parcelas', 1)))
+            valor_total = float(data.get('valor_total', data.get('valor', 0)))
+            valor_parcela = valor_total / num_parcelas
+            data_inicial = datetime.strptime(data.get('data', transaction['data']), '%Y-%m-%d')
+            
+            # Deleta todas as parcelas antigas
+            supabase.table('transactions').delete().eq('parcel_group_id', parcel_group_id).execute()
+            
+            # Cria novas parcelas
+            transactions_to_insert = []
+            base_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+            
+            for i in range(num_parcelas):
+                data_parcela = data_inicial + relativedelta(months=i)
+                transaction_data = {
+                    'id': base_id + str(i),
+                    'tipo': data.get('tipo', transaction['tipo']),
+                    'descricao': data.get('descricao', transaction['descricao']),
+                    'valor': float(valor_parcela),
+                    'data': data_parcela.strftime('%Y-%m-%d'),
+                    'parcelado': True,
+                    'parcela_atual': i + 1,
+                    'total_parcelas': num_parcelas,
+                    'valor_total': float(valor_total),
+                    'parcel_group_id': parcel_group_id
+                }
+                transactions_to_insert.append(transaction_data)
+            
+            supabase.table('transactions').insert(transactions_to_insert).execute()
+            print(f"OK - Parcelas atualizadas (grupo: {parcel_group_id})")
+        else:
+            # Atualiza transação única
+            update_data = {
+                'descricao': data.get('descricao', transaction['descricao']),
+                'valor': float(data.get('valor', transaction['valor'])),
+                'data': data.get('data', transaction['data']),
+                'tipo': data.get('tipo', transaction['tipo'])
+            }
+            
+            supabase.table('transactions').update(update_data).eq('id', transaction_id).execute()
+            print(f"OK - Transacao atualizada: {transaction_id}")
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"ERRO ao atualizar transacao: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/transactions/monthly', methods=['GET'])
 def get_monthly_summary():
     """Retorna resumo mensal para o gráfico"""

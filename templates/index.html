@@ -296,11 +296,82 @@
             cursor: pointer;
             border-radius: 4px;
             transition: all 0.3s;
+            margin-left: 8px;
         }
 
         .delete-btn:hover {
             background-color: #f87171;
             color: #000;
+        }
+
+        .edit-btn {
+            background: transparent;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .edit-btn:hover {
+            background-color: #3b82f6;
+            color: #000;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            overflow: auto;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #333;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 300;
+        }
+
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .close:hover {
+            color: #fff;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
         }
 
         .filters {
@@ -537,6 +608,10 @@
             </div>
             <div class="filters">
                 <div class="filter-group">
+                    <label for="filterMes" style="margin: 0;">Mês:</label>
+                    <input type="month" id="filterMes" style="width: auto; min-width: 150px;">
+                </div>
+                <div class="filter-group">
                     <label for="filterTipo" style="margin: 0;">Tipo:</label>
                     <select id="filterTipo" style="width: auto; min-width: 150px;">
                         <option value="">Todos</option>
@@ -570,6 +645,60 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✏️ Editar Transação</h2>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form id="editForm">
+                <input type="hidden" id="editId">
+                <input type="hidden" id="editTipo">
+                <input type="hidden" id="editParcelGroupId">
+                <input type="hidden" id="editParcelado">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTipoSelect">Tipo de Transação</label>
+                        <select id="editTipoSelect" required>
+                            <option value="">Selecione...</option>
+                            <option value="receita">💰 Receita</option>
+                            <option value="debito">💳 Gasto - Débito</option>
+                            <option value="mercado_pago">🛒 Gasto - Cartão Mercado Pago</option>
+                            <option value="nubank">💜 Gasto - Cartão Nubank</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editValor">Valor</label>
+                        <input type="number" id="editValor" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="editDescricao">Descrição</label>
+                        <input type="text" id="editDescricao" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editData">Data</label>
+                        <input type="date" id="editData" required>
+                    </div>
+                    <div class="form-group" id="editParcelasGroup" style="display: none;">
+                        <label for="editNumParcelas">Número de Parcelas</label>
+                        <input type="number" id="editNumParcelas" min="1" value="1">
+                    </div>
+                </div>
+                <div id="editParcelasInfo" style="display: none; padding: 15px; background: #0a0a0a; border-radius: 4px; margin-bottom: 20px; color: #aaa; font-size: 0.9rem;"></div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeEditModal()" style="background: transparent; border: 1px solid #333; color: #fff;">Cancelar</button>
+                    <button type="submit">Salvar Alterações</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -635,8 +764,18 @@
             const tbody = document.getElementById('transactionsTableBody');
             const filterTipo = document.getElementById('filterTipo').value;
             const filterBusca = document.getElementById('filterBusca').value.toLowerCase();
+            const filterMes = document.getElementById('filterMes').value; // Formato: YYYY-MM
             
             let filtered = allTransactions;
+            
+            // Filtro por mês (padrão: mês atual)
+            if (filterMes) {
+                filtered = filtered.filter(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    return transMonth === filterMes;
+                });
+            }
             
             if (filterTipo) {
                 filtered = filtered.filter(t => t.tipo === filterTipo);
@@ -680,7 +819,10 @@
                         <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #4ade80;' : 'color: #f87171;'}">${formatCurrency(transaction.valor)}</td>
                         <td>${parcelaInfo}</td>
                         <td>
-                            <button class="delete-btn" onclick="deleteTransaction('${transaction.tipo}', '${transaction.id}')">Excluir</button>
+                            <div class="btn-group">
+                                <button class="edit-btn" onclick="openEditModal(${JSON.stringify(transaction).replace(/"/g, '&quot;')})">Editar</button>
+                                <button class="delete-btn" onclick="deleteTransaction('${transaction.tipo}', '${transaction.id}')">Excluir</button>
+                            </div>
                         </td>
                     </tr>
                 `;
@@ -900,7 +1042,112 @@
             }
         });
 
+        // Abre modal de edição
+        function openEditModal(transaction) {
+            const modal = document.getElementById('editModal');
+            document.getElementById('editId').value = transaction.id;
+            document.getElementById('editTipo').value = transaction.tipo;
+            document.getElementById('editTipoSelect').value = transaction.tipo;
+            document.getElementById('editDescricao').value = transaction.descricao;
+            document.getElementById('editValor').value = transaction.valor;
+            document.getElementById('editData').value = transaction.data;
+            document.getElementById('editParcelGroupId').value = transaction.parcel_group_id || '';
+            document.getElementById('editParcelado').value = transaction.parcelado ? 'true' : 'false';
+            
+            // Se for parcelada, mostra campos de parcelas
+            if (transaction.parcelado) {
+                document.getElementById('editParcelasGroup').style.display = 'block';
+                document.getElementById('editNumParcelas').value = transaction.total_parcelas || 1;
+                document.getElementById('editValor').value = transaction.valor_total || transaction.valor;
+                updateEditParcelasInfo();
+            } else {
+                document.getElementById('editParcelasGroup').style.display = 'none';
+                document.getElementById('editParcelasInfo').style.display = 'none';
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        // Fecha modal de edição
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Atualiza info de parcelas no modal
+        function updateEditParcelasInfo() {
+            const numParcelas = parseInt(document.getElementById('editNumParcelas').value) || 1;
+            const valorTotal = parseFloat(document.getElementById('editValor').value) || 0;
+            const infoDiv = document.getElementById('editParcelasInfo');
+            
+            if (numParcelas > 1 && valorTotal > 0) {
+                const valorParcela = valorTotal / numParcelas;
+                infoDiv.innerHTML = `<strong>ℹ️ Informação:</strong> ${numParcelas}x de ${formatCurrency(valorParcela)} = Total: ${formatCurrency(valorTotal)}`;
+                infoDiv.style.display = 'block';
+            } else {
+                infoDiv.style.display = 'none';
+            }
+        }
+
+        // Submit do formulário de edição
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const transactionId = document.getElementById('editId').value;
+            const tipo = document.getElementById('editTipo').value;
+            const isParcelado = document.getElementById('editParcelado').value === 'true';
+            
+            const formData = {
+                tipo: document.getElementById('editTipoSelect').value,
+                descricao: document.getElementById('editDescricao').value,
+                valor: parseFloat(document.getElementById('editValor').value),
+                data: document.getElementById('editData').value,
+            };
+            
+            if (isParcelado) {
+                formData.num_parcelas = parseInt(document.getElementById('editNumParcelas').value) || 1;
+                formData.valor_total = formData.valor;
+            }
+            
+            try {
+                const response = await fetch(`/api/transactions/${tipo}/${transactionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    closeEditModal();
+                    showMessage('✓ Transação atualizada com sucesso!', 'success');
+                    loadTransactions();
+                } else {
+                    showMessage('✗ Erro: ' + (result.error || 'Erro ao atualizar'), 'error');
+                }
+            } catch (error) {
+                showMessage('✗ Erro de conexão: ' + error.message, 'error');
+            }
+        });
+
+        // Event listeners para parcelas no modal
+        document.getElementById('editNumParcelas').addEventListener('input', updateEditParcelasInfo);
+        document.getElementById('editValor').addEventListener('input', updateEditParcelasInfo);
+
+        // Fecha modal ao clicar fora
+        window.onclick = function(event) {
+            const modal = document.getElementById('editModal');
+            if (event.target == modal) {
+                closeEditModal();
+            }
+        }
+
+        // Define mês atual como padrão
+        const now = new Date();
+        const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('filterMes').value = currentMonth;
+
         // Filtros
+        document.getElementById('filterMes').addEventListener('change', renderTransactions);
         document.getElementById('filterTipo').addEventListener('change', renderTransactions);
         document.getElementById('filterBusca').addEventListener('input', renderTransactions);
 
