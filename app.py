@@ -2,9 +2,19 @@ from flask import Flask, render_template, request, jsonify
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from supabase import create_client, Client
-from config import SUPABASE_URL, SUPABASE_KEY
+import os
 
-app = Flask(__name__)
+# Configuração do Flask com caminho absoluto para templates (necessário para Vercel)
+template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
+app = Flask(__name__, template_folder=template_dir)
+
+# Importa configurações
+try:
+    from config import SUPABASE_URL, SUPABASE_KEY
+except ImportError:
+    # Se config.py não existir, usa variáveis de ambiente
+    SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+    SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
 
 # Inicializa cliente Supabase com tratamento de erro
 try:
