@@ -467,6 +467,12 @@
     </div>
 
     <div class="container">
+        <!-- Filtro de Mês para Cards -->
+        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
+            <label for="dashboardMonth" style="color: #aaa; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Filtrar Cards por Mês:</label>
+            <input type="month" id="dashboardMonth" style="padding: 10px 15px; background-color: #0a0a0a; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 1rem;">
+        </div>
+
         <!-- Dashboard Cards -->
         <div class="dashboard-grid">
             <div class="card saldo">
@@ -593,10 +599,6 @@
                     <div class="stat-label">Gastos Nubank</div>
                     <div class="stat-value" id="statNubank">R$ 0,00</div>
                     <div style="font-size: 0.8rem; color: #888; margin-top: 5px;" id="pctNubank">0%</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">Maior Transação</div>
-                    <div class="stat-value" style="font-size: 1.2rem;" id="maiorTransacao">-</div>
                 </div>
             </div>
         </div>
@@ -750,11 +752,11 @@
                     ...(data.gastos_nubank || []).map(t => ({...t, tipo: 'nubank'}))
                 ].sort((a, b) => new Date(b.data) - new Date(a.data));
                 
-                // Obtém o mês atual do filtro
-                const filterMonth = document.getElementById('filterMes').value;
+                // Obtém o mês do filtro do dashboard (não da tabela)
+                const dashboardMonth = document.getElementById('dashboardMonth').value;
                 
                 renderTransactions();
-                updateDashboard(data, filterMonth);
+                updateDashboard(data, dashboardMonth);
                 await loadCharts();
                 await loadStatistics();
             } catch (error) {
@@ -1026,15 +1028,6 @@
                 document.getElementById('pctMercadoPago').textContent = stats.pct_mercado_pago.toFixed(1) + '% do total';
                 document.getElementById('pctNubank').textContent = stats.pct_nubank.toFixed(1) + '% do total';
                 
-                if (stats.maior_transacao) {
-                    document.getElementById('maiorTransacao').textContent = 
-                        formatCurrency(stats.maior_transacao.valor) + ' - ' + stats.maior_transacao.descricao;
-                }
-                
-                document.getElementById('mediaReceitas').textContent = 
-                    'Média mensal: ' + formatCurrency(stats.media_mensal_receitas);
-                document.getElementById('mediaGastos').textContent = 
-                    'Média mensal: ' + formatCurrency(stats.media_mensal_gastos);
                 document.getElementById('parceladasInfo').textContent = 
                     stats.compras_parceladas + ' compras parceladas';
             } catch (error) {
@@ -1202,25 +1195,32 @@
             }
         }
 
-        // Define mês atual como padrão
-        const now = new Date();
-        const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        // Define mês atual como padrão para a tabela
         document.getElementById('filterMes').value = currentMonth;
 
-        // Função para atualizar tudo quando o filtro muda
-        function updateOnFilterChange() {
-            renderTransactions();
-            // Recarrega dados para atualizar dashboard
+        // Função para atualizar dashboard quando o filtro de mês muda
+        function updateDashboardOnMonthChange() {
             fetch('/api/transactions')
                 .then(response => response.json())
                 .then(data => {
-                    const filterMonth = document.getElementById('filterMes').value;
-                    updateDashboard(data, filterMonth);
+                    const dashboardMonth = document.getElementById('dashboardMonth').value;
+                    updateDashboard(data, dashboardMonth);
                 })
                 .catch(error => console.error('Erro ao atualizar dashboard:', error));
         }
 
+        // Função para atualizar tabela quando o filtro muda
+        function updateOnFilterChange() {
+            renderTransactions();
+        }
+
+        // Define mês atual como padrão para o dashboard
+        const now = new Date();
+        const currentMonth = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        document.getElementById('dashboardMonth').value = currentMonth;
+
         // Filtros
+        document.getElementById('dashboardMonth').addEventListener('change', updateDashboardOnMonthChange);
         document.getElementById('filterMes').addEventListener('change', updateOnFilterChange);
         document.getElementById('filterTipo').addEventListener('change', renderTransactions);
         document.getElementById('filterBusca').addEventListener('input', renderTransactions);
