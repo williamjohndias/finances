@@ -10,12 +10,19 @@ if root_dir not in sys.path:
 
 # Importa o app Flask
 try:
-    from app import app
-    print("App Flask importado com sucesso")
+    # Força o uso de variáveis de ambiente no Vercel
+    import os
+    print(f"Variáveis de ambiente disponíveis:")
+    print(f"  SUPABASE_URL: {'Sim' if os.getenv('SUPABASE_URL') else 'Não'}")
+    print(f"  SUPABASE_KEY: {'Sim' if os.getenv('SUPABASE_KEY') else 'Não'}")
+    
+    from app import app, supabase
+    print("✓ App Flask importado com sucesso")
+    print(f"  Supabase inicializado: {'Sim' if supabase else 'Não'}")
 except Exception as e:
     import traceback
     error_msg = traceback.format_exc()
-    print(f"ERRO ao importar app: {error_msg}")
+    print(f"✗ ERRO ao importar app: {error_msg}")
     # Se houver erro na importação, cria um app de erro
     from flask import Flask
     app = Flask(__name__)

@@ -8,25 +8,41 @@ import os
 template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates'))
 app = Flask(__name__, template_folder=template_dir)
 
-# Importa configurações
-try:
-    from config import SUPABASE_URL, SUPABASE_KEY
-except ImportError:
-    # Se config.py não existir, usa variáveis de ambiente
-    SUPABASE_URL = os.getenv('SUPABASE_URL', '')
-    SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
+# Importa configurações - prioriza variáveis de ambiente (Vercel)
+SUPABASE_URL = os.getenv('SUPABASE_URL', '')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
+
+# Se não encontrar nas variáveis de ambiente, tenta importar do config.py (desenvolvimento local)
+if not SUPABASE_URL or not SUPABASE_KEY:
+    try:
+        from config import SUPABASE_URL as config_url, SUPABASE_KEY as config_key
+        if not SUPABASE_URL:
+            SUPABASE_URL = config_url
+        if not SUPABASE_KEY:
+            SUPABASE_KEY = config_key
+        print("Configurações carregadas do config.py")
+    except ImportError:
+        print("config.py não encontrado, usando apenas variáveis de ambiente")
+
+# Log das configurações (sem mostrar a chave completa por segurança)
+print(f"SUPABASE_URL: {SUPABASE_URL}")
+print(f"SUPABASE_KEY presente: {'Sim' if SUPABASE_KEY else 'Não'} (tamanho: {len(SUPABASE_KEY) if SUPABASE_KEY else 0})")
 
 # Inicializa cliente Supabase com tratamento de erro
 supabase = None
 if SUPABASE_URL and SUPABASE_KEY:
     try:
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("Supabase inicializado com sucesso")
+        print("✓ Supabase inicializado com sucesso")
     except Exception as e:
-        print(f"Erro ao inicializar Supabase: {e}")
+        print(f"✗ Erro ao inicializar Supabase: {e}")
+        import traceback
+        traceback.print_exc()
         supabase = None
 else:
-    print("AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados")
+    print("✗ AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados")
+    print(f"  SUPABASE_URL: {'Definido' if SUPABASE_URL else 'NÃO DEFINIDO'}")
+    print(f"  SUPABASE_KEY: {'Definido' if SUPABASE_KEY else 'NÃO DEFINIDO'}")
 
 def load_transactions():
     """Carrega transações do Supabase"""
