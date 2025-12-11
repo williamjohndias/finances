@@ -21,22 +21,21 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
-            border-bottom: 2px solid #333;
-            padding: 20px 40px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
+            padding: 25px 40px;
         }
 
         .header h1 {
-            font-size: 2rem;
-            font-weight: 300;
-            letter-spacing: 2px;
+            font-size: 1.5rem;
+            font-weight: 400;
+            letter-spacing: 1px;
             color: #fff;
         }
 
         .header .subtitle {
-            font-size: 0.9rem;
-            color: #aaa;
+            font-size: 0.8rem;
+            color: #666;
             margin-top: 5px;
         }
 
@@ -54,17 +53,15 @@
         }
 
         .card {
-            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 25px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            transition: transform 0.3s, box-shadow 0.3s;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 20px;
+            transition: border-color 0.3s;
         }
 
         .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+            border-color: #333;
         }
 
         .card-header {
@@ -107,8 +104,8 @@
         }
 
         .card.saldo {
-            background: linear-gradient(135deg, #1e3a5f 0%, #2a4a6f 100%);
-            border-color: #3a5a7f;
+            background: #0a0a0a;
+            border-color: #333;
         }
 
         .card.receitas {
@@ -120,12 +117,11 @@
         }
 
         .section {
-            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 25px;
         }
 
         .section-header {
@@ -158,11 +154,11 @@
         }
 
         .form-section {
-            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 30px;
-            margin-bottom: 30px;
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 4px;
+            padding: 25px;
+            margin-bottom: 25px;
         }
 
         .form-row {
@@ -208,22 +204,19 @@
         }
 
         button {
-            background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+            background: #fff;
             color: #000;
             border: none;
-            padding: 12px 30px;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
             cursor: pointer;
             border-radius: 4px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            transition: all 0.3s;
+            transition: background-color 0.3s;
         }
 
         button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+            background: #e5e5e5;
         }
 
         .transactions-table {
@@ -333,14 +326,13 @@
         }
 
         .modal-content {
-            background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
+            background: #0a0a0a;
             margin: 5% auto;
-            padding: 30px;
-            border: 1px solid #333;
-            border-radius: 8px;
+            padding: 25px;
+            border: 1px solid #222;
+            border-radius: 4px;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
         .modal-header {
@@ -468,9 +460,11 @@
 
     <div class="container">
         <!-- Filtro de Mês para Cards -->
-        <div style="margin-bottom: 20px; display: flex; align-items: center; gap: 15px;">
-            <label for="dashboardMonth" style="color: #aaa; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Filtrar Cards por Mês:</label>
-            <input type="month" id="dashboardMonth" style="padding: 10px 15px; background-color: #0a0a0a; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 1rem;">
+        <div style="margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
+            <label for="dashboardMonth" style="color: #888; font-size: 0.85rem;">Mês:</label>
+            <select id="dashboardMonth" style="padding: 8px 12px; background-color: #0a0a0a; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 0.9rem; min-width: 200px;">
+                <option value="">Carregando...</option>
+            </select>
         </div>
 
         <!-- Dashboard Cards -->
@@ -611,7 +605,9 @@
             <div class="filters">
                 <div class="filter-group">
                     <label for="filterMes" style="margin: 0;">Mês:</label>
-                    <input type="month" id="filterMes" style="width: auto; min-width: 150px;">
+                    <select id="filterMes" style="width: auto; min-width: 180px;">
+                        <option value="">Carregando...</option>
+                    </select>
                 </div>
                 <div class="filter-group">
                     <label for="filterTipo" style="margin: 0;">Tipo:</label>
@@ -738,6 +734,63 @@
             }
         }
 
+        // Obtém meses únicos das transações
+        function getAvailableMonths(transactions) {
+            const months = new Set();
+            transactions.forEach(t => {
+                const transDate = new Date(t.data + 'T00:00:00');
+                const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                months.add(monthKey);
+            });
+            
+            const mesesNomes = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                               'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            
+            return Array.from(months)
+                .sort()
+                .reverse() // Mais recente primeiro
+                .map(monthKey => {
+                    const [year, month] = monthKey.split('-');
+                    const monthName = mesesNomes[parseInt(month) - 1];
+                    return {
+                        value: monthKey,
+                        label: `${monthName}/${year}`
+                    };
+                });
+        }
+
+        // Popula dropdowns de mês
+        function populateMonthDropdowns() {
+            const months = getAvailableMonths(allTransactions);
+            const currentMonth = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
+            
+            // Popula dropdown do dashboard
+            const dashboardSelect = document.getElementById('dashboardMonth');
+            dashboardSelect.innerHTML = '<option value="">Todos os meses</option>';
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month.value;
+                option.textContent = month.label;
+                if (month.value === currentMonth) {
+                    option.selected = true;
+                }
+                dashboardSelect.appendChild(option);
+            });
+            
+            // Popula dropdown da tabela
+            const tableSelect = document.getElementById('filterMes');
+            tableSelect.innerHTML = '<option value="">Todos os meses</option>';
+            months.forEach(month => {
+                const option = document.createElement('option');
+                option.value = month.value;
+                option.textContent = month.label;
+                if (month.value === currentMonth) {
+                    option.selected = true;
+                }
+                tableSelect.appendChild(option);
+            });
+        }
+
         // Carrega transações
         async function loadTransactions() {
             try {
@@ -752,7 +805,10 @@
                     ...(data.gastos_nubank || []).map(t => ({...t, tipo: 'nubank'}))
                 ].sort((a, b) => new Date(b.data) - new Date(a.data));
                 
-                // Obtém o mês do filtro do dashboard (não da tabela)
+                // Popula dropdowns de mês
+                populateMonthDropdowns();
+                
+                // Obtém o mês do filtro do dashboard
                 const dashboardMonth = document.getElementById('dashboardMonth').value;
                 
                 renderTransactions();
@@ -1195,8 +1251,6 @@
             }
         }
 
-        // Define mês atual como padrão para a tabela
-        document.getElementById('filterMes').value = currentMonth;
 
         // Função para atualizar dashboard quando o filtro de mês muda
         function updateDashboardOnMonthChange() {
