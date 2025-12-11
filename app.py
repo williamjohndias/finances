@@ -160,12 +160,30 @@ def add_transaction():
             })
         
         # Insere todas as transações de uma vez
-        supabase.table('transactions').insert(transactions_to_insert).execute()
+        try:
+            response = supabase.table('transactions').insert(transactions_to_insert).execute()
+            print(f"Transações inseridas: {len(transacoes_criadas)}")
+        except Exception as db_error:
+            print(f"Erro ao inserir no Supabase: {db_error}")
+            import traceback
+            traceback.print_exc()
+            return jsonify({
+                'success': False, 
+                'error': f'Erro ao salvar no banco de dados: {str(db_error)}',
+                'details': 'Verifique se a tabela transactions existe no Supabase'
+            }), 500
         
         return jsonify({'success': True, 'transactions': transacoes_criadas})
     except Exception as e:
+        import traceback
+        error_trace = traceback.format_exc()
         print(f"Erro ao adicionar transação: {e}")
-        return jsonify({'success': False, 'error': str(e)}), 500
+        print(f"Traceback: {error_trace}")
+        return jsonify({
+            'success': False, 
+            'error': str(e),
+            'traceback': error_trace if app.debug else None
+        }), 500
 
 @app.route('/api/transactions/<tipo>/<transaction_id>', methods=['DELETE'])
 def delete_transaction(tipo, transaction_id):
