@@ -6,12 +6,23 @@ from config import SUPABASE_URL, SUPABASE_KEY
 
 app = Flask(__name__)
 
-# Inicializa cliente Supabase
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Inicializa cliente Supabase com tratamento de erro
+try:
+    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+except Exception as e:
+    print(f"Erro ao inicializar Supabase: {e}")
+    supabase = None
 
 def load_transactions():
     """Carrega transações do Supabase"""
     try:
+        if supabase is None:
+            return {
+                'receitas': [],
+                'gastos_debito': [],
+                'gastos_mercado_pago': [],
+                'gastos_nubank': []
+            }
         # Busca todas as transações
         response = supabase.table('transactions').select('*').order('data', desc=False).execute()
         
@@ -69,6 +80,9 @@ def get_transactions():
 def add_transaction():
     """Adiciona uma nova transação"""
     try:
+        if supabase is None:
+            return jsonify({'success': False, 'error': 'Supabase não inicializado. Verifique as variáveis de ambiente.'}), 500
+        
         data = request.json
         
         tipo = data.get('tipo')
@@ -126,6 +140,9 @@ def add_transaction():
 def delete_transaction(tipo, transaction_id):
     """Remove uma transação"""
     try:
+        if supabase is None:
+            return jsonify({'success': False, 'error': 'Supabase não inicializado. Verifique as variáveis de ambiente.'}), 500
+        
         # Busca a transação para verificar se é parcelada
         response = supabase.table('transactions').select('*').eq('id', transaction_id).execute()
         
