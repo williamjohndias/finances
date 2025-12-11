@@ -890,6 +890,56 @@
             }).join('');
         }
 
+        // Calcula saldo acumulado até um mês específico
+        function calculateAccumulatedBalance(data, targetMonth) {
+            if (!targetMonth) {
+                // Se não há filtro, calcula saldo total de todos os meses
+                const receitas = (data.receitas || []).reduce((sum, t) => sum + t.valor, 0);
+                const debito = (data.gastos_debito || []).reduce((sum, t) => sum + t.valor, 0);
+                const mercadoPago = (data.gastos_mercado_pago || []).reduce((sum, t) => sum + t.valor, 0);
+                const nubank = (data.gastos_nubank || []).reduce((sum, t) => sum + t.valor, 0);
+                const gastos = debito + mercadoPago + nubank;
+                return receitas - gastos;
+            }
+            
+            // Agrupa transações por mês
+            const monthlyData = {};
+            
+            // Processa todas as transações
+            [...(data.receitas || []), ...(data.gastos_debito || []), 
+             ...(data.gastos_mercado_pago || []), ...(data.gastos_nubank || [])].forEach(t => {
+                const transDate = new Date(t.data + 'T00:00:00');
+                const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = { receitas: 0, gastos: 0 };
+                }
+                
+                if (t.tipo === 'receita' || (data.receitas || []).includes(t)) {
+                    monthlyData[monthKey].receitas += t.valor;
+                } else {
+                    monthlyData[monthKey].gastos += t.valor;
+                }
+            });
+            
+            // Ordena meses cronologicamente
+            const sortedMonths = Object.keys(monthlyData).sort();
+            
+            // Calcula saldo acumulado até o mês alvo (inclusive)
+            let accumulatedBalance = 0;
+            for (const month of sortedMonths) {
+                const monthBalance = monthlyData[month].receitas - monthlyData[month].gastos;
+                accumulatedBalance += monthBalance;
+                
+                // Para quando chegar no mês alvo
+                if (month === targetMonth) {
+                    break;
+                }
+            }
+            
+            return accumulatedBalance;
+        }
+
         // Atualiza dashboard
         function updateDashboard(data, filterMonth = null) {
             // Filtra transações por mês se especificado
@@ -926,10 +976,12 @@
             const mercadoPago = mercadoPagoList.reduce((sum, t) => sum + t.valor, 0);
             const nubank = nubankList.reduce((sum, t) => sum + t.valor, 0);
             const gastos = debito + mercadoPago + nubank;
-            const saldo = receitas - gastos;
             
-            document.getElementById('saldoTotal').textContent = formatCurrency(saldo);
-            document.getElementById('saldoTotal').className = 'card-value ' + (saldo >= 0 ? 'positive' : 'negative');
+            // Calcula saldo acumulado (soma dos meses anteriores + mês atual)
+            const saldoAcumulado = calculateAccumulatedBalance(data, filterMonth);
+            
+            document.getElementById('saldoTotal').textContent = formatCurrency(saldoAcumulado);
+            document.getElementById('saldoTotal').className = 'card-value ' + (saldoAcumulado >= 0 ? 'positive' : 'negative');
             
             document.getElementById('totalReceitas').textContent = formatCurrency(receitas);
             document.getElementById('totalGastos').textContent = formatCurrency(gastos);
