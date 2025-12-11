@@ -210,5 +210,6 @@ def get_monthly_summary():
             'saldos': []
         })
 
+# Para desenvolvimento local
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
