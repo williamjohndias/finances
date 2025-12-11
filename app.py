@@ -21,9 +21,9 @@ except ImportError:
 
 # Inicializa Supabase
 supabase = None
-print(f"\n🔧 Tentando inicializar Supabase...")
+print(f"\nTentando inicializar Supabase...")
 print(f"  URL: {SUPABASE_URL}")
-print(f"  Key presente: {'Sim' if SUPABASE_KEY else 'Não'} (tamanho: {len(SUPABASE_KEY) if SUPABASE_KEY else 0})")
+print(f"  Key presente: {'Sim' if SUPABASE_KEY else 'Nao'} (tamanho: {len(SUPABASE_KEY) if SUPABASE_KEY else 0})")
 
 if SUPABASE_URL and SUPABASE_KEY:
     try:
@@ -275,11 +275,11 @@ def get_monthly_summary():
 
 if __name__ == '__main__':
     print("\n" + "="*50)
-    print("🚀 Iniciando servidor Flask...")
+    print("Iniciando servidor Flask...")
     print("="*50)
-    print(f"📁 Diretório de templates: {template_dir}")
-    print(f"🗄️  Supabase: {'Conectado ✓' if supabase else 'Não conectado ✗'}")
+    print(f"Diretorio de templates: {template_dir}")
+    print(f"Supabase: {'Conectado OK' if supabase else 'Nao conectado'}")
     print("="*50)
-    print("🌐 Servidor rodando em: http://localhost:5000")
+    print("Servidor rodando em: http://localhost:5000")
     print("="*50 + "\n")
     app.run(debug=True, port=5000, host='127.0.0.1')
