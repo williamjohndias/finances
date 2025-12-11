@@ -17,11 +17,16 @@ except ImportError:
     SUPABASE_KEY = os.getenv('SUPABASE_KEY', '')
 
 # Inicializa cliente Supabase com tratamento de erro
-try:
-    supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-except Exception as e:
-    print(f"Erro ao inicializar Supabase: {e}")
-    supabase = None
+supabase = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("Supabase inicializado com sucesso")
+    except Exception as e:
+        print(f"Erro ao inicializar Supabase: {e}")
+        supabase = None
+else:
+    print("AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados")
 
 def load_transactions():
     """Carrega transações do Supabase"""
