@@ -31,20 +31,20 @@ if SUPABASE_URL and SUPABASE_KEY:
         from supabase import create_client, Client
         print("  Criando cliente Supabase...")
         supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-        print("✓ Supabase inicializado com sucesso!\n")
+        print("OK - Supabase inicializado com sucesso!\n")
     except Exception as e:
-        print(f"✗ ERRO ao inicializar Supabase:")
+        print(f"ERRO ao inicializar Supabase:")
         print(f"  Tipo: {type(e).__name__}")
         print(f"  Mensagem: {str(e)}")
         import traceback
-        print("\n📋 Traceback completo:")
+        print("\nTraceback completo:")
         traceback.print_exc()
         supabase = None
         print()
 else:
-    print("✗ AVISO: SUPABASE_URL ou SUPABASE_KEY não configurados")
-    print(f"  SUPABASE_URL: {'Definido' if SUPABASE_URL else 'NÃO DEFINIDO'}")
-    print(f"  SUPABASE_KEY: {'Definido' if SUPABASE_KEY else 'NÃO DEFINIDO'}\n")
+    print("AVISO: SUPABASE_URL ou SUPABASE_KEY nao configurados")
+    print(f"  SUPABASE_URL: {'Definido' if SUPABASE_URL else 'NAO DEFINIDO'}")
+    print(f"  SUPABASE_KEY: {'Definido' if SUPABASE_KEY else 'NAO DEFINIDO'}\n")
 
 def load_transactions():
     """Carrega transações do Supabase"""
