@@ -1172,101 +1172,186 @@
         // Carrega gráficos
         async function loadCharts() {
             try {
-                const response = await fetch('/api/transactions/monthly');
-                const data = await response.json();
+                // Busca dados mensais para o gráfico de linha
+                const monthlyResponse = await fetch('/api/transactions/monthly');
+                const monthlyData = await monthlyResponse.json();
                 
-                // Gráfico mensal
+                // Busca todas as transações para o gráfico de distribuição
+                const transactionsResponse = await fetch('/api/transactions');
+                const transactionsData = await transactionsResponse.json();
+                
+                // Calcula totais de gastos por tipo
+                const totalDebito = (transactionsData.gastos_debito || []).reduce((sum, t) => sum + t.valor, 0);
+                const totalMercadoPago = (transactionsData.gastos_mercado_pago || []).reduce((sum, t) => sum + t.valor, 0);
+                const totalNubank = (transactionsData.gastos_nubank || []).reduce((sum, t) => sum + t.valor, 0);
+                const totalGastos = totalDebito + totalMercadoPago + totalNubank;
+                
+                // Gráfico mensal - simplificado
                 if (monthlyChart) monthlyChart.destroy();
                 const ctx1 = document.getElementById('monthlyChart').getContext('2d');
                 monthlyChart = new Chart(ctx1, {
                     type: 'line',
                     data: {
-                        labels: data.meses,
+                        labels: monthlyData.meses || [],
                         datasets: [
                             {
                                 label: 'Receitas',
-                                data: data.receitas,
+                                data: monthlyData.receitas || [],
                                 borderColor: '#4ade80',
-                                backgroundColor: 'rgba(74, 222, 128, 0.1)',
-                                tension: 0.4,
-                                fill: true
+                                backgroundColor: 'rgba(74, 222, 128, 0.2)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                fill: false,
+                                pointRadius: 3,
+                                pointHoverRadius: 5
                             },
                             {
                                 label: 'Gastos',
-                                data: data.gastos,
+                                data: monthlyData.gastos || [],
                                 borderColor: '#f87171',
-                                backgroundColor: 'rgba(248, 113, 113, 0.1)',
-                                tension: 0.4,
-                                fill: true
+                                backgroundColor: 'rgba(248, 113, 113, 0.2)',
+                                borderWidth: 2,
+                                tension: 0.3,
+                                fill: false,
+                                pointRadius: 3,
+                                pointHoverRadius: 5
                             },
                             {
                                 label: 'Saldo',
-                                data: data.saldos,
+                                data: monthlyData.saldos || [],
                                 borderColor: '#3b82f6',
                                 backgroundColor: 'transparent',
                                 borderWidth: 2,
-                                borderDash: [5, 5],
-                                tension: 0.4
+                                borderDash: [8, 4],
+                                tension: 0.3,
+                                fill: false,
+                                pointRadius: 3,
+                                pointHoverRadius: 5
                             }
                         ]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
+                        interaction: {
+                            intersect: false,
+                            mode: 'index'
+                        },
                         plugins: {
-                            legend: { labels: { color: '#fff' } },
+                            legend: { 
+                                labels: { 
+                                    color: '#fff',
+                                    font: { size: 12 },
+                                    padding: 15,
+                                    usePointStyle: true
+                                },
+                                position: 'top'
+                            },
                             tooltip: {
+                                backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                titleColor: '#fff',
+                                bodyColor: '#fff',
+                                borderColor: '#333',
+                                borderWidth: 1,
+                                padding: 12,
                                 callbacks: {
-                                    label: (ctx) => ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y)
+                                    label: (ctx) => {
+                                        return ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y);
+                                    }
                                 }
                             }
                         },
                         scales: {
-                            x: { ticks: { color: '#fff' }, grid: { color: '#333' } },
+                            x: { 
+                                ticks: { 
+                                    color: '#aaa',
+                                    font: { size: 11 }
+                                }, 
+                                grid: { 
+                                    color: '#222',
+                                    drawBorder: false
+                                } 
+                            },
                             y: {
                                 ticks: {
-                                    color: '#fff',
-                                    callback: (value) => formatCurrency(value)
+                                    color: '#aaa',
+                                    font: { size: 11 },
+                                    callback: (value) => {
+                                        if (value >= 1000) return 'R$ ' + (value / 1000).toFixed(1) + 'k';
+                                        return formatCurrency(value);
+                                    }
                                 },
-                                grid: { color: '#333' }
+                                grid: { 
+                                    color: '#222',
+                                    drawBorder: false
+                                },
+                                beginAtZero: true
                             }
                         }
                     }
                 });
                 
-                // Gráfico de distribuição de gastos
+                // Gráfico de distribuição de gastos - simplificado e funcional
                 if (gastosChart) gastosChart.destroy();
                 const ctx2 = document.getElementById('gastosChart').getContext('2d');
-                gastosChart = new Chart(ctx2, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Débito', 'Mercado Pago', 'Nubank'],
-                        datasets: [{
-                            data: [
-                                data.debito.reduce((a, b) => a + b, 0),
-                                data.mercado_pago.reduce((a, b) => a + b, 0),
-                                data.nubank.reduce((a, b) => a + b, 0)
-                            ],
-                            backgroundColor: ['#f87171', '#fbbf24', '#a855f7']
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { labels: { color: '#fff' }, position: 'bottom' },
-                            tooltip: {
-                                callbacks: {
-                                    label: (ctx) => {
-                                        const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
-                                        const percent = ((ctx.parsed / total) * 100).toFixed(1);
-                                        return ctx.label + ': ' + formatCurrency(ctx.parsed) + ' (' + percent + '%)';
+                
+                // Só mostra o gráfico se houver gastos
+                if (totalGastos > 0) {
+                    gastosChart = new Chart(ctx2, {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['Débito', 'Mercado Pago', 'Nubank'],
+                            datasets: [{
+                                data: [totalDebito, totalMercadoPago, totalNubank],
+                                backgroundColor: [
+                                    '#f87171',
+                                    '#fbbf24',
+                                    '#a855f7'
+                                ],
+                                borderColor: '#0a0a0a',
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            cutout: '60%',
+                            plugins: {
+                                legend: { 
+                                    labels: { 
+                                        color: '#fff',
+                                        font: { size: 12 },
+                                        padding: 12,
+                                        usePointStyle: true
+                                    }, 
+                                    position: 'bottom'
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                                    titleColor: '#fff',
+                                    bodyColor: '#fff',
+                                    borderColor: '#333',
+                                    borderWidth: 1,
+                                    padding: 12,
+                                    callbacks: {
+                                        label: (ctx) => {
+                                            const total = ctx.dataset.data.reduce((a, b) => a + b, 0);
+                                            const percent = total > 0 ? ((ctx.parsed / total) * 100).toFixed(1) : 0;
+                                            return ctx.label + ': ' + formatCurrency(ctx.parsed) + ' (' + percent + '%)';
+                                        }
                                     }
                                 }
                             }
                         }
-                    }
-                });
+                    });
+                } else {
+                    // Se não houver gastos, mostra mensagem
+                    ctx2.clearRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
+                    ctx2.fillStyle = '#888';
+                    ctx2.font = '14px sans-serif';
+                    ctx2.textAlign = 'center';
+                    ctx2.fillText('Nenhum gasto registrado', ctx2.canvas.width / 2, ctx2.canvas.height / 2);
+                }
             } catch (error) {
                 console.error('Erro ao carregar gráficos:', error);
             }
