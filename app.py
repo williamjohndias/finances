@@ -525,6 +525,41 @@ def add_abatimento():
             'error': str(e)
         }), 500
 
+@app.route('/api/abatimentos/<abatimento_id>', methods=['PUT'])
+def update_abatimento(abatimento_id):
+    """Atualiza um abatimento"""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase não inicializado'}), 500
+    
+    try:
+        data = request.json
+        if not data:
+            return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
+        
+        # Verifica se o abatimento existe
+        response = supabase.table('abatimentos').select('*').eq('id', abatimento_id).execute()
+        
+        if not response.data:
+            return jsonify({'success': False, 'error': 'Abatimento não encontrado'}), 404
+        
+        # Atualiza o abatimento
+        update_data = {
+            'tipo_cartao': data.get('tipo_cartao'),
+            'valor': float(data.get('valor', 0)),
+            'data': data.get('data'),
+            'descricao': data.get('descricao', '')
+        }
+        
+        supabase.table('abatimentos').update(update_data).eq('id', abatimento_id).execute()
+        print(f"OK - Abatimento atualizado: {abatimento_id}")
+        
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"ERRO ao atualizar abatimento: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/abatimentos/<abatimento_id>', methods=['DELETE'])
 def delete_abatimento(abatimento_id):
     """Remove um abatimento"""

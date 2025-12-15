@@ -684,6 +684,31 @@
             </div>
         </div>
 
+        <!-- Lista de Abatimentos -->
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">💰 Histórico de Abatimentos</h2>
+            </div>
+            <div style="overflow-x: auto;">
+                <table class="transactions-table">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Cartão</th>
+                            <th>Descrição</th>
+                            <th>Valor</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="abatimentosTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #888; padding: 40px;">Carregando abatimentos...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Tabela de Transações -->
         <div class="section">
             <div class="section-header">
@@ -730,6 +755,48 @@
                     </tbody>
                 </table>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal de Edição de Abatimento -->
+    <div id="editAbatimentoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">✏️ Editar Abatimento</h2>
+                <span class="close" onclick="closeEditAbatimentoModal()">&times;</span>
+            </div>
+            <form id="editAbatimentoForm">
+                <input type="hidden" id="editAbatimentoId">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editAbatimentoTipoCartao">Cartão</label>
+                        <select id="editAbatimentoTipoCartao" required>
+                            <option value="">Selecione...</option>
+                            <option value="mercado_pago">🛒 Mercado Pago</option>
+                            <option value="nubank">💜 Nubank</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editAbatimentoValor">Valor do Abatimento (R$)</label>
+                        <input type="number" id="editAbatimentoValor" step="0.01" min="0" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label for="editAbatimentoData">Data</label>
+                        <input type="date" id="editAbatimentoData" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group full-width">
+                        <label for="editAbatimentoDescricao">Descrição (opcional)</label>
+                        <input type="text" id="editAbatimentoDescricao" placeholder="Ex: Depósito para pagar fatura...">
+                    </div>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                    <button type="button" onclick="closeEditAbatimentoModal()" style="background: transparent; border: 1px solid #333; color: #fff;">Cancelar</button>
+                    <button type="submit">Salvar Alterações</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1382,9 +1449,13 @@
 
         // Fecha modal ao clicar fora
         window.onclick = function(event) {
-            const modal = document.getElementById('editModal');
-            if (event.target == modal) {
+            const editModal = document.getElementById('editModal');
+            const editAbatimentoModal = document.getElementById('editAbatimentoModal');
+            if (event.target == editModal) {
                 closeEditModal();
+            }
+            if (event.target == editAbatimentoModal) {
+                closeEditAbatimentoModal();
             }
         }
 
@@ -1535,6 +1606,7 @@
                     document.getElementById('data_abatimento').valueAsDate = new Date();
                     showAbatimentoMessage('✓ Abatimento adicionado com sucesso!', 'success');
                     await loadFaturas();
+                    await loadAbatimentos();
                     loadTransactions(); // Recarrega para atualizar tudo
                 } else {
                     showAbatimentoMessage('✗ Erro: ' + (result.error || 'Erro ao adicionar abatimento'), 'error');
@@ -1553,10 +1625,127 @@
             setTimeout(() => msg.style.display = 'none', 3000);
         }
 
+        // Carrega e renderiza abatimentos
+        async function loadAbatimentos() {
+            try {
+                const response = await fetch('/api/abatimentos');
+                const abatimentos = await response.json();
+                
+                renderAbatimentos(abatimentos);
+            } catch (error) {
+                console.error('Erro ao carregar abatimentos:', error);
+            }
+        }
+
+        // Renderiza tabela de abatimentos
+        function renderAbatimentos(abatimentos) {
+            const tbody = document.getElementById('abatimentosTableBody');
+            
+            if (!abatimentos || abatimentos.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #888; padding: 40px;">Nenhum abatimento encontrado</td></tr>';
+                return;
+            }
+            
+            // Ordena por data (mais recente primeiro)
+            const sorted = [...abatimentos].sort((a, b) => new Date(b.data) - new Date(a.data));
+            
+            tbody.innerHTML = sorted.map(abatimento => {
+                const cartaoLabel = abatimento.tipo_cartao === 'mercado_pago' 
+                    ? '🛒 Mercado Pago' 
+                    : '💜 Nubank';
+                
+                return `
+                    <tr>
+                        <td>${formatDate(abatimento.data)}</td>
+                        <td>${cartaoLabel}</td>
+                        <td>${abatimento.descricao || '-'}</td>
+                        <td style="font-weight: 500; color: #4ade80;">${formatCurrency(abatimento.valor)}</td>
+                        <td>
+                            <div class="btn-group">
+                                <button class="edit-btn" onclick="openEditAbatimentoModal(${JSON.stringify(abatimento).replace(/"/g, '&quot;')})">Editar</button>
+                                <button class="delete-btn" onclick="deleteAbatimento('${abatimento.id}')">Excluir</button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Abre modal de edição de abatimento
+        function openEditAbatimentoModal(abatimento) {
+            const modal = document.getElementById('editAbatimentoModal');
+            document.getElementById('editAbatimentoId').value = abatimento.id;
+            document.getElementById('editAbatimentoTipoCartao').value = abatimento.tipo_cartao;
+            document.getElementById('editAbatimentoValor').value = abatimento.valor;
+            document.getElementById('editAbatimentoData').value = abatimento.data;
+            document.getElementById('editAbatimentoDescricao').value = abatimento.descricao || '';
+            
+            modal.style.display = 'block';
+        }
+
+        // Fecha modal de edição de abatimento
+        function closeEditAbatimentoModal() {
+            document.getElementById('editAbatimentoModal').style.display = 'none';
+        }
+
+        // Deleta abatimento
+        async function deleteAbatimento(id) {
+            if (!confirm('Deseja realmente excluir este abatimento?')) return;
+            
+            try {
+                const response = await fetch(`/api/abatimentos/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    await loadAbatimentos();
+                    await loadFaturas();
+                    showAbatimentoMessage('Abatimento excluído com sucesso!', 'success');
+                }
+            } catch (error) {
+                console.error('Erro ao deletar:', error);
+                showAbatimentoMessage('Erro ao excluir abatimento', 'error');
+            }
+        }
+
+        // Submit do formulário de edição de abatimento
+        document.getElementById('editAbatimentoForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const abatimentoId = document.getElementById('editAbatimentoId').value;
+            
+            const formData = {
+                tipo_cartao: document.getElementById('editAbatimentoTipoCartao').value,
+                valor: parseFloat(document.getElementById('editAbatimentoValor').value),
+                data: document.getElementById('editAbatimentoData').value,
+                descricao: document.getElementById('editAbatimentoDescricao').value || ''
+            };
+            
+            try {
+                const response = await fetch(`/api/abatimentos/${abatimentoId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok && result.success) {
+                    closeEditAbatimentoModal();
+                    showAbatimentoMessage('✓ Abatimento atualizado com sucesso!', 'success');
+                    await loadAbatimentos();
+                    await loadFaturas();
+                } else {
+                    showAbatimentoMessage('✗ Erro: ' + (result.error || 'Erro ao atualizar'), 'error');
+                }
+            } catch (error) {
+                showAbatimentoMessage('✗ Erro de conexão: ' + error.message, 'error');
+            }
+        });
+
+
         // Carrega dados iniciais
         (async () => {
             await loadTransactions();
             await loadFaturas();
+            await loadAbatimentos();
             // Calcula saldos após carregar tudo
             await atualizarSaldos();
         })();
