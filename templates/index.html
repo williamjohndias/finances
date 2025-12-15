@@ -475,7 +475,7 @@
                     <div class="card-icon">💵</div>
                 </div>
                 <div class="card-value" id="saldoAtual">R$ 0,00</div>
-                <div class="card-footer">Receitas do mês - Débito do mês</div>
+                <div class="card-footer">Receitas - Débito - Abatimentos do mês</div>
             </div>
 
             <div class="card" style="border-left: 4px solid #10b981;">
@@ -1559,11 +1559,28 @@
                 const faturasResponse = await fetch('/api/faturas' + monthParam);
                 const faturasData = await faturasResponse.json();
                 
+                // Busca abatimentos do mês
+                const abatimentosResponse = await fetch('/api/abatimentos');
+                const abatimentos = await abatimentosResponse.json();
+                
+                // Filtra abatimentos do mês selecionado
+                let abatimentosMes = abatimentos || [];
+                if (dashboardMonth) {
+                    abatimentosMes = abatimentosMes.filter(a => {
+                        const abatDate = new Date(a.data + 'T00:00:00');
+                        const abatMonth = abatDate.getFullYear() + '-' + String(abatDate.getMonth() + 1).padStart(2, '0');
+                        return abatMonth === dashboardMonth;
+                    });
+                }
+                
+                // Calcula total de abatimentos do mês
+                const totalAbatimentosMes = abatimentosMes.reduce((sum, a) => sum + parseFloat(a.valor), 0);
+                
                 // Faturas totais do mês (cartões de crédito)
                 const faturasTotais = faturasData.mercado_pago.fatura_total + faturasData.nubank.fatura_total;
                 
-                // Saldo Atual = Receitas do mês - Débito do mês
-                const saldoAtual = receitasMes - debitoMes;
+                // Saldo Atual = Receitas do mês - Débito do mês - Abatimentos do mês
+                const saldoAtual = receitasMes - debitoMes - totalAbatimentosMes;
                 
                 // Saldo Projetado = Receitas do mês - Débito do mês - Faturas do mês
                 const saldoProjetado = receitasMes - debitoMes - faturasTotais;
