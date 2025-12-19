@@ -14,14 +14,41 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0d2818 0%, #1a0d0d 50%, #0d2818 100%);
-            background-size: 200% 200%;
-            animation: gradientShift 10s ease infinite;
+            background: linear-gradient(135deg, #0d2818 0%, #1a0d0d 30%, #0d2818 60%, #1a0d0d 100%);
+            background-size: 300% 300%;
+            animation: gradientShift 15s ease infinite;
             color: #ffffff;
             min-height: 100vh;
             padding: 0;
             position: relative;
             overflow-x: hidden;
+        }
+        
+        /* Padrão de estrelas no fundo */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(2px 2px at 20% 30%, rgba(255, 215, 0, 0.3), transparent),
+                radial-gradient(2px 2px at 60% 70%, rgba(255, 215, 0, 0.3), transparent),
+                radial-gradient(1px 1px at 50% 50%, rgba(255, 215, 0, 0.2), transparent),
+                radial-gradient(1px 1px at 80% 10%, rgba(255, 215, 0, 0.2), transparent),
+                radial-gradient(2px 2px at 90% 40%, rgba(255, 215, 0, 0.3), transparent),
+                radial-gradient(1px 1px at 33% 60%, rgba(255, 215, 0, 0.2), transparent),
+                radial-gradient(2px 2px at 70% 20%, rgba(255, 215, 0, 0.3), transparent);
+            background-size: 200% 200%;
+            animation: starField 20s linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        @keyframes starField {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-50%, -50%); }
         }
 
         @keyframes gradientShift {
@@ -30,20 +57,20 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Animação de Natal - Flocos de Neve */
+        /* Animação de Natal - Flocos de Neve (mais lentos) */
         .snowflake {
             position: fixed;
             top: -10px;
             color: #fff;
-            font-size: 1em;
+            font-size: 1.2em;
             font-family: Arial, sans-serif;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
-            animation: fall linear infinite;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
+            animation: fallSlow linear infinite;
             z-index: 0;
             pointer-events: none;
         }
 
-        @keyframes fall {
+        @keyframes fallSlow {
             to {
                 transform: translateY(100vh) rotate(360deg);
             }
@@ -53,15 +80,91 @@
         .star {
             position: fixed;
             color: #ffd700;
-            font-size: 1.5em;
-            animation: twinkle 2s ease-in-out infinite;
+            font-size: 1.8em;
+            animation: twinkle 3s ease-in-out infinite;
             z-index: 0;
             pointer-events: none;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
         }
 
         @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.2); }
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        /* Papai Noel e Renas */
+        .santa-sleigh {
+            position: fixed;
+            font-size: 3em;
+            z-index: 0;
+            pointer-events: none;
+            animation: santaFly 30s linear infinite;
+            top: 10%;
+        }
+
+        @keyframes santaFly {
+            0% {
+                left: -200px;
+                transform: translateY(0);
+            }
+            25% {
+                transform: translateY(-20px);
+            }
+            50% {
+                transform: translateY(0);
+            }
+            75% {
+                transform: translateY(-15px);
+            }
+            100% {
+                left: 100vw;
+                transform: translateY(0);
+            }
+        }
+
+        .reindeer {
+            position: fixed;
+            font-size: 1.5em;
+            z-index: 0;
+            pointer-events: none;
+            animation: reindeerFly 30s linear infinite;
+            top: 8%;
+        }
+
+        @keyframes reindeerFly {
+            0% {
+                left: -200px;
+                transform: translateY(0);
+            }
+            25% {
+                transform: translateY(-15px);
+            }
+            50% {
+                transform: translateY(0);
+            }
+            75% {
+                transform: translateY(-10px);
+            }
+            100% {
+                left: 100vw;
+                transform: translateY(0);
+            }
+        }
+
+        /* Luzes de Natal piscando */
+        .christmas-light {
+            position: fixed;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            z-index: 0;
+            pointer-events: none;
+            animation: lightBlink 2s ease-in-out infinite;
+        }
+
+        @keyframes lightBlink {
+            0%, 100% { opacity: 0.3; box-shadow: 0 0 5px currentColor; }
+            50% { opacity: 1; box-shadow: 0 0 15px currentColor, 0 0 25px currentColor; }
         }
 
         /* Garantir que o conteúdo fique acima das animações */
@@ -553,6 +656,9 @@
     <!-- Animação de Natal -->
     <div id="snowflakes"></div>
     <div id="stars"></div>
+    <div id="santa"></div>
+    <div id="reindeers"></div>
+    <div id="christmasLights"></div>
 
     <div class="header">
         <h1>🏦 Banco Financeiro</h1>
@@ -2086,28 +2192,63 @@
             const stars = ['⭐', '✨', '🌟'];
             const snowContainer = document.getElementById('snowflakes');
             const starContainer = document.getElementById('stars');
+            const santaContainer = document.getElementById('santa');
+            const reindeersContainer = document.getElementById('reindeers');
+            const lightsContainer = document.getElementById('christmasLights');
             
-            // Cria flocos de neve
-            for (let i = 0; i < 50; i++) {
+            // Cria flocos de neve (mais lentos)
+            for (let i = 0; i < 60; i++) {
                 const snowflake = document.createElement('div');
                 snowflake.className = 'snowflake';
                 snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
                 snowflake.style.left = Math.random() * 100 + '%';
-                snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
-                snowflake.style.animationDelay = Math.random() * 2 + 's';
-                snowflake.style.opacity = Math.random() * 0.5 + 0.5;
+                // Flocos mais lentos: entre 8 e 15 segundos
+                snowflake.style.animationDuration = (Math.random() * 7 + 8) + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                snowflake.style.opacity = Math.random() * 0.6 + 0.4;
                 snowContainer.appendChild(snowflake);
             }
             
             // Cria estrelas
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 25; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
                 star.textContent = stars[Math.floor(Math.random() * stars.length)];
                 star.style.left = Math.random() * 100 + '%';
                 star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 2 + 's';
+                star.style.animationDelay = Math.random() * 3 + 's';
                 starContainer.appendChild(star);
+            }
+            
+            // Cria Papai Noel voando
+            const santa = document.createElement('div');
+            santa.className = 'santa-sleigh';
+            santa.textContent = '🎅';
+            santa.style.animationDelay = '0s';
+            santaContainer.appendChild(santa);
+            
+            // Cria renas voando (8 renas)
+            const reindeerEmojis = ['🦌', '🦌', '🦌', '🦌', '🦌', '🦌', '🦌', '🦌'];
+            reindeerEmojis.forEach((emoji, index) => {
+                const reindeer = document.createElement('div');
+                reindeer.className = 'reindeer';
+                reindeer.textContent = emoji;
+                reindeer.style.animationDelay = (index * 0.2) + 's';
+                reindeer.style.top = (8 + index * 0.5) + '%';
+                reindeersContainer.appendChild(reindeer);
+            });
+            
+            // Cria luzes de Natal piscando
+            const lightColors = ['#ff0000', '#00ff00', '#ffff00', '#ff00ff', '#00ffff', '#ff6b6b', '#90ee90', '#ffd700'];
+            for (let i = 0; i < 40; i++) {
+                const light = document.createElement('div');
+                light.className = 'christmas-light';
+                light.style.left = Math.random() * 100 + '%';
+                light.style.top = Math.random() * 100 + '%';
+                light.style.backgroundColor = lightColors[Math.floor(Math.random() * lightColors.length)];
+                light.style.color = light.style.backgroundColor;
+                light.style.animationDelay = Math.random() * 2 + 's';
+                lightsContainer.appendChild(light);
             }
         }
 
