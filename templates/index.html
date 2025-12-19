@@ -18,6 +18,48 @@
             color: #ffffff;
             min-height: 100vh;
             padding: 0;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animação de Natal - Flocos de Neve */
+        .snowflake {
+            position: fixed;
+            top: -10px;
+            color: #fff;
+            font-size: 1em;
+            font-family: Arial, sans-serif;
+            text-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+            animation: fall linear infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        /* Estrelas de Natal */
+        .star {
+            position: fixed;
+            color: #ffd700;
+            font-size: 1.5em;
+            animation: twinkle 2s ease-in-out infinite;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Garantir que o conteúdo fique acima das animações */
+        .container, .header {
+            position: relative;
+            z-index: 1;
         }
 
         .header {
@@ -453,6 +495,10 @@
     </style>
 </head>
 <body>
+    <!-- Animação de Natal -->
+    <div id="snowflakes"></div>
+    <div id="stars"></div>
+
     <div class="header">
         <h1>🏦 Banco Financeiro</h1>
         <div class="subtitle">Controle Financeiro Pessoal Completo</div>
@@ -735,11 +781,17 @@
                     <label for="filterBusca" style="margin: 0;">Buscar:</label>
                     <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
                 </div>
+                <div class="filter-group" style="margin-left: auto;">
+                    <button type="button" id="deleteSelectedBtn" style="background: #f87171; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
+                </div>
             </div>
             <div style="overflow-x: auto;">
                 <table class="transactions-table">
                     <thead>
                         <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                            </th>
                             <th>Data</th>
                             <th>Descrição</th>
                             <th>Tipo</th>
@@ -1005,7 +1057,7 @@
             }
             
             if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #888; padding: 40px;">Nenhuma transação encontrada</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888; padding: 40px;">Nenhuma transação encontrada</td></tr>';
                 return;
             }
             
@@ -1030,6 +1082,9 @@
                 
                 return `
                     <tr>
+                        <td>
+                            <input type="checkbox" class="transaction-checkbox" value="${transaction.tipo}|${transaction.id}" onchange="updateDeleteButton()">
+                        </td>
                         <td>${formatDate(transaction.data)}</td>
                         <td>${transaction.descricao}</td>
                         <td><span class="badge ${tipoBadges[transaction.tipo]}">${tipoLabels[transaction.tipo]}</span></td>
@@ -1044,6 +1099,8 @@
                     </tr>
                 `;
             }).join('');
+            
+            updateDeleteButton();
         }
 
         // Calcula saldo acumulado até um mês específico
@@ -1380,19 +1437,107 @@
             }
         }
 
-        // Deleta transação
+        // Deleta transação (mantém filtro)
         async function deleteTransaction(tipo, id) {
             if (!confirm('Deseja realmente excluir esta transação?')) return;
+            
+            // Salva o filtro atual
+            const currentFilterMes = document.getElementById('filterMes').value;
+            const currentFilterTipo = document.getElementById('filterTipo').value;
+            const currentFilterBusca = document.getElementById('filterBusca').value;
             
             try {
                 const response = await fetch(`/api/transactions/${tipo}/${id}`, { method: 'DELETE' });
                 if (response.ok) {
-                    loadTransactions();
+                    await loadTransactions();
+                    // Restaura os filtros
+                    document.getElementById('filterMes').value = currentFilterMes;
+                    document.getElementById('filterTipo').value = currentFilterTipo;
+                    document.getElementById('filterBusca').value = currentFilterBusca;
+                    renderTransactions();
                     showMessage('Transação excluída com sucesso!', 'success');
                 }
             } catch (error) {
                 console.error('Erro ao deletar:', error);
                 showMessage('Erro ao excluir transação', 'error');
+            }
+        }
+
+        // Seleciona/deseleciona todos
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.transaction-checkbox');
+            checkboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateDeleteButton();
+        }
+
+        // Atualiza visibilidade do botão de excluir selecionados
+        function updateDeleteButton() {
+            const checkboxes = document.querySelectorAll('.transaction-checkbox:checked');
+            const deleteBtn = document.getElementById('deleteSelectedBtn');
+            if (checkboxes.length > 0) {
+                deleteBtn.style.display = 'block';
+                deleteBtn.textContent = `Excluir Selecionados (${checkboxes.length})`;
+            } else {
+                deleteBtn.style.display = 'none';
+            }
+            // Atualiza checkbox "selecionar todos"
+            const allCheckboxes = document.querySelectorAll('.transaction-checkbox');
+            const selectAll = document.getElementById('selectAll');
+            if (allCheckboxes.length > 0) {
+                selectAll.checked = checkboxes.length === allCheckboxes.length;
+            }
+        }
+
+        // Exclui transações selecionadas
+        async function deleteSelectedTransactions() {
+            const checkboxes = document.querySelectorAll('.transaction-checkbox:checked');
+            if (checkboxes.length === 0) return;
+            
+            if (!confirm(`Deseja realmente excluir ${checkboxes.length} transação(ões)?`)) return;
+            
+            // Salva o filtro atual
+            const currentFilterMes = document.getElementById('filterMes').value;
+            const currentFilterTipo = document.getElementById('filterTipo').value;
+            const currentFilterBusca = document.getElementById('filterBusca').value;
+            
+            const transactionsToDelete = Array.from(checkboxes).map(cb => {
+                const [tipo, id] = cb.value.split('|');
+                return { tipo, id };
+            });
+            
+            try {
+                let successCount = 0;
+                let errorCount = 0;
+                
+                for (const { tipo, id } of transactionsToDelete) {
+                    try {
+                        const response = await fetch(`/api/transactions/${tipo}/${id}`, { method: 'DELETE' });
+                        if (response.ok) {
+                            successCount++;
+                        } else {
+                            errorCount++;
+                        }
+                    } catch (error) {
+                        errorCount++;
+                    }
+                }
+                
+                await loadTransactions();
+                // Restaura os filtros
+                document.getElementById('filterMes').value = currentFilterMes;
+                document.getElementById('filterTipo').value = currentFilterTipo;
+                document.getElementById('filterBusca').value = currentFilterBusca;
+                renderTransactions();
+                
+                if (errorCount === 0) {
+                    showMessage(`${successCount} transação(ões) excluída(s) com sucesso!`, 'success');
+                } else {
+                    showMessage(`${successCount} excluída(s), ${errorCount} erro(s)`, 'error');
+                }
+            } catch (error) {
+                console.error('Erro ao deletar:', error);
+                showMessage('Erro ao excluir transações', 'error');
             }
         }
 
@@ -1427,12 +1572,22 @@
                 const result = await response.json();
                 
                 if (response.ok && result.success) {
+                    // Salva o filtro atual
+                    const currentFilterMes = document.getElementById('filterMes').value;
+                    const currentFilterTipo = document.getElementById('filterTipo').value;
+                    const currentFilterBusca = document.getElementById('filterBusca').value;
+                    
                     document.getElementById('transactionForm').reset();
                     document.getElementById('num_parcelas').value = 1;
                     document.getElementById('data').valueAsDate = new Date();
                     document.getElementById('parcelasInfo').style.display = 'none';
                     showMessage('✓ Transação adicionada com sucesso!', 'success');
-                    loadTransactions();
+                    await loadTransactions();
+                    // Restaura os filtros
+                    document.getElementById('filterMes').value = currentFilterMes;
+                    document.getElementById('filterTipo').value = currentFilterTipo;
+                    document.getElementById('filterBusca').value = currentFilterBusca;
+                    renderTransactions();
                 } else {
                     showMessage('✗ Erro: ' + (result.error || 'Erro ao adicionar'), 'error');
                 }
@@ -1517,9 +1672,19 @@
                 const result = await response.json();
                 
                 if (response.ok && result.success) {
+                    // Salva o filtro atual
+                    const currentFilterMes = document.getElementById('filterMes').value;
+                    const currentFilterTipo = document.getElementById('filterTipo').value;
+                    const currentFilterBusca = document.getElementById('filterBusca').value;
+                    
                     closeEditModal();
                     showMessage('✓ Transação atualizada com sucesso!', 'success');
-                    loadTransactions();
+                    await loadTransactions();
+                    // Restaura os filtros
+                    document.getElementById('filterMes').value = currentFilterMes;
+                    document.getElementById('filterTipo').value = currentFilterTipo;
+                    document.getElementById('filterBusca').value = currentFilterBusca;
+                    renderTransactions();
                 } else {
                     showMessage('✗ Erro: ' + (result.error || 'Erro ao atualizar'), 'error');
                 }
@@ -1843,8 +2008,40 @@
         });
 
 
+        // Cria animação de Natal
+        function createChristmasAnimation() {
+            const snowflakes = ['❄', '❅', '❆', '✻', '✼', '✽', '✾', '✿'];
+            const stars = ['⭐', '✨', '🌟'];
+            const snowContainer = document.getElementById('snowflakes');
+            const starContainer = document.getElementById('stars');
+            
+            // Cria flocos de neve
+            for (let i = 0; i < 50; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                snowflake.style.animationDelay = Math.random() * 2 + 's';
+                snowflake.style.opacity = Math.random() * 0.5 + 0.5;
+                snowContainer.appendChild(snowflake);
+            }
+            
+            // Cria estrelas
+            for (let i = 0; i < 20; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.textContent = stars[Math.floor(Math.random() * stars.length)];
+                star.style.left = Math.random() * 100 + '%';
+                star.style.top = Math.random() * 100 + '%';
+                star.style.animationDelay = Math.random() * 2 + 's';
+                starContainer.appendChild(star);
+            }
+        }
+
         // Carrega dados iniciais
         (async () => {
+            createChristmasAnimation();
             await loadTransactions();
             await loadFaturas();
             await loadAbatimentos();
