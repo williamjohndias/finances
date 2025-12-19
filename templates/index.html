@@ -14,57 +14,21 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0d2818 0%, #1a0d0d 30%, #0d2818 60%, #1a0d0d 100%);
-            background-size: 300% 300%;
-            animation: gradientShift 15s ease infinite;
+            background: #0a0a0a;
             color: #ffffff;
             min-height: 100vh;
             padding: 0;
             position: relative;
             overflow-x: hidden;
         }
-        
-        /* Padrão de estrelas no fundo */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(2px 2px at 20% 30%, rgba(255, 215, 0, 0.3), transparent),
-                radial-gradient(2px 2px at 60% 70%, rgba(255, 215, 0, 0.3), transparent),
-                radial-gradient(1px 1px at 50% 50%, rgba(255, 215, 0, 0.2), transparent),
-                radial-gradient(1px 1px at 80% 10%, rgba(255, 215, 0, 0.2), transparent),
-                radial-gradient(2px 2px at 90% 40%, rgba(255, 215, 0, 0.3), transparent),
-                radial-gradient(1px 1px at 33% 60%, rgba(255, 215, 0, 0.2), transparent),
-                radial-gradient(2px 2px at 70% 20%, rgba(255, 215, 0, 0.3), transparent);
-            background-size: 200% 200%;
-            animation: starField 20s linear infinite;
-            z-index: 0;
-            pointer-events: none;
-        }
-        
-        @keyframes starField {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-50%, -50%); }
-        }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Animação de Natal - Flocos de Neve (mais lentos) */
+        /* Animação minimalista - Flocos de Neve sutis */
         .snowflake {
             position: fixed;
             top: -10px;
-            color: #fff;
-            font-size: 1.2em;
+            color: rgba(255, 255, 255, 0.3);
+            font-size: 0.8em;
             font-family: Arial, sans-serif;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.9);
             animation: fallSlow linear infinite;
             z-index: 0;
             pointer-events: none;
@@ -72,99 +36,8 @@
 
         @keyframes fallSlow {
             to {
-                transform: translateY(100vh) rotate(360deg);
+                transform: translateY(100vh) rotate(180deg);
             }
-        }
-
-        /* Estrelas de Natal */
-        .star {
-            position: fixed;
-            color: #ffd700;
-            font-size: 1.8em;
-            animation: twinkle 3s ease-in-out infinite;
-            z-index: 0;
-            pointer-events: none;
-            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.4; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.3); }
-        }
-
-        /* Papai Noel e Renas */
-        .santa-sleigh {
-            position: fixed;
-            font-size: 3em;
-            z-index: 0;
-            pointer-events: none;
-            animation: santaFly 30s linear infinite;
-            top: 10%;
-        }
-
-        @keyframes santaFly {
-            0% {
-                left: -200px;
-                transform: translateY(0);
-            }
-            25% {
-                transform: translateY(-20px);
-            }
-            50% {
-                transform: translateY(0);
-            }
-            75% {
-                transform: translateY(-15px);
-            }
-            100% {
-                left: 100vw;
-                transform: translateY(0);
-            }
-        }
-
-        .reindeer {
-            position: fixed;
-            font-size: 1.5em;
-            z-index: 0;
-            pointer-events: none;
-            animation: reindeerFly 30s linear infinite;
-            top: 8%;
-        }
-
-        @keyframes reindeerFly {
-            0% {
-                left: -200px;
-                transform: translateY(0);
-            }
-            25% {
-                transform: translateY(-15px);
-            }
-            50% {
-                transform: translateY(0);
-            }
-            75% {
-                transform: translateY(-10px);
-            }
-            100% {
-                left: 100vw;
-                transform: translateY(0);
-            }
-        }
-
-        /* Luzes de Natal piscando */
-        .christmas-light {
-            position: fixed;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            z-index: 0;
-            pointer-events: none;
-            animation: lightBlink 2s ease-in-out infinite;
-        }
-
-        @keyframes lightBlink {
-            0%, 100% { opacity: 0.3; box-shadow: 0 0 5px currentColor; }
-            50% { opacity: 1; box-shadow: 0 0 15px currentColor, 0 0 25px currentColor; }
         }
 
         /* Garantir que o conteúdo fique acima das animações */
@@ -174,25 +47,22 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #1a4d2e 0%, #8b0000 100%);
-            border-bottom: 3px solid #ffd700;
+            background: #0a0a0a;
+            border-bottom: 1px solid #222;
             padding: 25px 40px;
-            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
         }
 
         .header h1 {
             font-size: 1.5rem;
-            font-weight: 400;
-            letter-spacing: 1px;
+            font-weight: 300;
+            letter-spacing: 2px;
             color: #fff;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .header .subtitle {
             font-size: 0.8rem;
-            color: #ffd700;
+            color: #666;
             margin-top: 5px;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .container {
@@ -209,19 +79,15 @@
         }
 
         .card {
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.3) 0%, rgba(139, 0, 0, 0.3) 100%);
-            border: 2px solid #ffd700;
-            border-radius: 8px;
-            padding: 20px;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
-            backdrop-filter: blur(10px);
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 0;
+            padding: 24px;
+            transition: border-color 0.2s;
         }
 
         .card:hover {
-            border-color: #ff6b6b;
-            box-shadow: 0 6px 25px rgba(255, 107, 107, 0.4);
-            transform: translateY(-2px);
+            border-color: #333;
         }
 
         .card-header {
@@ -250,13 +116,11 @@
         }
 
         .card-value.positive {
-            color: #90ee90;
-            text-shadow: 0 0 10px rgba(144, 238, 144, 0.5);
+            color: #4ade80;
         }
 
         .card-value.negative {
-            color: #ff6b6b;
-            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
+            color: #f87171;
         }
 
         .card-footer {
@@ -271,23 +135,19 @@
         }
 
         .card.receitas {
-            border-left: 5px solid #90ee90;
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.4) 0%, rgba(26, 77, 46, 0.2) 100%);
+            border-left: 3px solid #4ade80;
         }
 
         .card.gastos {
-            border-left: 5px solid #ff6b6b;
-            background: linear-gradient(135deg, rgba(139, 0, 0, 0.4) 0%, rgba(139, 0, 0, 0.2) 100%);
+            border-left: 3px solid #f87171;
         }
 
         .section {
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.2) 0%, rgba(139, 0, 0, 0.2) 100%);
-            border: 2px solid #ffd700;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
-            backdrop-filter: blur(10px);
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 0;
+            padding: 30px;
+            margin-bottom: 30px;
         }
 
         .section-header {
@@ -296,7 +156,7 @@
             align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 2px solid #ffd700;
+            border-bottom: 1px solid #222;
         }
 
         .section-title {
@@ -320,13 +180,11 @@
         }
 
         .form-section {
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.2) 0%, rgba(139, 0, 0, 0.2) 100%);
-            border: 2px solid #ffd700;
-            border-radius: 8px;
-            padding: 25px;
-            margin-bottom: 25px;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
-            backdrop-filter: blur(10px);
+            background: #0a0a0a;
+            border: 1px solid #222;
+            border-radius: 0;
+            padding: 30px;
+            margin-bottom: 30px;
         }
 
         .form-row {
@@ -357,39 +215,33 @@
         input, select {
             width: 100%;
             padding: 12px 15px;
-            background-color: rgba(26, 77, 46, 0.3);
-            border: 2px solid #ffd700;
-            border-radius: 6px;
+            background-color: #0a0a0a;
+            border: 1px solid #333;
+            border-radius: 0;
             color: #fff;
             font-size: 1rem;
-            transition: all 0.3s;
+            transition: border-color 0.2s;
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: #90ee90;
-            box-shadow: 0 0 0 3px rgba(144, 238, 144, 0.3);
-            background-color: rgba(26, 77, 46, 0.5);
+            border-color: #4ade80;
         }
 
         button {
-            background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
-            color: #fff;
-            border: 2px solid #ffd700;
-            padding: 10px 20px;
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 12px 24px;
             font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.3s;
-            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            border-radius: 0;
+            transition: background-color 0.2s;
         }
 
         button:hover {
-            background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
-            transform: translateY(-2px);
+            background: #e5e5e5;
         }
 
         .transactions-table {
@@ -399,25 +251,25 @@
         }
 
         .transactions-table th {
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.4) 0%, rgba(139, 0, 0, 0.4) 100%);
+            background-color: #0a0a0a;
             padding: 15px;
             text-align: left;
             font-size: 0.85rem;
-            color: #ffd700;
+            color: #aaa;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 500;
-            border-bottom: 2px solid #ffd700;
+            border-bottom: 1px solid #222;
         }
 
         .transactions-table td {
             padding: 15px;
-            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+            border-bottom: 1px solid #222;
             font-size: 0.9rem;
         }
 
         .transactions-table tr:hover {
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.2) 0%, rgba(139, 0, 0, 0.2) 100%);
+            background-color: #1a1a1a;
         }
 
         .badge {
@@ -429,73 +281,66 @@
         }
 
         .badge.receita {
-            background: linear-gradient(135deg, rgba(144, 238, 144, 0.3) 0%, rgba(144, 238, 144, 0.1) 100%);
-            color: #90ee90;
-            border: 1px solid #90ee90;
-            box-shadow: 0 0 10px rgba(144, 238, 144, 0.3);
+            background-color: rgba(74, 222, 128, 0.15);
+            color: #4ade80;
+            border: none;
         }
 
         .badge.debito {
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.3) 0%, rgba(255, 107, 107, 0.1) 100%);
-            color: #ff6b6b;
-            border: 1px solid #ff6b6b;
-            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+            background-color: rgba(248, 113, 113, 0.15);
+            color: #f87171;
+            border: none;
         }
 
         .badge.mercado-pago {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
-            color: #ffd700;
-            border: 1px solid #ffd700;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            background-color: rgba(251, 191, 36, 0.15);
+            color: #fbbf24;
+            border: none;
         }
 
         .badge.nubank {
-            background: linear-gradient(135deg, rgba(255, 182, 193, 0.3) 0%, rgba(255, 182, 193, 0.1) 100%);
-            color: #ffb6c1;
-            border: 1px solid #ffb6c1;
-            box-shadow: 0 0 10px rgba(255, 182, 193, 0.3);
+            background-color: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+            border: none;
         }
 
         .badge.parcela {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
-            color: #ffd700;
-            border: 1px solid #ffd700;
-            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+            background-color: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border: none;
         }
 
         .delete-btn {
             background: transparent;
-            color: #ff6b6b;
-            border: 2px solid #ff6b6b;
+            color: #f87171;
+            border: 1px solid #f87171;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.3s;
+            border-radius: 0;
+            transition: all 0.2s;
             margin-left: 8px;
         }
 
         .delete-btn:hover {
-            background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
-            color: #fff;
-            box-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
+            background-color: #f87171;
+            color: #000;
         }
 
         .edit-btn {
             background: transparent;
-            color: #ffd700;
-            border: 2px solid #ffd700;
+            color: #3b82f6;
+            border: 1px solid #3b82f6;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 6px;
-            transition: all 0.3s;
+            border-radius: 0;
+            transition: all 0.2s;
         }
 
         .edit-btn:hover {
-            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            background-color: #3b82f6;
             color: #000;
-            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
         }
 
         .modal {
@@ -511,15 +356,13 @@
         }
 
         .modal-content {
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%);
+            background: #0a0a0a;
             margin: 5% auto;
-            padding: 25px;
-            border: 3px solid #ffd700;
-            border-radius: 12px;
+            padding: 30px;
+            border: 1px solid #222;
+            border-radius: 0;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.5);
-            backdrop-filter: blur(10px);
         }
 
         .modal-header {
@@ -581,16 +424,14 @@
         .stat-item {
             text-align: center;
             padding: 20px;
-            background: linear-gradient(135deg, rgba(26, 77, 46, 0.3) 0%, rgba(139, 0, 0, 0.3) 100%);
-            border-radius: 8px;
-            border: 2px solid #ffd700;
-            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
-            transition: all 0.3s;
+            background-color: #0a0a0a;
+            border-radius: 0;
+            border: 1px solid #222;
+            transition: border-color 0.2s;
         }
 
         .stat-item:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
+            border-color: #333;
         }
 
         .stat-label {
@@ -614,27 +455,24 @@
         }
 
         .alert.success {
-            background: linear-gradient(135deg, rgba(144, 238, 144, 0.2) 0%, rgba(144, 238, 144, 0.1) 100%);
-            border-color: #90ee90;
-            color: #90ee90;
-            border-width: 2px;
-            box-shadow: 0 0 15px rgba(144, 238, 144, 0.3);
+            background-color: rgba(74, 222, 128, 0.1);
+            border-color: #4ade80;
+            color: #4ade80;
+            border-left-width: 3px;
         }
 
         .alert.error {
-            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 107, 107, 0.1) 100%);
-            border-color: #ff6b6b;
-            color: #ff6b6b;
-            border-width: 2px;
-            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
+            background-color: rgba(248, 113, 113, 0.1);
+            border-color: #f87171;
+            color: #f87171;
+            border-left-width: 3px;
         }
 
         .alert.info {
-            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%);
-            border-color: #ffd700;
-            color: #ffd700;
-            border-width: 2px;
-            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            background-color: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #3b82f6;
+            border-left-width: 3px;
         }
 
         @media (max-width: 768px) {
@@ -653,12 +491,8 @@
     </style>
 </head>
 <body>
-    <!-- Animação de Natal -->
+    <!-- Animação minimalista - Flocos de Neve sutis -->
     <div id="snowflakes"></div>
-    <div id="stars"></div>
-    <div id="santa"></div>
-    <div id="reindeers"></div>
-    <div id="christmasLights"></div>
 
     <div class="header">
         <h1>🏦 Banco Financeiro</h1>
@@ -2186,69 +2020,21 @@
         });
 
 
-        // Cria animação de Natal
+        // Cria animação minimalista
         function createChristmasAnimation() {
-            const snowflakes = ['❄', '❅', '❆', '✻', '✼', '✽', '✾', '✿'];
-            const stars = ['⭐', '✨', '🌟'];
+            const snowflakes = ['❄', '❅', '❆'];
             const snowContainer = document.getElementById('snowflakes');
-            const starContainer = document.getElementById('stars');
-            const santaContainer = document.getElementById('santa');
-            const reindeersContainer = document.getElementById('reindeers');
-            const lightsContainer = document.getElementById('christmasLights');
             
-            // Cria flocos de neve (mais lentos)
-            for (let i = 0; i < 60; i++) {
+            // Cria apenas alguns flocos de neve sutis
+            for (let i = 0; i < 20; i++) {
                 const snowflake = document.createElement('div');
                 snowflake.className = 'snowflake';
                 snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
                 snowflake.style.left = Math.random() * 100 + '%';
-                // Flocos mais lentos: entre 8 e 15 segundos
-                snowflake.style.animationDuration = (Math.random() * 7 + 8) + 's';
-                snowflake.style.animationDelay = Math.random() * 5 + 's';
-                snowflake.style.opacity = Math.random() * 0.6 + 0.4;
+                snowflake.style.animationDuration = (Math.random() * 10 + 15) + 's';
+                snowflake.style.animationDelay = Math.random() * 10 + 's';
+                snowflake.style.opacity = Math.random() * 0.2 + 0.1;
                 snowContainer.appendChild(snowflake);
-            }
-            
-            // Cria estrelas
-            for (let i = 0; i < 25; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.textContent = stars[Math.floor(Math.random() * stars.length)];
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                starContainer.appendChild(star);
-            }
-            
-            // Cria Papai Noel voando
-            const santa = document.createElement('div');
-            santa.className = 'santa-sleigh';
-            santa.textContent = '🎅';
-            santa.style.animationDelay = '0s';
-            santaContainer.appendChild(santa);
-            
-            // Cria renas voando (8 renas)
-            const reindeerEmojis = ['🦌', '🦌', '🦌', '🦌', '🦌', '🦌', '🦌', '🦌'];
-            reindeerEmojis.forEach((emoji, index) => {
-                const reindeer = document.createElement('div');
-                reindeer.className = 'reindeer';
-                reindeer.textContent = emoji;
-                reindeer.style.animationDelay = (index * 0.2) + 's';
-                reindeer.style.top = (8 + index * 0.5) + '%';
-                reindeersContainer.appendChild(reindeer);
-            });
-            
-            // Cria luzes de Natal piscando
-            const lightColors = ['#ff0000', '#00ff00', '#ffff00', '#ff00ff', '#00ffff', '#ff6b6b', '#90ee90', '#ffd700'];
-            for (let i = 0; i < 40; i++) {
-                const light = document.createElement('div');
-                light.className = 'christmas-light';
-                light.style.left = Math.random() * 100 + '%';
-                light.style.top = Math.random() * 100 + '%';
-                light.style.backgroundColor = lightColors[Math.floor(Math.random() * lightColors.length)];
-                light.style.color = light.style.backgroundColor;
-                light.style.animationDelay = Math.random() * 2 + 's';
-                lightsContainer.appendChild(light);
             }
         }
 
