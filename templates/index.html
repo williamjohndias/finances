@@ -14,12 +14,20 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%);
+            background: linear-gradient(135deg, #0d2818 0%, #1a0d0d 50%, #0d2818 100%);
+            background-size: 200% 200%;
+            animation: gradientShift 10s ease infinite;
             color: #ffffff;
             min-height: 100vh;
             padding: 0;
             position: relative;
             overflow-x: hidden;
+        }
+
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         /* Animação de Natal - Flocos de Neve */
@@ -63,9 +71,10 @@
         }
 
         .header {
-            background: #0a0a0a;
-            border-bottom: 1px solid #222;
+            background: linear-gradient(135deg, #1a4d2e 0%, #8b0000 100%);
+            border-bottom: 3px solid #ffd700;
             padding: 25px 40px;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
         }
 
         .header h1 {
@@ -73,12 +82,14 @@
             font-weight: 400;
             letter-spacing: 1px;
             color: #fff;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
         }
 
         .header .subtitle {
             font-size: 0.8rem;
-            color: #666;
+            color: #ffd700;
             margin-top: 5px;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         .container {
@@ -95,15 +106,19 @@
         }
 
         .card {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.3) 0%, rgba(139, 0, 0, 0.3) 100%);
+            border: 2px solid #ffd700;
+            border-radius: 8px;
             padding: 20px;
-            transition: border-color 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+            backdrop-filter: blur(10px);
         }
 
         .card:hover {
-            border-color: #333;
+            border-color: #ff6b6b;
+            box-shadow: 0 6px 25px rgba(255, 107, 107, 0.4);
+            transform: translateY(-2px);
         }
 
         .card-header {
@@ -132,11 +147,13 @@
         }
 
         .card-value.positive {
-            color: #4ade80;
+            color: #90ee90;
+            text-shadow: 0 0 10px rgba(144, 238, 144, 0.5);
         }
 
         .card-value.negative {
-            color: #f87171;
+            color: #ff6b6b;
+            text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);
         }
 
         .card-footer {
@@ -151,19 +168,23 @@
         }
 
         .card.receitas {
-            border-left: 4px solid #4ade80;
+            border-left: 5px solid #90ee90;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.4) 0%, rgba(26, 77, 46, 0.2) 100%);
         }
 
         .card.gastos {
-            border-left: 4px solid #f87171;
+            border-left: 5px solid #ff6b6b;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.4) 0%, rgba(139, 0, 0, 0.2) 100%);
         }
 
         .section {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.2) 0%, rgba(139, 0, 0, 0.2) 100%);
+            border: 2px solid #ffd700;
+            border-radius: 8px;
             padding: 25px;
             margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+            backdrop-filter: blur(10px);
         }
 
         .section-header {
@@ -172,7 +193,7 @@
             align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #333;
+            border-bottom: 2px solid #ffd700;
         }
 
         .section-title {
@@ -196,11 +217,13 @@
         }
 
         .form-section {
-            background: #0a0a0a;
-            border: 1px solid #222;
-            border-radius: 4px;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.2) 0%, rgba(139, 0, 0, 0.2) 100%);
+            border: 2px solid #ffd700;
+            border-radius: 8px;
             padding: 25px;
             margin-bottom: 25px;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+            backdrop-filter: blur(10px);
         }
 
         .form-row {
@@ -231,9 +254,9 @@
         input, select {
             width: 100%;
             padding: 12px 15px;
-            background-color: #0a0a0a;
-            border: 1px solid #333;
-            border-radius: 4px;
+            background-color: rgba(26, 77, 46, 0.3);
+            border: 2px solid #ffd700;
+            border-radius: 6px;
             color: #fff;
             font-size: 1rem;
             transition: all 0.3s;
@@ -241,24 +264,29 @@
 
         input:focus, select:focus {
             outline: none;
-            border-color: #4ade80;
-            box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.1);
+            border-color: #90ee90;
+            box-shadow: 0 0 0 3px rgba(144, 238, 144, 0.3);
+            background-color: rgba(26, 77, 46, 0.5);
         }
 
         button {
-            background: #fff;
-            color: #000;
-            border: none;
+            background: linear-gradient(135deg, #8b0000 0%, #dc143c 100%);
+            color: #fff;
+            border: 2px solid #ffd700;
             padding: 10px 20px;
             font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.3s;
+            border-radius: 6px;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
         }
 
         button:hover {
-            background: #e5e5e5;
+            background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.5);
+            transform: translateY(-2px);
         }
 
         .transactions-table {
@@ -268,25 +296,25 @@
         }
 
         .transactions-table th {
-            background-color: #0a0a0a;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.4) 0%, rgba(139, 0, 0, 0.4) 100%);
             padding: 15px;
             text-align: left;
             font-size: 0.85rem;
-            color: #aaa;
+            color: #ffd700;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 500;
-            border-bottom: 2px solid #333;
+            border-bottom: 2px solid #ffd700;
         }
 
         .transactions-table td {
             padding: 15px;
-            border-bottom: 1px solid #222;
+            border-bottom: 1px solid rgba(255, 215, 0, 0.3);
             font-size: 0.9rem;
         }
 
         .transactions-table tr:hover {
-            background-color: #1a1a1a;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.2) 0%, rgba(139, 0, 0, 0.2) 100%);
         }
 
         .badge {
@@ -298,61 +326,73 @@
         }
 
         .badge.receita {
-            background-color: rgba(74, 222, 128, 0.2);
-            color: #4ade80;
+            background: linear-gradient(135deg, rgba(144, 238, 144, 0.3) 0%, rgba(144, 238, 144, 0.1) 100%);
+            color: #90ee90;
+            border: 1px solid #90ee90;
+            box-shadow: 0 0 10px rgba(144, 238, 144, 0.3);
         }
 
         .badge.debito {
-            background-color: rgba(248, 113, 113, 0.2);
-            color: #f87171;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.3) 0%, rgba(255, 107, 107, 0.1) 100%);
+            color: #ff6b6b;
+            border: 1px solid #ff6b6b;
+            box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
         }
 
         .badge.mercado-pago {
-            background-color: rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
         }
 
         .badge.nubank {
-            background-color: rgba(168, 85, 247, 0.2);
-            color: #a855f7;
+            background: linear-gradient(135deg, rgba(255, 182, 193, 0.3) 0%, rgba(255, 182, 193, 0.1) 100%);
+            color: #ffb6c1;
+            border: 1px solid #ffb6c1;
+            box-shadow: 0 0 10px rgba(255, 182, 193, 0.3);
         }
 
         .badge.parcela {
-            background-color: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 215, 0, 0.1) 100%);
+            color: #ffd700;
+            border: 1px solid #ffd700;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
         }
 
         .delete-btn {
             background: transparent;
-            color: #f87171;
-            border: 1px solid #f87171;
+            color: #ff6b6b;
+            border: 2px solid #ff6b6b;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             transition: all 0.3s;
             margin-left: 8px;
         }
 
         .delete-btn:hover {
-            background-color: #f87171;
-            color: #000;
+            background: linear-gradient(135deg, #dc143c 0%, #ff6b6b 100%);
+            color: #fff;
+            box-shadow: 0 2px 10px rgba(255, 107, 107, 0.5);
         }
 
         .edit-btn {
             background: transparent;
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
+            color: #ffd700;
+            border: 2px solid #ffd700;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             transition: all 0.3s;
         }
 
         .edit-btn:hover {
-            background-color: #3b82f6;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
             color: #000;
+            box-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
         }
 
         .modal {
@@ -368,13 +408,15 @@
         }
 
         .modal-content {
-            background: #0a0a0a;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.95) 0%, rgba(139, 0, 0, 0.95) 100%);
             margin: 5% auto;
             padding: 25px;
-            border: 1px solid #222;
-            border-radius: 4px;
+            border: 3px solid #ffd700;
+            border-radius: 12px;
             width: 90%;
             max-width: 600px;
+            box-shadow: 0 10px 40px rgba(255, 215, 0, 0.5);
+            backdrop-filter: blur(10px);
         }
 
         .modal-header {
@@ -436,9 +478,16 @@
         .stat-item {
             text-align: center;
             padding: 20px;
-            background-color: #0a0a0a;
+            background: linear-gradient(135deg, rgba(26, 77, 46, 0.3) 0%, rgba(139, 0, 0, 0.3) 100%);
             border-radius: 8px;
-            border: 1px solid #333;
+            border: 2px solid #ffd700;
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+            transition: all 0.3s;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(255, 215, 0, 0.4);
         }
 
         .stat-label {
@@ -462,21 +511,27 @@
         }
 
         .alert.success {
-            background-color: rgba(74, 222, 128, 0.1);
-            border-color: #4ade80;
-            color: #4ade80;
+            background: linear-gradient(135deg, rgba(144, 238, 144, 0.2) 0%, rgba(144, 238, 144, 0.1) 100%);
+            border-color: #90ee90;
+            color: #90ee90;
+            border-width: 2px;
+            box-shadow: 0 0 15px rgba(144, 238, 144, 0.3);
         }
 
         .alert.error {
-            background-color: rgba(248, 113, 113, 0.1);
-            border-color: #f87171;
-            color: #f87171;
+            background: linear-gradient(135deg, rgba(255, 107, 107, 0.2) 0%, rgba(255, 107, 107, 0.1) 100%);
+            border-color: #ff6b6b;
+            color: #ff6b6b;
+            border-width: 2px;
+            box-shadow: 0 0 15px rgba(255, 107, 107, 0.3);
         }
 
         .alert.info {
-            background-color: rgba(59, 130, 246, 0.1);
-            border-color: #3b82f6;
-            color: #3b82f6;
+            background: linear-gradient(135deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 215, 0, 0.1) 100%);
+            border-color: #ffd700;
+            color: #ffd700;
+            border-width: 2px;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
         }
 
         @media (max-width: 768px) {
