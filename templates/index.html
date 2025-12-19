@@ -521,7 +521,7 @@
                     <div class="card-icon">💵</div>
                 </div>
                 <div class="card-value" id="saldoAtual">R$ 0,00</div>
-                <div class="card-footer">Receitas - Débito - Abatimentos do mês</div>
+                <div class="card-footer">Saldo acumulado até o mês selecionado</div>
             </div>
 
             <div class="card" style="border-left: 4px solid #10b981;">
@@ -530,7 +530,7 @@
                     <div class="card-icon">📊</div>
                 </div>
                 <div class="card-value" id="saldoProjetado">R$ 0,00</div>
-                <div class="card-footer">Receitas - Débito - Faturas do mês</div>
+                <div class="card-footer">Saldo projetado acumulado (com faturas)</div>
             </div>
 
             <div class="card receitas">
@@ -1775,74 +1775,91 @@
             }
         }
 
-        // Atualiza saldo atual e projetado
+        // Atualiza saldo atual e projetado (acumulativo)
         async function atualizarSaldos() {
             try {
-                // Busca transações do mês atual
                 const dashboardMonth = document.getElementById('dashboardMonth').value;
                 const response = await fetch('/api/transactions');
                 const data = await response.json();
                 
-                // Filtra transações do mês selecionado
-                let receitasList = data.receitas || [];
-                let debitoList = data.gastos_debito || [];
-                
-                if (dashboardMonth) {
-                    receitasList = receitasList.filter(t => {
-                        const transDate = new Date(t.data + 'T00:00:00');
-                        const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
-                        return transMonth === dashboardMonth;
-                    });
-                    debitoList = debitoList.filter(t => {
-                        const transDate = new Date(t.data + 'T00:00:00');
-                        const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
-                        return transMonth === dashboardMonth;
-                    });
-                }
-                
-                // Calcula receitas e débito do mês
-                const receitasMes = receitasList.reduce((sum, t) => sum + t.valor, 0);
-                const debitoMes = debitoList.reduce((sum, t) => sum + t.valor, 0);
-                
-                // Busca faturas do mês atual
-                const monthParam = dashboardMonth ? `?month=${dashboardMonth}` : '';
-                const faturasResponse = await fetch('/api/faturas' + monthParam);
-                const faturasData = await faturasResponse.json();
-                
-                // Busca abatimentos do mês
+                // Busca abatimentos
                 const abatimentosResponse = await fetch('/api/abatimentos');
                 const abatimentos = await abatimentosResponse.json();
                 
-                // Filtra abatimentos do mês selecionado
-                let abatimentosMes = abatimentos || [];
-                if (dashboardMonth) {
-                    abatimentosMes = abatimentosMes.filter(a => {
-                        const abatDate = new Date(a.data + 'T00:00:00');
-                        const abatMonth = abatDate.getFullYear() + '-' + String(abatDate.getMonth() + 1).padStart(2, '0');
-                        return abatMonth === dashboardMonth;
-                    });
+                // Agrupa transações por mês
+                const monthlyData = {};
+                
+                // Processa receitas
+                (data.receitas || []).forEach(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    if (!monthlyData[monthKey]) {
+                        monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                    }
+                    monthlyData[monthKey].receitas += t.valor;
+                });
+                
+                // Processa débitos
+                (data.gastos_debito || []).forEach(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    if (!monthlyData[monthKey]) {
+                        monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                    }
+                    monthlyData[monthKey].debito += t.valor;
+                });
+                
+                // Processa faturas (cartões de crédito)
+                [...(data.gastos_mercado_pago || []), ...(data.gastos_nubank || [])].forEach(t => {
+                    const transDate = new Date(t.data + 'T00:00:00');
+                    const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+                    if (!monthlyData[monthKey]) {
+                        monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                    }
+                    monthlyData[monthKey].faturas += t.valor;
+                });
+                
+                // Processa abatimentos
+                (abatimentos || []).forEach(a => {
+                    const abatDate = new Date(a.data + 'T00:00:00');
+                    const monthKey = abatDate.getFullYear() + '-' + String(abatDate.getMonth() + 1).padStart(2, '0');
+                    if (!monthlyData[monthKey]) {
+                        monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                    }
+                    monthlyData[monthKey].abatimentos += parseFloat(a.valor);
+                });
+                
+                // Ordena meses cronologicamente
+                const sortedMonths = Object.keys(monthlyData).sort();
+                
+                // Calcula saldo acumulado até o mês selecionado (ou todos se não houver filtro)
+                let saldoAcumuladoAtual = 0;
+                let saldoAcumuladoProjetado = 0;
+                
+                for (const month of sortedMonths) {
+                    const monthData = monthlyData[month];
+                    const saldoMesAtual = monthData.receitas - monthData.debito - monthData.abatimentos;
+                    const saldoMesProjetado = monthData.receitas - monthData.debito - monthData.faturas;
+                    
+                    saldoAcumuladoAtual += saldoMesAtual;
+                    saldoAcumuladoProjetado += saldoMesProjetado;
+                    
+                    // Para quando chegar no mês selecionado
+                    if (dashboardMonth && month === dashboardMonth) {
+                        break;
+                    }
                 }
                 
-                // Calcula total de abatimentos do mês
-                const totalAbatimentosMes = abatimentosMes.reduce((sum, a) => sum + parseFloat(a.valor), 0);
-                
-                // Faturas totais do mês (cartões de crédito)
-                const faturasTotais = faturasData.mercado_pago.fatura_total + faturasData.nubank.fatura_total;
-                
-                // Saldo Atual = Receitas do mês - Débito do mês - Abatimentos do mês
-                const saldoAtual = receitasMes - debitoMes - totalAbatimentosMes;
-                
-                // Saldo Projetado = Receitas do mês - Débito do mês - Faturas do mês
-                const saldoProjetado = receitasMes - debitoMes - faturasTotais;
+                // Se não há filtro, usa todos os meses (já calculado acima)
                 
                 // Atualiza cards
                 const saldoAtualEl = document.getElementById('saldoAtual');
-                saldoAtualEl.textContent = formatCurrency(saldoAtual);
-                saldoAtualEl.className = 'card-value ' + (saldoAtual >= 0 ? 'positive' : 'negative');
+                saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
+                saldoAtualEl.className = 'card-value ' + (saldoAcumuladoAtual >= 0 ? 'positive' : 'negative');
                 
                 const saldoProjetadoEl = document.getElementById('saldoProjetado');
-                saldoProjetadoEl.textContent = formatCurrency(saldoProjetado);
-                saldoProjetadoEl.className = 'card-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
+                saldoProjetadoEl.textContent = formatCurrency(saldoAcumuladoProjetado);
+                saldoProjetadoEl.className = 'card-value ' + (saldoAcumuladoProjetado >= 0 ? 'positive' : 'negative');
             } catch (error) {
                 console.error('Erro ao calcular saldos:', error);
             }
