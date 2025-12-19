@@ -14,7 +14,7 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: #0a0a0a;
+            background: linear-gradient(135deg, #0a0a0a 0%, #0d1a0d 50%, #1a0d0d 100%);
             color: #ffffff;
             min-height: 100vh;
             padding: 0;
@@ -22,12 +22,12 @@
             overflow-x: hidden;
         }
 
-        /* Animação minimalista - Flocos de Neve sutis */
+        /* Animação minimalista natalina - Flocos de Neve sutis */
         .snowflake {
             position: fixed;
             top: -10px;
-            color: rgba(255, 255, 255, 0.3);
-            font-size: 0.8em;
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9em;
             font-family: Arial, sans-serif;
             animation: fallSlow linear infinite;
             z-index: 0;
@@ -47,9 +47,10 @@
         }
 
         .header {
-            background: #0a0a0a;
-            border-bottom: 1px solid #222;
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid rgba(34, 139, 34, 0.3);
             padding: 25px 40px;
+            backdrop-filter: blur(10px);
         }
 
         .header h1 {
@@ -57,6 +58,10 @@
             font-weight: 300;
             letter-spacing: 2px;
             color: #fff;
+            background: linear-gradient(135deg, #228b22 0%, #dc143c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .header .subtitle {
@@ -79,15 +84,17 @@
         }
 
         .card {
-            background: #0a0a0a;
-            border: 1px solid #222;
+            background: rgba(10, 10, 10, 0.6);
+            border: 1px solid rgba(34, 139, 34, 0.2);
             border-radius: 0;
             padding: 24px;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
         }
 
         .card:hover {
-            border-color: #333;
+            border-color: rgba(34, 139, 34, 0.5);
+            background: rgba(10, 10, 10, 0.8);
         }
 
         .card-header {
@@ -116,11 +123,11 @@
         }
 
         .card-value.positive {
-            color: #4ade80;
+            color: #228b22;
         }
 
         .card-value.negative {
-            color: #f87171;
+            color: #dc143c;
         }
 
         .card-footer {
@@ -135,19 +142,20 @@
         }
 
         .card.receitas {
-            border-left: 3px solid #4ade80;
+            border-left: 3px solid #228b22;
         }
 
         .card.gastos {
-            border-left: 3px solid #f87171;
+            border-left: 3px solid #dc143c;
         }
 
         .section {
-            background: #0a0a0a;
-            border: 1px solid #222;
+            background: rgba(10, 10, 10, 0.6);
+            border: 1px solid rgba(34, 139, 34, 0.2);
             border-radius: 0;
             padding: 30px;
             margin-bottom: 30px;
+            backdrop-filter: blur(5px);
         }
 
         .section-header {
@@ -180,11 +188,12 @@
         }
 
         .form-section {
-            background: #0a0a0a;
-            border: 1px solid #222;
+            background: rgba(10, 10, 10, 0.6);
+            border: 1px solid rgba(34, 139, 34, 0.2);
             border-radius: 0;
             padding: 30px;
             margin-bottom: 30px;
+            backdrop-filter: blur(5px);
         }
 
         .form-row {
@@ -225,23 +234,24 @@
 
         input:focus, select:focus {
             outline: none;
-            border-color: #4ade80;
+            border-color: #228b22;
         }
 
         button {
-            background: #fff;
-            color: #000;
+            background: linear-gradient(135deg, #228b22 0%, #dc143c 100%);
+            color: #fff;
             border: none;
             padding: 12px 24px;
             font-size: 0.9rem;
             font-weight: 500;
             cursor: pointer;
             border-radius: 0;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
         }
 
         button:hover {
-            background: #e5e5e5;
+            opacity: 0.9;
+            transform: translateY(-1px);
         }
 
         .transactions-table {
@@ -251,7 +261,7 @@
         }
 
         .transactions-table th {
-            background-color: #0a0a0a;
+            background-color: rgba(10, 10, 10, 0.8);
             padding: 15px;
             text-align: left;
             font-size: 0.85rem;
@@ -259,17 +269,17 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 500;
-            border-bottom: 1px solid #222;
+            border-bottom: 1px solid rgba(34, 139, 34, 0.2);
         }
 
         .transactions-table td {
             padding: 15px;
-            border-bottom: 1px solid #222;
+            border-bottom: 1px solid rgba(34, 139, 34, 0.1);
             font-size: 0.9rem;
         }
 
         .transactions-table tr:hover {
-            background-color: #1a1a1a;
+            background-color: rgba(34, 139, 34, 0.05);
         }
 
         .badge {
@@ -281,14 +291,14 @@
         }
 
         .badge.receita {
-            background-color: rgba(74, 222, 128, 0.15);
-            color: #4ade80;
+            background-color: rgba(34, 139, 34, 0.2);
+            color: #228b22;
             border: none;
         }
 
         .badge.debito {
-            background-color: rgba(248, 113, 113, 0.15);
-            color: #f87171;
+            background-color: rgba(220, 20, 60, 0.2);
+            color: #dc143c;
             border: none;
         }
 
@@ -305,42 +315,42 @@
         }
 
         .badge.parcela {
-            background-color: rgba(59, 130, 246, 0.15);
-            color: #3b82f6;
+            background-color: rgba(212, 175, 55, 0.15);
+            color: #d4af37;
             border: none;
         }
 
         .delete-btn {
             background: transparent;
-            color: #f87171;
-            border: 1px solid #f87171;
+            color: #dc143c;
+            border: 1px solid #dc143c;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
             border-radius: 0;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             margin-left: 8px;
         }
 
         .delete-btn:hover {
-            background-color: #f87171;
-            color: #000;
+            background-color: #dc143c;
+            color: #fff;
         }
 
         .edit-btn {
             background: transparent;
-            color: #3b82f6;
-            border: 1px solid #3b82f6;
+            color: #228b22;
+            border: 1px solid #228b22;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
             border-radius: 0;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
         }
 
         .edit-btn:hover {
-            background-color: #3b82f6;
-            color: #000;
+            background-color: #228b22;
+            color: #fff;
         }
 
         .modal {
@@ -356,13 +366,14 @@
         }
 
         .modal-content {
-            background: #0a0a0a;
+            background: rgba(10, 10, 10, 0.95);
             margin: 5% auto;
             padding: 30px;
-            border: 1px solid #222;
+            border: 1px solid rgba(34, 139, 34, 0.3);
             border-radius: 0;
             width: 90%;
             max-width: 600px;
+            backdrop-filter: blur(10px);
         }
 
         .modal-header {
@@ -455,23 +466,23 @@
         }
 
         .alert.success {
-            background-color: rgba(74, 222, 128, 0.1);
-            border-color: #4ade80;
-            color: #4ade80;
+            background-color: rgba(34, 139, 34, 0.15);
+            border-color: #228b22;
+            color: #228b22;
             border-left-width: 3px;
         }
 
         .alert.error {
-            background-color: rgba(248, 113, 113, 0.1);
-            border-color: #f87171;
-            color: #f87171;
+            background-color: rgba(220, 20, 60, 0.15);
+            border-color: #dc143c;
+            color: #dc143c;
             border-left-width: 3px;
         }
 
         .alert.info {
-            background-color: rgba(59, 130, 246, 0.1);
-            border-color: #3b82f6;
-            color: #3b82f6;
+            background-color: rgba(212, 175, 55, 0.15);
+            border-color: #d4af37;
+            color: #d4af37;
             border-left-width: 3px;
         }
 
@@ -510,7 +521,7 @@
 
         <!-- Dashboard Cards -->
         <div class="dashboard-grid">
-            <div class="card" style="border-left: 4px solid #3b82f6;">
+            <div class="card" style="border-left: 4px solid #d4af37;">
                 <div class="card-header">
                     <div class="card-title">Saldo Atual</div>
                     <div class="card-icon">💵</div>
@@ -777,7 +788,7 @@
                     <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
                 </div>
                 <div class="filter-group" style="margin-left: auto;">
-                    <button type="button" id="deleteSelectedBtn" style="background: #f87171; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
+                    <button type="button" id="deleteSelectedBtn" style="background: #dc143c; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
                 </div>
             </div>
             <div style="overflow-x: auto;">
@@ -1083,7 +1094,7 @@
                         <td>${formatDate(transaction.data)}</td>
                         <td>${transaction.descricao}</td>
                         <td><span class="badge ${tipoBadges[transaction.tipo]}">${tipoLabels[transaction.tipo]}</span></td>
-                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #4ade80;' : 'color: #f87171;'}">${formatCurrency(transaction.valor)}</td>
+                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #228b22;' : 'color: #dc143c;'}">${formatCurrency(transaction.valor)}</td>
                         <td>${parcelaInfo}</td>
                         <td>
                             <div class="btn-group">
@@ -1249,8 +1260,8 @@
                             {
                                 label: 'Receitas',
                                 data: monthlyData.receitas || [],
-                                borderColor: '#4ade80',
-                                backgroundColor: 'rgba(74, 222, 128, 0.2)',
+                                borderColor: '#228b22',
+                                backgroundColor: 'rgba(34, 139, 34, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1260,8 +1271,8 @@
                             {
                                 label: 'Gastos',
                                 data: monthlyData.gastos || [],
-                                borderColor: '#f87171',
-                                backgroundColor: 'rgba(248, 113, 113, 0.2)',
+                                borderColor: '#dc143c',
+                                backgroundColor: 'rgba(220, 20, 60, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1271,7 +1282,7 @@
                             {
                                 label: 'Saldo',
                                 data: monthlyData.saldos || [],
-                                borderColor: '#3b82f6',
+                                borderColor: '#d4af37',
                                 backgroundColor: 'transparent',
                                 borderWidth: 2,
                                 borderDash: [8, 4],
@@ -1356,8 +1367,8 @@
                             datasets: [{
                                 data: [totalDebito, totalMercadoPago, totalNubank],
                                 backgroundColor: [
-                                    '#f87171',
-                                    '#fbbf24',
+                                    '#dc143c',
+                                    '#d4af37',
                                     '#a855f7'
                                 ],
                                 borderColor: '#0a0a0a',
@@ -1938,7 +1949,7 @@
                         <td>${formatDate(abatimento.data)}</td>
                         <td>${cartaoLabel}</td>
                         <td>${abatimento.descricao || '-'}</td>
-                        <td style="font-weight: 500; color: #4ade80;">${formatCurrency(abatimento.valor)}</td>
+                        <td style="font-weight: 500; color: #228b22;">${formatCurrency(abatimento.valor)}</td>
                         <td>
                             <div class="btn-group">
                                 <button class="edit-btn" onclick="openEditAbatimentoModal(${JSON.stringify(abatimento).replace(/"/g, '&quot;')})">Editar</button>
