@@ -84,7 +84,7 @@
             font-weight: 300;
             letter-spacing: 2px;
             color: #fff;
-            background: linear-gradient(135deg, #00ff41 0%, #dc143c 100%);
+            background: linear-gradient(135deg, #00ff41 0%, #ff1744 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -153,7 +153,7 @@
         }
 
         .card-value.negative {
-            color: #dc143c;
+            color: #ff1744;
         }
 
         .card-footer {
@@ -172,7 +172,7 @@
         }
 
         .card.gastos {
-            border-left: 3px solid #dc143c;
+            border-left: 3px solid #ff1744;
         }
 
         .section {
@@ -264,7 +264,7 @@
         }
 
         button {
-            background: linear-gradient(135deg, #00ff41 0%, #dc143c 100%);
+            background: linear-gradient(135deg, #00ff41 0%, #ff1744 100%);
             color: #fff;
             border: none;
             padding: 12px 24px;
@@ -323,8 +323,8 @@
         }
 
         .badge.debito {
-            background-color: rgba(220, 20, 60, 0.2);
-            color: #dc143c;
+            background-color: rgba(255, 23, 68, 0.2);
+            color: #ff1744;
             border: none;
         }
 
@@ -348,8 +348,8 @@
 
         .delete-btn {
             background: transparent;
-            color: #dc143c;
-            border: 1px solid #dc143c;
+            color: #ff1744;
+            border: 1px solid #ff1744;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -359,7 +359,7 @@
         }
 
         .delete-btn:hover {
-            background-color: #dc143c;
+            background-color: #ff1744;
             color: #fff;
         }
 
@@ -499,9 +499,9 @@
         }
 
         .alert.error {
-            background-color: rgba(220, 20, 60, 0.15);
-            border-color: #dc143c;
-            color: #dc143c;
+            background-color: rgba(255, 23, 68, 0.15);
+            border-color: #ff1744;
+            color: #ff1744;
             border-left-width: 3px;
         }
 
@@ -815,7 +815,7 @@
                     <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
                 </div>
                 <div class="filter-group" style="margin-left: auto;">
-                    <button type="button" id="deleteSelectedBtn" style="background: #dc143c; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
+                    <button type="button" id="deleteSelectedBtn" style="background: #ff1744; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
                 </div>
             </div>
             <div style="overflow-x: auto;">
@@ -1121,7 +1121,7 @@
                         <td>${formatDate(transaction.data)}</td>
                         <td>${transaction.descricao}</td>
                         <td><span class="badge ${tipoBadges[transaction.tipo]}">${tipoLabels[transaction.tipo]}</span></td>
-                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #00ff41;' : 'color: #dc143c;'}">${formatCurrency(transaction.valor)}</td>
+                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #00ff41;' : 'color: #ff1744;'}">${formatCurrency(transaction.valor)}</td>
                         <td>${parcelaInfo}</td>
                         <td>
                             <div class="btn-group">
@@ -1298,8 +1298,8 @@
                             {
                                 label: 'Gastos',
                                 data: monthlyData.gastos || [],
-                                borderColor: '#dc143c',
-                                backgroundColor: 'rgba(220, 20, 60, 0.2)',
+                                borderColor: '#ff1744',
+                                backgroundColor: 'rgba(255, 23, 68, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1394,7 +1394,7 @@
                             datasets: [{
                                 data: [totalDebito, totalMercadoPago, totalNubank],
                                 backgroundColor: [
-                                    '#dc143c',
+                                    '#ff1744',
                                     '#d4af37',
                                     '#a855f7'
                                 ],
