@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Banco Financeiro - Controle Pessoal</title>
+    <title>FINANCES - Controle Financeiro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -12,9 +12,15 @@
             box-sizing: border-box;
         }
 
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            background: linear-gradient(135deg, #0a0a0a 0%, #0d1a0d 30%, #1a0d0d 70%, #0d0d1a 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #000000;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(0, 255, 65, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 23, 68, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(0, 255, 65, 0.03) 0%, transparent 50%);
             background-attachment: fixed;
             color: #ffffff;
             min-height: 100vh;
@@ -23,71 +29,53 @@
             overflow-x: hidden;
         }
 
-        /* Animação natalina - Neve caindo lentamente */
-        .snowflake {
+        /* Grid pattern street */
+        body::before {
+            content: '';
             position: fixed;
-            top: -10px;
-            color: rgba(255, 255, 255, 0.8);
-            font-family: Arial, sans-serif;
-            animation: fallSlow linear infinite;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(0, 255, 65, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 65, 0.03) 1px, transparent 1px);
+            background-size: 50px 50px;
             z-index: 0;
             pointer-events: none;
-            user-select: none;
         }
 
-        @keyframes fallSlow {
-            0% {
-                transform: translateY(0) translateX(0) rotate(0deg);
-                opacity: 0.8;
-            }
-            50% {
-                transform: translateY(50vh) translateX(20px) rotate(90deg);
-                opacity: 0.6;
-            }
-            100% {
-                transform: translateY(100vh) translateX(-20px) rotate(180deg);
-                opacity: 0.4;
-            }
-        }
-
-        /* Estrelas natalinas sutis no fundo */
-        .star {
-            position: fixed;
-            color: rgba(212, 175, 55, 0.3);
-            font-size: 1.2em;
-            animation: twinkle 3s ease-in-out infinite;
-            z-index: 0;
-            pointer-events: none;
-            user-select: none;
-        }
-
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.2); }
-        }
-
-        /* Garantir que o conteúdo fique acima das animações */
         .container, .header {
             position: relative;
             z-index: 1;
         }
 
         .header {
-            background: rgba(10, 10, 10, 0.8);
-            border-bottom: 1px solid rgba(0, 255, 65, 0.3);
-            padding: 25px 40px;
-            backdrop-filter: blur(10px);
+            background: rgba(0, 0, 0, 0.95);
+            border-bottom: 2px solid #00ff41;
+            padding: 30px 40px;
+            box-shadow: 0 4px 20px rgba(0, 255, 65, 0.2);
         }
 
         .header h1 {
-            font-size: 1.5rem;
-            font-weight: 300;
-            letter-spacing: 2px;
+            font-size: 2rem;
+            font-weight: 900;
+            letter-spacing: 3px;
             color: #fff;
-            background: linear-gradient(135deg, #00ff41 0%, #ff1744 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(0, 255, 65, 0.5);
+            position: relative;
+        }
+
+        .header h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #00ff41, #ff1744);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.8);
         }
 
         .header .subtitle {
@@ -110,17 +98,35 @@
         }
 
         .card {
-            background: rgba(10, 10, 10, 0.6);
-            border: 1px solid rgba(0, 255, 65, 0.2);
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(0, 255, 65, 0.3);
             border-radius: 0;
             padding: 24px;
             transition: all 0.3s ease;
-            backdrop-filter: blur(5px);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff41, transparent);
+            transform: translateX(-100%);
+            transition: transform 0.5s ease;
         }
 
         .card:hover {
-            border-color: rgba(0, 255, 65, 0.5);
-            background: rgba(10, 10, 10, 0.8);
+            border-color: #00ff41;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .card:hover::before {
+            transform: translateX(100%);
         }
 
         .card-header {
@@ -131,11 +137,11 @@
         }
 
         .card-title {
-            font-size: 0.85rem;
-            color: #aaa;
+            font-size: 0.75rem;
+            color: #888;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 500;
+            letter-spacing: 2px;
+            font-weight: 700;
         }
 
         .card-icon {
@@ -143,9 +149,10 @@
         }
 
         .card-value {
-            font-size: 2rem;
-            font-weight: 300;
+            font-size: 2.2rem;
+            font-weight: 800;
             margin-bottom: 10px;
+            letter-spacing: 1px;
         }
 
         .card-value.positive {
@@ -168,20 +175,22 @@
         }
 
         .card.receitas {
-            border-left: 3px solid #00ff41;
+            border-left: 4px solid #00ff41;
+            box-shadow: -4px 0 20px rgba(0, 255, 65, 0.2);
         }
 
         .card.gastos {
-            border-left: 3px solid #ff1744;
+            border-left: 4px solid #ff1744;
+            box-shadow: -4px 0 20px rgba(255, 23, 68, 0.2);
         }
 
         .section {
-            background: rgba(10, 10, 10, 0.6);
-            border: 1px solid rgba(0, 255, 65, 0.2);
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(0, 255, 65, 0.3);
             border-radius: 0;
             padding: 30px;
             margin-bottom: 30px;
-            backdrop-filter: blur(5px);
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.1);
         }
 
         .section-header {
@@ -194,10 +203,12 @@
         }
 
         .section-title {
-            font-size: 1.3rem;
-            font-weight: 300;
-            letter-spacing: 1px;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 3px;
             text-transform: uppercase;
+            color: #fff;
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
 
         .charts-grid {
@@ -250,34 +261,57 @@
         input, select {
             width: 100%;
             padding: 12px 15px;
-            background-color: #0a0a0a;
-            border: 1px solid #333;
+            background-color: #000;
+            border: 2px solid rgba(0, 255, 65, 0.3);
             border-radius: 0;
             color: #fff;
             font-size: 1rem;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            font-weight: 500;
         }
 
         input:focus, select:focus {
             outline: none;
             border-color: #00ff41;
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.4);
         }
 
         button {
-            background: linear-gradient(135deg, #00ff41 0%, #ff1744 100%);
-            color: #fff;
-            border: none;
+            background: #000;
+            color: #00ff41;
+            border: 2px solid #00ff41;
             padding: 12px 24px;
             font-size: 0.9rem;
-            font-weight: 500;
+            font-weight: 700;
             cursor: pointer;
             border-radius: 0;
             transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: #00ff41;
+            transition: left 0.3s ease;
+            z-index: -1;
         }
 
         button:hover {
-            opacity: 0.9;
-            transform: translateY(-1px);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.6);
+            transform: translateY(-2px);
+        }
+
+        button:hover::before {
+            left: 0;
         }
 
         .transactions-table {
@@ -287,25 +321,27 @@
         }
 
         .transactions-table th {
-            background-color: rgba(10, 10, 10, 0.8);
+            background-color: rgba(0, 0, 0, 0.9);
             padding: 15px;
             text-align: left;
             font-size: 0.85rem;
-            color: #aaa;
+            color: #888;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            font-weight: 500;
-            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+            letter-spacing: 2px;
+            font-weight: 700;
+            border-bottom: 2px solid rgba(0, 255, 65, 0.3);
         }
 
         .transactions-table td {
             padding: 15px;
             border-bottom: 1px solid rgba(0, 255, 65, 0.1);
             font-size: 0.9rem;
+            font-weight: 500;
         }
 
         .transactions-table tr:hover {
-            background-color: rgba(0, 255, 65, 0.05);
+            background-color: rgba(0, 255, 65, 0.08);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.1);
         }
 
         .badge {
@@ -528,13 +564,10 @@
     </style>
 </head>
 <body>
-    <!-- Animação minimalista - Flocos de Neve sutis -->
-    <div id="snowflakes"></div>
-    <div id="stars"></div>
 
     <div class="header">
-        <h1>🏦 Banco Financeiro</h1>
-        <div class="subtitle">Controle Financeiro Pessoal Completo</div>
+        <h1>💰 FINANCES</h1>
+        <div class="subtitle">STREET FINANCIAL CONTROL</div>
     </div>
 
     <div class="container">
@@ -548,7 +581,7 @@
 
         <!-- Dashboard Cards -->
         <div class="dashboard-grid">
-            <div class="card" style="border-left: 4px solid #d4af37;">
+            <div class="card" style="border-left: 4px solid #00ff41;">
                 <div class="card-header">
                     <div class="card-title">Saldo Atual</div>
                     <div class="card-icon">💵</div>
@@ -2057,47 +2090,8 @@
             }
         });
 
-
-        // Cria animação natalina com neve caindo lentamente
-        function createChristmasAnimation() {
-            const snowflakes = ['❄', '❅', '❆', '✦', '✧'];
-            const snowContainer = document.getElementById('snowflakes');
-            const starsContainer = document.getElementById('stars');
-            
-            // Cria muitos flocos de neve caindo lentamente
-            for (let i = 0; i < 100; i++) {
-                const snowflake = document.createElement('div');
-                snowflake.className = 'snowflake';
-                snowflake.textContent = snowflakes[Math.floor(Math.random() * snowflakes.length)];
-                snowflake.style.left = Math.random() * 100 + '%';
-                // Animação muito mais lenta (30-60 segundos)
-                snowflake.style.animationDuration = (Math.random() * 30 + 30) + 's';
-                snowflake.style.animationDelay = Math.random() * 30 + 's';
-                // Mais visíveis (opacidade entre 0.6 e 0.9)
-                snowflake.style.opacity = Math.random() * 0.3 + 0.6;
-                // Variação de tamanhos
-                const size = Math.random() * 0.8 + 0.7;
-                snowflake.style.fontSize = size + 'em';
-                snowContainer.appendChild(snowflake);
-            }
-            
-            // Cria estrelas natalinas no fundo
-            const starSymbols = ['✦', '✧', '⭐', '✨'];
-            for (let i = 0; i < 30; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                star.textContent = starSymbols[Math.floor(Math.random() * starSymbols.length)];
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animationDelay = Math.random() * 3 + 's';
-                star.style.animationDuration = (Math.random() * 2 + 2) + 's';
-                starsContainer.appendChild(star);
-            }
-        }
-
         // Carrega dados iniciais
         (async () => {
-            createChristmasAnimation();
             await loadTransactions();
             await loadFaturas();
             await loadAbatimentos();
