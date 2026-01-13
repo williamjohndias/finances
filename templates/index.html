@@ -900,7 +900,7 @@
         </div>
 
         <!-- Dashboard Cards -->
-        <div class="dashboard-grid">
+        <div id="dashboard" class="dashboard-grid">
             <div class="card" style="border-left: 4px solid #0060AA;">
                 <div class="card-header">
                     <div class="card-title">Saldo Atual</div>
@@ -987,7 +987,7 @@
         </div>
 
         <!-- Formulário de Abatimento -->
-        <div class="form-section">
+        <div id="abatimentos" class="form-section">
             <div class="section-header">
                 <h2 class="section-title">💰 Abater Fatura / Depósito</h2>
             </div>
@@ -1072,7 +1072,7 @@
         </div>
 
         <!-- Gráficos -->
-        <div class="charts-grid">
+        <div id="charts" class="charts-grid">
             <div class="section">
                 <div class="section-header">
                     <h2 class="section-title">📈 Evolução Mensal</h2>
@@ -2418,7 +2418,43 @@
             // Calcula saldos após carregar tudo
             await atualizarSaldos();
         })();
+
+        // Bottom navigation functionality
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = this.getAttribute('data-target');
+                if (target) {
+                    document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
+                    const element = document.querySelector(target);
+                    if (element) {
+                        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+        });
     </script>
+
+    <!-- Bottom Navigation - Mobile -->
+    <nav class="bottom-nav">
+        <a href="#dashboard" class="nav-item active" data-target="#dashboard">
+            <div class="nav-icon">📊</div>
+            <span>Dashboard</span>
+        </a>
+        <a href="#transactions" class="nav-item" data-target="#transactions">
+            <div class="nav-icon">💳</div>
+            <span>Transações</span>
+        </a>
+        <a href="#charts" class="nav-item" data-target="#charts">
+            <div class="nav-icon">📈</div>
+            <span>Gráficos</span>
+        </a>
+        <a href="#abatimentos" class="nav-item" data-target="#abatimentos">
+            <div class="nav-icon">💰</div>
+            <span>Abatimentos</span>
+        </a>
+    </nav>
 </body>
 </html>
 
