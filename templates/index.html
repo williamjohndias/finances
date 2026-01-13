@@ -697,7 +697,7 @@
 
         <!-- Dashboard Cards -->
         <div class="dashboard-grid">
-            <div class="card" style="border-left: 4px solid #00ff41;">
+            <div class="card" style="border-left: 4px solid #0066CC;">
                 <div class="card-header">
                     <div class="card-title">Saldo Atual</div>
                     <div class="card-icon">💵</div>
@@ -1436,8 +1436,8 @@
                             {
                                 label: 'Receitas',
                                 data: monthlyData.receitas || [],
-                                borderColor: '#00ff41',
-                                backgroundColor: 'rgba(0, 255, 65, 0.2)',
+                                borderColor: '#0066CC',
+                                backgroundColor: 'rgba(0, 102, 204, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1447,8 +1447,8 @@
                             {
                                 label: 'Gastos',
                                 data: monthlyData.gastos || [],
-                                borderColor: '#ff1744',
-                                backgroundColor: 'rgba(255, 23, 68, 0.2)',
+                                borderColor: '#DC143C',
+                                backgroundColor: 'rgba(220, 20, 60, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1458,7 +1458,7 @@
                             {
                                 label: 'Saldo',
                                 data: monthlyData.saldos || [],
-                                borderColor: '#d4af37',
+                                borderColor: '#FFD700',
                                 backgroundColor: 'transparent',
                                 borderWidth: 2,
                                 borderDash: [8, 4],
@@ -1543,9 +1543,9 @@
                             datasets: [{
                                 data: [totalDebito, totalMercadoPago, totalNubank],
                                 backgroundColor: [
-                                    '#ff1744',
-                                    '#d4af37',
-                                    '#a855f7'
+                                    '#DC143C',
+                                    '#FFD700',
+                                    '#0066CC'
                                 ],
                                 borderColor: '#0a0a0a',
                                 borderWidth: 2
