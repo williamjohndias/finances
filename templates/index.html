@@ -678,39 +678,100 @@
         .transactions-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 12px;
+        }
+
+        @media (min-width: 768px) {
+            .transactions-table {
+                margin-top: 20px;
+            }
         }
 
         .transactions-table th {
-            background-color: rgba(10, 14, 39, 0.8);
-            padding: 15px;
+            background-color: rgba(1, 1, 1, 0.8);
+            padding: 8px;
             text-align: left;
-            font-size: 0.85rem;
+            font-size: 0.65rem;
             color: #888;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             font-weight: 700;
             border-bottom: 2px solid rgba(0, 96, 170, 0.3);
+            display: block;
+        }
+
+        @media (min-width: 768px) {
+            .transactions-table th {
+                display: table-cell;
+                padding: 15px;
+                font-size: 0.85rem;
+                letter-spacing: 2px;
+            }
         }
 
         .transactions-table td {
-            padding: 15px;
+            padding: 8px;
             border-bottom: 1px solid rgba(0, 96, 170, 0.1);
-            font-size: 0.9rem;
+            font-size: 0.75rem;
             font-weight: 500;
+            display: block;
+            text-align: right;
+            position: relative;
+            padding-left: 50%;
         }
 
-        .transactions-table tr:hover {
-            background-color: rgba(0, 96, 170, 0.08);
-            box-shadow: 0 0 8px rgba(0, 96, 170, 0.15);
+        .transactions-table td::before {
+            content: attr(data-label);
+            position: absolute;
+            left: 8px;
+            width: 45%;
+            text-align: left;
+            font-weight: 700;
+            color: #0060AA;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        @media (min-width: 768px) {
+            .transactions-table td {
+                display: table-cell;
+                text-align: left;
+                padding: 15px;
+                padding-left: 15px;
+                font-size: 0.9rem;
+            }
+
+            .transactions-table td::before {
+                display: none;
+            }
+        }
+
+        .transactions-table tr:active {
+            background-color: rgba(0, 96, 170, 0.1);
+        }
+
+        @media (hover: hover) {
+            .transactions-table tr:hover {
+                background-color: rgba(0, 96, 170, 0.08);
+                box-shadow: 0 0 8px rgba(0, 96, 170, 0.15);
+            }
         }
 
         .badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 8px;
+            font-size: 0.65rem;
             font-weight: 500;
+        }
+
+        @media (min-width: 768px) {
+            .badge {
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 0.75rem;
+            }
         }
 
         .badge.receita {
