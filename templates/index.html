@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FINANCES - Controle Financeiro</title>
+    <title>FINANCES - Controle Financeiro | Hogwarts</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -39,7 +39,7 @@
             100% { background-position: 0% 50%; }
         }
 
-        /* Animated particles background - Superman colors */
+        /* Animated particles background - Harry Potter colors */
         body::before {
             content: '';
             position: fixed;
@@ -48,9 +48,10 @@
             width: 100%;
             height: 100%;
             background-image: 
-                radial-gradient(2px 2px at 20% 30%, rgba(0, 96, 170, 0.15), transparent),
-                radial-gradient(2px 2px at 60% 70%, rgba(226, 0, 37, 0.15), transparent),
-                radial-gradient(1px 1px at 50% 50%, rgba(255, 237, 16, 0.1), transparent);
+                radial-gradient(2px 2px at 20% 30%, rgba(174, 0, 1, 0.15), transparent),
+                radial-gradient(2px 2px at 60% 70%, rgba(211, 166, 37, 0.15), transparent),
+                radial-gradient(1px 1px at 50% 50%, rgba(14, 26, 64, 0.1), transparent),
+                radial-gradient(1px 1px at 80% 20%, rgba(26, 71, 42, 0.1), transparent);
             background-size: 200% 200%;
             animation: particleMove 20s linear infinite;
             z-index: 0;
@@ -97,9 +98,9 @@
             backdrop-filter: blur(20px);
             border: none;
             border-bottom: 2px solid transparent;
-            border-image: linear-gradient(90deg, #0060AA, #E20025, #FFED10) 1;
+            border-image: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A) 1;
             padding: 10px 15px;
-            box-shadow: 0 2px 10px rgba(0, 96, 170, 0.2);
+            box-shadow: 0 2px 10px rgba(174, 0, 1, 0.2);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -119,7 +120,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 96, 170, 0.1), transparent);
+            background: linear-gradient(90deg, transparent, rgba(174, 0, 1, 0.1), transparent);
             animation: headerScan 5s linear infinite;
         }
 
@@ -135,9 +136,9 @@
             letter-spacing: 2px;
             color: #fff;
             text-transform: uppercase;
-            text-shadow: 0 2px 10px rgba(0, 96, 170, 0.5);
+            text-shadow: 0 2px 10px rgba(174, 0, 1, 0.5);
             position: relative;
-            background: linear-gradient(90deg, #0060AA, #E20025, #FFED10);
+            background: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A);
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -205,13 +206,13 @@
             background: rgba(1, 1, 1, 0.7);
             backdrop-filter: blur(10px);
             border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #0060AA, transparent, #E20025) 1;
+            border-image: linear-gradient(135deg, #AE0001, transparent, #D3A625) 1;
             border-radius: 12px;
             padding: 12px;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0, 96, 170, 0.15);
+            box-shadow: 0 4px 20px rgba(174, 0, 1, 0.15);
         }
 
         @media (min-width: 768px) {
@@ -228,7 +229,7 @@
             left: -50%;
             width: 200%;
             height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(0, 96, 170, 0.05), transparent 30%);
+            background: conic-gradient(from 0deg, transparent, rgba(174, 0, 1, 0.05), transparent 30%);
             animation: rotate 6s linear infinite;
         }
 
@@ -252,9 +253,9 @@
             .card:hover {
                 transform: translateY(-4px);
                 box-shadow: 
-                    0 8px 25px rgba(0, 96, 170, 0.3),
-                    0 0 35px rgba(226, 0, 37, 0.2);
-                border-image: linear-gradient(135deg, #0060AA, #FFED10, #E20025) 1;
+                    0 8px 25px rgba(174, 0, 1, 0.3),
+                    0 0 35px rgba(211, 166, 37, 0.2);
+                border-image: linear-gradient(135deg, #AE0001, #D3A625, #0E1A40) 1;
             }
         }
 
@@ -268,7 +269,7 @@
         .card-title {
             font-family: 'Orbitron', monospace;
             font-size: 0.55rem;
-            color: #0060AA;
+            color: #D3A625;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             font-weight: 700;
@@ -312,11 +313,11 @@
         }
 
         .card-value.positive {
-            color: #0060AA;
+            color: #D3A625;
         }
 
         .card-value.negative {
-            color: #E20025;
+            color: #AE0001;
         }
 
         .card-footer {
@@ -338,24 +339,24 @@
         }
 
         .card.receitas {
-            border-image: linear-gradient(135deg, #0060AA, transparent, #0060AA) 1;
-            box-shadow: -4px 0 20px rgba(0, 96, 170, 0.25);
+            border-image: linear-gradient(135deg, #D3A625, transparent, #D3A625) 1;
+            box-shadow: -4px 0 20px rgba(211, 166, 37, 0.25);
         }
 
         .card.gastos {
-            border-image: linear-gradient(135deg, #E20025, transparent, #E20025) 1;
-            box-shadow: -4px 0 20px rgba(226, 0, 37, 0.25);
+            border-image: linear-gradient(135deg, #AE0001, transparent, #AE0001) 1;
+            box-shadow: -4px 0 20px rgba(174, 0, 1, 0.25);
         }
 
         .section {
             background: rgba(1, 1, 1, 0.7);
             backdrop-filter: blur(10px);
             border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #0060AA, transparent, #E20025) 1;
+            border-image: linear-gradient(135deg, #AE0001, transparent, #D3A625) 1;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 15px;
-            box-shadow: 0 4px 20px rgba(0, 96, 170, 0.15);
+            box-shadow: 0 4px 20px rgba(174, 0, 1, 0.15);
             position: relative;
             overflow: hidden;
         }
@@ -375,7 +376,7 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(0, 96, 170, 0.05), transparent);
+            background: linear-gradient(90deg, transparent, rgba(174, 0, 1, 0.05), transparent);
             animation: sectionScan 6s linear infinite;
         }
 
@@ -407,10 +408,10 @@
             letter-spacing: 1.5px;
             text-transform: uppercase;
             color: #fff;
-            text-shadow: 0 2px 10px rgba(0, 96, 170, 0.4);
+            text-shadow: 0 2px 10px rgba(174, 0, 1, 0.4);
             position: relative;
             z-index: 1;
-            background: linear-gradient(90deg, #0060AA, #FFED10, #E20025);
+            background: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A);
             background-size: 200% auto;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -439,10 +440,10 @@
             background: rgba(1, 1, 1, 0.95);
             backdrop-filter: blur(20px);
             border-top: 2px solid transparent;
-            border-image: linear-gradient(90deg, #0060AA, #E20025, #FFED10) 1;
+            border-image: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A) 1;
             padding: 10px 0;
             z-index: 100;
-            box-shadow: 0 -4px 20px rgba(0, 96, 170, 0.2);
+            box-shadow: 0 -4px 20px rgba(174, 0, 1, 0.2);
         }
 
         @media (max-width: 767px) {
@@ -471,8 +472,8 @@
         }
 
         .nav-item.active {
-            color: #0060AA;
-            background: rgba(0, 96, 170, 0.1);
+            color: #D3A625;
+            background: rgba(211, 166, 37, 0.1);
         }
 
         .nav-item:active {
@@ -490,7 +491,7 @@
 
         /* Touch improvements */
         * {
-            -webkit-tap-highlight-color: rgba(0, 96, 170, 0.2);
+            -webkit-tap-highlight-color: rgba(174, 0, 1, 0.2);
         }
 
         /* Better mobile table labels */
@@ -531,7 +532,7 @@
         .form-section {
             background: rgba(1, 1, 1, 0.7);
             border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #0060AA, transparent, #E20025) 1;
+            border-image: linear-gradient(135deg, #AE0001, transparent, #D3A625) 1;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 15px;
@@ -597,7 +598,7 @@
             width: 100%;
             padding: 10px 12px;
             background-color: rgba(1, 1, 1, 0.6);
-            border: 2px solid rgba(0, 96, 170, 0.3);
+            border: 2px solid rgba(211, 166, 37, 0.3);
             border-radius: 10px;
             color: #fff;
             font-size: 0.85rem;
@@ -610,8 +611,8 @@
 
         input:focus, select:focus {
             outline: none;
-            border-color: #0060AA;
-            box-shadow: 0 0 15px rgba(0, 96, 170, 0.4);
+            border-color: #D3A625;
+            box-shadow: 0 0 15px rgba(211, 166, 37, 0.4);
             background-color: rgba(1, 1, 1, 0.8);
         }
 
@@ -626,8 +627,8 @@
 
         button {
             background: transparent;
-            color: #0060AA;
-            border: 2px solid #0060AA;
+            color: #D3A625;
+            border: 2px solid #D3A625;
             padding: 10px 18px;
             font-family: 'Orbitron', monospace;
             font-size: 0.75rem;
@@ -660,14 +661,14 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: #0060AA;
+            background: #D3A625;
             transition: left 0.3s ease;
             z-index: -1;
         }
 
         button:hover {
             color: #fff;
-            box-shadow: 0 4px 15px rgba(0, 96, 170, 0.4);
+            box-shadow: 0 4px 15px rgba(211, 166, 37, 0.4);
             transform: translateY(-2px);
         }
 
@@ -696,7 +697,7 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 700;
-            border-bottom: 2px solid rgba(0, 96, 170, 0.3);
+            border-bottom: 2px solid rgba(211, 166, 37, 0.3);
             display: block;
         }
 
@@ -711,7 +712,7 @@
 
         .transactions-table td {
             padding: 8px;
-            border-bottom: 1px solid rgba(0, 96, 170, 0.1);
+            border-bottom: 1px solid rgba(211, 166, 37, 0.1);
             font-size: 0.75rem;
             font-weight: 500;
             display: block;
@@ -727,7 +728,7 @@
             width: 45%;
             text-align: left;
             font-weight: 700;
-            color: #0060AA;
+            color: #D3A625;
             font-size: 0.65rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -748,13 +749,13 @@
         }
 
         .transactions-table tr:active {
-            background-color: rgba(0, 96, 170, 0.1);
+            background-color: rgba(211, 166, 37, 0.1);
         }
 
         @media (hover: hover) {
             .transactions-table tr:hover {
-                background-color: rgba(0, 96, 170, 0.08);
-                box-shadow: 0 0 8px rgba(0, 96, 170, 0.15);
+                background-color: rgba(211, 166, 37, 0.08);
+                box-shadow: 0 0 8px rgba(211, 166, 37, 0.15);
             }
         }
 
@@ -775,14 +776,14 @@
         }
 
         .badge.receita {
-            background-color: rgba(0, 96, 170, 0.2);
-            color: #0060AA;
+            background-color: rgba(211, 166, 37, 0.2);
+            color: #D3A625;
             border: none;
         }
 
         .badge.debito {
-            background-color: rgba(226, 0, 37, 0.2);
-            color: #E20025;
+            background-color: rgba(174, 0, 1, 0.2);
+            color: #AE0001;
             border: none;
         }
 
@@ -806,8 +807,8 @@
 
         .delete-btn {
             background: transparent;
-            color: #E20025;
-            border: 2px solid #E20025;
+            color: #AE0001;
+            border: 2px solid #AE0001;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -817,15 +818,15 @@
         }
 
         .delete-btn:hover {
-            background-color: #E20025;
+            background-color: #AE0001;
             color: #fff;
-            box-shadow: 0 0 10px rgba(226, 0, 37, 0.4);
+            box-shadow: 0 0 10px rgba(174, 0, 1, 0.4);
         }
 
         .edit-btn {
             background: transparent;
-            color: #0060AA;
-            border: 2px solid #0060AA;
+            color: #D3A625;
+            border: 2px solid #D3A625;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
@@ -834,9 +835,9 @@
         }
 
         .edit-btn:hover {
-            background-color: #0060AA;
+            background-color: #D3A625;
             color: #fff;
-            box-shadow: 0 0 10px rgba(0, 96, 170, 0.4);
+            box-shadow: 0 0 10px rgba(211, 166, 37, 0.4);
         }
 
         .modal {
@@ -961,23 +962,23 @@
         }
 
         .alert.success {
-            background-color: rgba(0, 96, 170, 0.15);
-            border-color: #0060AA;
-            color: #0060AA;
+            background-color: rgba(211, 166, 37, 0.15);
+            border-color: #D3A625;
+            color: #D3A625;
             border-left-width: 3px;
         }
 
         .alert.error {
-            background-color: rgba(226, 0, 37, 0.15);
-            border-color: #E20025;
-            color: #E20025;
+            background-color: rgba(174, 0, 1, 0.15);
+            border-color: #AE0001;
+            color: #AE0001;
             border-left-width: 3px;
         }
 
         .alert.info {
-            background-color: rgba(255, 237, 16, 0.15);
-            border-color: #FFED10;
-            color: #FFED10;
+            background-color: rgba(14, 26, 64, 0.15);
+            border-color: #0E1A40;
+            color: #0E1A40;
             border-left-width: 3px;
         }
 
@@ -999,8 +1000,8 @@
 <body>
 
     <div class="header">
-        <h1>💰 FINANCES</h1>
-        <div class="subtitle" style="font-family: 'Orbitron', monospace; color: #00ff41; text-shadow: 0 0 10px rgba(0, 255, 65, 0.8); letter-spacing: 4px; font-weight: 700; margin-top: 10px;">⚡ CYBER FINANCIAL SYSTEM ⚡</div>
+        <h1>⚡ FINANCES - HOGWARTS ⚡</h1>
+        <div class="subtitle" style="font-family: 'Orbitron', monospace; color: #D3A625; text-shadow: 0 0 10px rgba(211, 166, 37, 0.8); letter-spacing: 4px; font-weight: 700; margin-top: 10px;">⚡ HOGWARTS FINANCIAL SYSTEM ⚡</div>
     </div>
 
     <div class="container">
@@ -1014,7 +1015,7 @@
 
         <!-- Dashboard Cards -->
         <div id="dashboard" class="dashboard-grid">
-            <div class="card" style="border-left: 4px solid #0060AA;">
+            <div class="card" style="border-left: 4px solid #D3A625;">
                 <div class="card-header">
                     <div class="card-title">Saldo Atual</div>
                     <div class="card-icon">💵</div>
@@ -1023,7 +1024,7 @@
                 <div class="card-footer">Saldo acumulado até o mês selecionado</div>
             </div>
 
-            <div class="card" style="border-left: 4px solid #10b981;">
+            <div class="card" style="border-left: 4px solid #0E1A40;">
                 <div class="card-header">
                     <div class="card-title">Saldo Projetado</div>
                     <div class="card-icon">📊</div>
@@ -1281,7 +1282,7 @@
                     <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
                 </div>
                 <div class="filter-group" style="margin-left: auto;">
-                    <button type="button" id="deleteSelectedBtn" style="background: #ff1744; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
+                    <button type="button" id="deleteSelectedBtn" style="background: #AE0001; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
                 </div>
             </div>
             <div style="overflow-x: auto;">
@@ -1587,7 +1588,7 @@
                         <td>${formatDate(transaction.data)}</td>
                         <td>${transaction.descricao}</td>
                         <td><span class="badge ${tipoBadges[transaction.tipo]}">${tipoLabels[transaction.tipo]}</span></td>
-                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #00ff41;' : 'color: #ff1744;'}">${formatCurrency(transaction.valor)}</td>
+                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #D3A625;' : 'color: #AE0001;'}">${formatCurrency(transaction.valor)}</td>
                         <td>${parcelaInfo}</td>
                         <td>
                             <div class="btn-group">
@@ -1753,8 +1754,8 @@
                             {
                                 label: 'Receitas',
                                 data: monthlyData.receitas || [],
-                                borderColor: '#0060AA',
-                                backgroundColor: 'rgba(0, 96, 170, 0.2)',
+                                borderColor: '#D3A625',
+                                backgroundColor: 'rgba(211, 166, 37, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1764,8 +1765,8 @@
                             {
                                 label: 'Gastos',
                                 data: monthlyData.gastos || [],
-                                borderColor: '#E20025',
-                                backgroundColor: 'rgba(226, 0, 37, 0.2)',
+                                borderColor: '#AE0001',
+                                backgroundColor: 'rgba(174, 0, 1, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1775,7 +1776,7 @@
                             {
                                 label: 'Saldo',
                                 data: monthlyData.saldos || [],
-                                borderColor: '#FFED10',
+                                borderColor: '#0E1A40',
                                 backgroundColor: 'transparent',
                                 borderWidth: 2,
                                 borderDash: [8, 4],
@@ -1860,9 +1861,10 @@
                             datasets: [{
                                 data: [totalDebito, totalMercadoPago, totalNubank],
                                 backgroundColor: [
-                                    '#E20025',
-                                    '#FFED10',
-                                    '#0060AA'
+                                    '#AE0001',
+                                    '#D3A625',
+                                    '#0E1A40',
+                                    '#1A472A'
                                 ],
                                 borderColor: '#0a0a0a',
                                 borderWidth: 2
@@ -2442,7 +2444,7 @@
                         <td>${formatDate(abatimento.data)}</td>
                         <td>${cartaoLabel}</td>
                         <td>${abatimento.descricao || '-'}</td>
-                        <td style="font-weight: 500; color: #00ff41;">${formatCurrency(abatimento.valor)}</td>
+                        <td style="font-weight: 500; color: #D3A625;">${formatCurrency(abatimento.valor)}</td>
                         <td>
                             <div class="btn-group">
                                 <button class="edit-btn" onclick="openEditAbatimentoModal(${JSON.stringify(abatimento).replace(/"/g, '&quot;')})">Editar</button>
