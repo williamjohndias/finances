@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FINANCES - Controle Financeiro | Hogwarts</title>
+    <title>FINANCES - Controle Financeiro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
         * {
@@ -16,9 +16,8 @@
 
         body {
             font-family: 'Rajdhani', sans-serif;
-            background: #010101;
-            background: linear-gradient(135deg, #010101 0%, #0a0e27 50%, #010101 100%);
-            color: #ffffff;
+            background: #ffffff;
+            color: #2c2c2c;
             min-height: 100vh;
             padding: 0;
             margin: 0;
@@ -33,74 +32,17 @@
             }
         }
 
-        @keyframes gradientShift {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-
-        /* Animated particles background - Harry Potter colors */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-image: 
-                radial-gradient(2px 2px at 20% 30%, rgba(174, 0, 1, 0.15), transparent),
-                radial-gradient(2px 2px at 60% 70%, rgba(211, 166, 37, 0.15), transparent),
-                radial-gradient(1px 1px at 50% 50%, rgba(14, 26, 64, 0.1), transparent),
-                radial-gradient(1px 1px at 80% 20%, rgba(26, 71, 42, 0.1), transparent);
-            background-size: 200% 200%;
-            animation: particleMove 20s linear infinite;
-            z-index: 0;
-            pointer-events: none;
-        }
-
-        @keyframes particleMove {
-            0% { background-position: 0% 0%; }
-            100% { background-position: 100% 100%; }
-        }
-
-        /* Scanlines effect - reduced */
-        body::after {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 0, 0, 0.05),
-                rgba(0, 0, 0, 0.05) 1px,
-                transparent 1px,
-                transparent 3px
-            );
-            pointer-events: none;
-            z-index: 9999;
-            animation: scanline 12s linear infinite;
-        }
-
-        @keyframes scanline {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(100vh); }
-        }
-
         .container, .header {
             position: relative;
             z-index: 1;
         }
 
         .header {
-            background: rgba(1, 1, 1, 0.95);
-            backdrop-filter: blur(20px);
+            background: #ffffff;
             border: none;
-            border-bottom: 2px solid transparent;
-            border-image: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A) 1;
-            padding: 10px 15px;
-            box-shadow: 0 2px 10px rgba(174, 0, 1, 0.2);
+            border-bottom: 3px solid #0060AA;
+            padding: 15px 20px;
+            box-shadow: 0 2px 8px rgba(0, 96, 170, 0.1);
             position: sticky;
             top: 0;
             z-index: 100;
@@ -113,60 +55,30 @@
             }
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(174, 0, 1, 0.1), transparent);
-            animation: headerScan 5s linear infinite;
-        }
-
-        @keyframes headerScan {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-
         .header h1 {
             font-family: 'Orbitron', monospace;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 900;
-            letter-spacing: 2px;
-            color: #fff;
+            letter-spacing: 3px;
+            color: #0060AA;
             text-transform: uppercase;
-            text-shadow: 0 2px 10px rgba(174, 0, 1, 0.5);
             position: relative;
-            background: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: textShine 4s linear infinite;
             margin: 0;
+            text-align: center;
         }
 
         @media (min-width: 768px) {
             .header h1 {
-                font-size: 2.5rem;
-                letter-spacing: 6px;
+                font-size: 2.8rem;
+                letter-spacing: 8px;
             }
         }
 
-        @keyframes textShine {
-            to { background-position: 200% center; }
-        }
-
-        @keyframes textGlow {
-            from { filter: brightness(1); }
-            to { filter: brightness(1.5); }
-        }
-
         .header .subtitle {
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             color: #666;
-            margin-top: 5px;
+            margin-top: 8px;
+            text-align: center;
         }
 
         .container {
@@ -203,16 +115,13 @@
         }
 
         .card {
-            background: rgba(1, 1, 1, 0.7);
-            backdrop-filter: blur(10px);
-            border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #AE0001, transparent, #D3A625) 1;
-            border-radius: 12px;
-            padding: 12px;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: #ffffff;
+            border: 2px solid #0060AA;
+            border-radius: 8px;
+            padding: 16px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 20px rgba(174, 0, 1, 0.15);
+            box-shadow: 0 2px 8px rgba(0, 96, 170, 0.1);
         }
 
         @media (min-width: 768px) {
@@ -225,37 +134,17 @@
         .card::before {
             content: '';
             position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: conic-gradient(from 0deg, transparent, rgba(174, 0, 1, 0.05), transparent 30%);
-            animation: rotate 6s linear infinite;
-        }
-
-        @keyframes rotate {
-            to { transform: rotate(360deg); }
-        }
-
-        .card::after {
-            content: '';
-            position: absolute;
-            inset: 2px;
-            background: rgba(0, 0, 0, 0.9);
-            z-index: -1;
-        }
-
-        .card:active {
-            transform: scale(0.98);
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0060AA, #E20025, #FFED10);
         }
 
         @media (hover: hover) {
             .card:hover {
-                transform: translateY(-4px);
-                box-shadow: 
-                    0 8px 25px rgba(174, 0, 1, 0.3),
-                    0 0 35px rgba(211, 166, 37, 0.2);
-                border-image: linear-gradient(135deg, #AE0001, #D3A625, #0E1A40) 1;
+                box-shadow: 0 4px 12px rgba(0, 96, 170, 0.2);
+                border-color: #E20025;
             }
         }
 
@@ -268,8 +157,8 @@
 
         .card-title {
             font-family: 'Orbitron', monospace;
-            font-size: 0.55rem;
-            color: #D3A625;
+            font-size: 0.7rem;
+            color: #0060AA;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             font-weight: 700;
@@ -279,7 +168,7 @@
 
         @media (min-width: 768px) {
             .card-title {
-                font-size: 0.65rem;
+                font-size: 0.85rem;
                 letter-spacing: 2px;
             }
         }
@@ -296,7 +185,7 @@
 
         .card-value {
             font-family: 'Orbitron', monospace;
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 900;
             margin-bottom: 4px;
             letter-spacing: 0.5px;
@@ -306,57 +195,55 @@
 
         @media (min-width: 768px) {
             .card-value {
-                font-size: 1.8rem;
+                font-size: 2rem;
                 margin-bottom: 8px;
                 letter-spacing: 1px;
             }
         }
 
         .card-value.positive {
-            color: #D3A625;
+            color: #0060AA;
         }
 
         .card-value.negative {
-            color: #AE0001;
+            color: #E20025;
         }
 
         .card-footer {
-            font-size: 0.6rem;
+            font-size: 0.7rem;
             color: #888;
             margin-top: 4px;
         }
 
         @media (min-width: 768px) {
             .card-footer {
-                font-size: 0.7rem;
+                font-size: 0.8rem;
                 margin-top: 8px;
             }
         }
 
         .card.saldo {
-            background: #0a0a0a;
+            background: #ffffff;
             border-color: #333;
         }
 
         .card.receitas {
-            border-image: linear-gradient(135deg, #D3A625, transparent, #D3A625) 1;
-            box-shadow: -4px 0 20px rgba(211, 166, 37, 0.25);
+            border-color: #0060AA;
+            border-left-width: 4px;
         }
 
         .card.gastos {
-            border-image: linear-gradient(135deg, #AE0001, transparent, #AE0001) 1;
-            box-shadow: -4px 0 20px rgba(174, 0, 1, 0.25);
+            border-color: #E20025;
+            border-left-width: 4px;
         }
 
         .section {
-            background: rgba(1, 1, 1, 0.7);
-            backdrop-filter: blur(10px);
-            border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #AE0001, transparent, #D3A625) 1;
-            border-radius: 12px;
-            padding: 12px;
-            margin-bottom: 15px;
-            box-shadow: 0 4px 20px rgba(174, 0, 1, 0.15);
+            background: #ffffff;
+            border: 2px solid #0060AA;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0, 96, 170, 0.1);
             position: relative;
             overflow: hidden;
         }
@@ -373,25 +260,19 @@
             content: '';
             position: absolute;
             top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(174, 0, 1, 0.05), transparent);
-            animation: sectionScan 6s linear infinite;
-        }
-
-        @keyframes sectionScan {
-            0% { left: -100%; }
-            100% { left: 100%; }
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #0060AA, #E20025, #FFED10);
         }
 
         .section-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid #222;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #0060AA;
         }
 
         @media (min-width: 768px) {
@@ -403,31 +284,20 @@
 
         .section-title {
             font-family: 'Orbitron', monospace;
-            font-size: 1rem;
+            font-size: 1.2rem;
             font-weight: 900;
             letter-spacing: 1.5px;
             text-transform: uppercase;
-            color: #fff;
-            text-shadow: 0 2px 10px rgba(174, 0, 1, 0.4);
+            color: #0060AA;
             position: relative;
             z-index: 1;
-            background: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A);
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            animation: titleShine 4s linear infinite;
         }
 
         @media (min-width: 768px) {
             .section-title {
-                font-size: 1.8rem;
+                font-size: 2rem;
                 letter-spacing: 4px;
             }
-        }
-
-        @keyframes titleShine {
-            to { background-position: 200% center; }
         }
 
         /* Bottom Navigation - Mobile App Style */
@@ -437,13 +307,11 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(1, 1, 1, 0.95);
-            backdrop-filter: blur(20px);
-            border-top: 2px solid transparent;
-            border-image: linear-gradient(90deg, #AE0001, #D3A625, #0E1A40, #1A472A) 1;
+            background: #ffffff;
+            border-top: 3px solid #0060AA;
             padding: 10px 0;
             z-index: 100;
-            box-shadow: 0 -4px 20px rgba(174, 0, 1, 0.2);
+            box-shadow: 0 -2px 8px rgba(0, 96, 170, 0.1);
         }
 
         @media (max-width: 767px) {
@@ -462,8 +330,7 @@
             padding: 8px 16px;
             color: #666;
             text-decoration: none;
-            transition: all 0.3s ease;
-            border-radius: 12px;
+            border-radius: 8px;
             min-width: 60px;
             font-size: 0.7rem;
             font-weight: 600;
@@ -472,13 +339,10 @@
         }
 
         .nav-item.active {
-            color: #D3A625;
-            background: rgba(211, 166, 37, 0.1);
+            color: #0060AA;
+            background: rgba(0, 96, 170, 0.1);
         }
 
-        .nav-item:active {
-            transform: scale(0.95);
-        }
 
         .nav-icon {
             font-size: 1.5rem;
@@ -532,7 +396,7 @@
         .form-section {
             background: rgba(1, 1, 1, 0.7);
             border: 2px solid transparent;
-            border-image: linear-gradient(135deg, #AE0001, transparent, #D3A625) 1;
+            border-image: linear-gradient(135deg, #0060AA, transparent, #E20025) 1;
             border-radius: 12px;
             padding: 12px;
             margin-bottom: 15px;
@@ -597,49 +461,46 @@
         input, select {
             width: 100%;
             padding: 10px 12px;
-            background-color: rgba(1, 1, 1, 0.6);
-            border: 2px solid rgba(211, 166, 37, 0.3);
-            border-radius: 10px;
-            color: #fff;
+            background-color: #ffffff;
+            border: 2px solid #0060AA;
+            border-radius: 6px;
+            color: #2c2c2c;
             font-size: 0.85rem;
-            transition: all 0.3s ease;
             font-weight: 500;
             min-height: 40px; /* Touch-friendly */
             -webkit-appearance: none;
             appearance: none;
+            font-family: 'Rajdhani', sans-serif;
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: #D3A625;
-            box-shadow: 0 0 15px rgba(211, 166, 37, 0.4);
-            background-color: rgba(1, 1, 1, 0.8);
+            border-color: #0060AA;
+            box-shadow: 0 0 8px rgba(0, 96, 170, 0.2);
+            background-color: #ffffff;
         }
 
         @media (min-width: 768px) {
             input, select {
                 padding: 12px 15px;
                 font-size: 1rem;
-                border-radius: 8px;
+                border-radius: 6px;
                 min-height: 44px;
             }
         }
 
         button {
             background: transparent;
-            color: #D3A625;
-            border: 2px solid #D3A625;
+            color: #0060AA;
+            border: 2px solid #0060AA;
             padding: 10px 18px;
             font-family: 'Orbitron', monospace;
             font-size: 0.75rem;
             font-weight: 700;
             cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s ease;
+            border-radius: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
             min-height: 40px; /* Touch-friendly */
             touch-action: manipulation;
         }
@@ -648,32 +509,16 @@
             button {
                 padding: 12px 24px;
                 font-size: 0.9rem;
-                border-radius: 8px;
+                border-radius: 6px;
                 letter-spacing: 2px;
                 min-height: 44px;
             }
         }
 
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: #D3A625;
-            transition: left 0.3s ease;
-            z-index: -1;
-        }
-
         button:hover {
-            color: #fff;
-            box-shadow: 0 4px 15px rgba(211, 166, 37, 0.4);
-            transform: translateY(-2px);
-        }
-
-        button:hover::before {
-            left: 0;
+            color: #ffffff;
+            background-color: #0060AA;
+            box-shadow: 0 2px 8px rgba(0, 96, 170, 0.3);
         }
 
         .transactions-table {
@@ -689,49 +534,52 @@
         }
 
         .transactions-table th {
-            background-color: rgba(1, 1, 1, 0.8);
-            padding: 8px;
+            background-color: #f0f0f0;
+            padding: 12px;
             text-align: left;
-            font-size: 0.65rem;
-            color: #888;
+            font-size: 0.7rem;
+            color: #0060AA;
             text-transform: uppercase;
             letter-spacing: 1px;
             font-weight: 700;
-            border-bottom: 2px solid rgba(211, 166, 37, 0.3);
+            border-bottom: 2px solid #0060AA;
             display: block;
+            font-family: 'Orbitron', monospace;
         }
 
         @media (min-width: 768px) {
             .transactions-table th {
                 display: table-cell;
                 padding: 15px;
-                font-size: 0.85rem;
+                font-size: 0.9rem;
                 letter-spacing: 2px;
             }
         }
 
         .transactions-table td {
-            padding: 8px;
-            border-bottom: 1px solid rgba(211, 166, 37, 0.1);
-            font-size: 0.75rem;
+            padding: 12px;
+            border-bottom: 1px solid #e8e6e0;
+            font-size: 0.85rem;
             font-weight: 500;
             display: block;
             text-align: right;
             position: relative;
             padding-left: 50%;
+            background-color: #ffffff;
         }
 
         .transactions-table td::before {
             content: attr(data-label);
             position: absolute;
-            left: 8px;
+            left: 12px;
             width: 45%;
             text-align: left;
             font-weight: 700;
-            color: #D3A625;
-            font-size: 0.65rem;
+            color: #0060AA;
+            font-size: 0.7rem;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            font-family: 'Orbitron', monospace;
         }
 
         @media (min-width: 768px) {
@@ -749,13 +597,12 @@
         }
 
         .transactions-table tr:active {
-            background-color: rgba(211, 166, 37, 0.1);
+            background-color: #f0f0f0;
         }
 
         @media (hover: hover) {
             .transactions-table tr:hover {
-                background-color: rgba(211, 166, 37, 0.08);
-                box-shadow: 0 0 8px rgba(211, 166, 37, 0.15);
+                background-color: #f0f0f0;
             }
         }
 
@@ -776,68 +623,68 @@
         }
 
         .badge.receita {
-            background-color: rgba(211, 166, 37, 0.2);
-            color: #D3A625;
-            border: none;
+            background-color: rgba(0, 96, 170, 0.1);
+            color: #0060AA;
+            border: 1px solid #0060AA;
         }
 
         .badge.debito {
-            background-color: rgba(174, 0, 1, 0.2);
-            color: #AE0001;
-            border: none;
+            background-color: rgba(226, 0, 37, 0.1);
+            color: #E20025;
+            border: 1px solid #E20025;
         }
 
         .badge.mercado-pago {
-            background-color: rgba(251, 191, 36, 0.15);
-            color: #fbbf24;
-            border: none;
+            background-color: rgba(255, 237, 16, 0.1);
+            color: #FFED10;
+            border: 1px solid #FFED10;
         }
 
         .badge.nubank {
-            background-color: rgba(168, 85, 247, 0.15);
-            color: #a855f7;
-            border: none;
+            background-color: rgba(0, 96, 170, 0.1);
+            color: #0060AA;
+            border: 1px solid #0060AA;
         }
 
         .badge.parcela {
-            background-color: rgba(212, 175, 55, 0.15);
-            color: #d4af37;
-            border: none;
+            background-color: rgba(255, 237, 16, 0.1);
+            color: #FFED10;
+            border: 1px solid #FFED10;
         }
 
         .delete-btn {
             background: transparent;
-            color: #AE0001;
-            border: 2px solid #AE0001;
+            color: #E20025;
+            border: 2px solid #E20025;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 0;
-            transition: all 0.3s ease;
+            border-radius: 4px;
             margin-left: 8px;
+            font-family: 'Orbitron', monospace;
         }
 
         .delete-btn:hover {
-            background-color: #AE0001;
+            background-color: #E20025;
             color: #fff;
-            box-shadow: 0 0 10px rgba(174, 0, 1, 0.4);
+            box-shadow: 0 2px 6px rgba(226, 0, 37, 0.3);
         }
 
         .edit-btn {
             background: transparent;
-            color: #D3A625;
-            border: 2px solid #D3A625;
+            color: #0060AA;
+            border: 2px solid #0060AA;
             padding: 6px 12px;
             font-size: 0.8rem;
             cursor: pointer;
-            border-radius: 0;
-            transition: all 0.3s ease;
+            border-radius: 4px;
+            font-family: 'Orbitron', monospace;
         }
 
         .edit-btn:hover {
-            background-color: #D3A625;
+            background-color: #0060AA;
             color: #fff;
-            box-shadow: 0 0 10px rgba(211, 166, 37, 0.4);
+            box-shadow: 0 2px 6px rgba(0, 96, 170, 0.3);
         }
 
         .modal {
@@ -853,14 +700,14 @@
         }
 
         .modal-content {
-            background: rgba(10, 10, 10, 0.95);
+            background: #ffffff;
             margin: 5% auto;
             padding: 30px;
-            border: 1px solid rgba(0, 255, 65, 0.3);
-            border-radius: 0;
+            border: 3px solid #0060AA;
+            border-radius: 8px;
             width: 90%;
             max-width: 600px;
-            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0, 96, 170, 0.2);
         }
 
         .modal-header {
@@ -869,24 +716,25 @@
             align-items: center;
             margin-bottom: 25px;
             padding-bottom: 15px;
-            border-bottom: 1px solid #333;
+            border-bottom: 2px solid #0060AA;
         }
 
         .modal-title {
             font-size: 1.5rem;
-            font-weight: 300;
+            font-weight: 900;
+            color: #0060AA;
+            font-family: 'Orbitron', monospace;
         }
 
         .close {
-            color: #aaa;
+            color: #666;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
-            transition: color 0.3s;
         }
 
         .close:hover {
-            color: #fff;
+            color: #E20025;
         }
 
         .btn-group {
@@ -931,14 +779,13 @@
         .stat-item {
             text-align: center;
             padding: 20px;
-            background-color: #0a0a0a;
-            border-radius: 0;
-            border: 1px solid #222;
-            transition: border-color 0.2s;
+            background-color: #ffffff;
+            border-radius: 8px;
+            border: 2px solid #0060AA;
         }
 
         .stat-item:hover {
-            border-color: #333;
+            border-color: #E20025;
         }
 
         .stat-label {
@@ -947,11 +794,14 @@
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 10px;
+            font-family: 'Orbitron', monospace;
         }
 
         .stat-value {
             font-size: 1.8rem;
-            font-weight: 300;
+            font-weight: 900;
+            color: #0060AA;
+            font-family: 'Orbitron', monospace;
         }
 
         .alert {
@@ -962,24 +812,24 @@
         }
 
         .alert.success {
-            background-color: rgba(211, 166, 37, 0.15);
-            border-color: #D3A625;
-            color: #D3A625;
-            border-left-width: 3px;
+            background-color: rgba(0, 96, 170, 0.1);
+            border-color: #0060AA;
+            color: #0060AA;
+            border-left-width: 4px;
         }
 
         .alert.error {
-            background-color: rgba(174, 0, 1, 0.15);
-            border-color: #AE0001;
-            color: #AE0001;
-            border-left-width: 3px;
+            background-color: rgba(226, 0, 37, 0.1);
+            border-color: #E20025;
+            color: #E20025;
+            border-left-width: 4px;
         }
 
         .alert.info {
-            background-color: rgba(14, 26, 64, 0.15);
-            border-color: #0E1A40;
-            color: #0E1A40;
-            border-left-width: 3px;
+            background-color: rgba(255, 237, 16, 0.1);
+            border-color: #FFED10;
+            color: #FFED10;
+            border-left-width: 4px;
         }
 
         @media (max-width: 768px) {
@@ -1000,22 +850,22 @@
 <body>
 
     <div class="header">
-        <h1>⚡ FINANCES - HOGWARTS ⚡</h1>
-        <div class="subtitle" style="font-family: 'Orbitron', monospace; color: #D3A625; text-shadow: 0 0 10px rgba(211, 166, 37, 0.8); letter-spacing: 4px; font-weight: 700; margin-top: 10px;">⚡ HOGWARTS FINANCIAL SYSTEM ⚡</div>
+        <h1>💰 FINANCES</h1>
+        <div class="subtitle">⚡ CYBER FINANCIAL SYSTEM ⚡</div>
     </div>
 
     <div class="container">
         <!-- Filtro de Mês para Cards -->
         <div style="margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
             <label for="dashboardMonth" style="color: #888; font-size: 0.85rem;">Mês:</label>
-            <select id="dashboardMonth" style="padding: 8px 12px; background-color: #0a0a0a; border: 1px solid #333; border-radius: 4px; color: #fff; font-size: 0.9rem; min-width: 200px;">
+            <select id="dashboardMonth" style="padding: 8px 12px; background-color: #ffffff; border: 2px solid #0060AA; border-radius: 6px; color: #2c2c2c; font-size: 0.9rem; min-width: 200px;">
                 <option value="">Carregando...</option>
             </select>
         </div>
 
         <!-- Dashboard Cards -->
         <div id="dashboard" class="dashboard-grid">
-            <div class="card" style="border-left: 4px solid #D3A625;">
+            <div class="card" style="border-left: 4px solid #0060AA;">
                 <div class="card-header">
                     <div class="card-title">Saldo Atual</div>
                     <div class="card-icon">💵</div>
@@ -1024,7 +874,7 @@
                 <div class="card-footer">Saldo acumulado até o mês selecionado</div>
             </div>
 
-            <div class="card" style="border-left: 4px solid #0E1A40;">
+            <div class="card" style="border-left: 4px solid #10b981;">
                 <div class="card-header">
                     <div class="card-title">Saldo Projetado</div>
                     <div class="card-icon">📊</div>
@@ -1180,7 +1030,7 @@
                         <button type="submit">Adicionar Transação</button>
                     </div>
                 </div>
-                <div id="parcelasInfo" style="display: none; padding: 15px; background: #0a0a0a; border-radius: 4px; margin-top: 15px; color: #aaa; font-size: 0.9rem;"></div>
+                <div id="parcelasInfo" style="display: none; padding: 15px; background: rgba(0, 96, 170, 0.1); border: 1px solid #0060AA; border-radius: 6px; margin-top: 15px; color: #0060AA; font-size: 0.9rem;"></div>
                 <div id="successMessage" class="alert" style="display: none;"></div>
             </form>
         </div>
@@ -1282,7 +1132,7 @@
                     <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
                 </div>
                 <div class="filter-group" style="margin-left: auto;">
-                    <button type="button" id="deleteSelectedBtn" style="background: #AE0001; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
+                    <button type="button" id="deleteSelectedBtn" style="background: #E20025; color: #fff; padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
                 </div>
             </div>
             <div style="overflow-x: auto;">
@@ -1345,7 +1195,7 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeEditAbatimentoModal()" style="background: transparent; border: 1px solid #333; color: #fff;">Cancelar</button>
+                    <button type="button" onclick="closeEditAbatimentoModal()" style="background: transparent; border: 2px solid #666; color: #666;">Cancelar</button>
                     <button type="submit">Salvar Alterações</button>
                 </div>
             </form>
@@ -1397,9 +1247,9 @@
                         <input type="number" id="editNumParcelas" min="1" value="1">
                     </div>
                 </div>
-                <div id="editParcelasInfo" style="display: none; padding: 15px; background: #0a0a0a; border-radius: 4px; margin-bottom: 20px; color: #aaa; font-size: 0.9rem;"></div>
+                <div id="editParcelasInfo" style="display: none; padding: 15px; background: #fff9e6; border: 1px solid #D3A625; border-radius: 6px; margin-bottom: 20px; color: #946B2D; font-size: 0.9rem;"></div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeEditModal()" style="background: transparent; border: 1px solid #333; color: #fff;">Cancelar</button>
+                    <button type="button" onclick="closeEditModal()" style="background: transparent; border: 2px solid #5D5D5D; color: #5D5D5D;">Cancelar</button>
                     <button type="submit">Salvar Alterações</button>
                 </div>
             </form>
@@ -1588,7 +1438,7 @@
                         <td>${formatDate(transaction.data)}</td>
                         <td>${transaction.descricao}</td>
                         <td><span class="badge ${tipoBadges[transaction.tipo]}">${tipoLabels[transaction.tipo]}</span></td>
-                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #D3A625;' : 'color: #AE0001;'}">${formatCurrency(transaction.valor)}</td>
+                        <td style="font-weight: 500; ${transaction.tipo === 'receita' ? 'color: #0060AA;' : 'color: #E20025;'}">${formatCurrency(transaction.valor)}</td>
                         <td>${parcelaInfo}</td>
                         <td>
                             <div class="btn-group">
@@ -1765,8 +1615,8 @@
                             {
                                 label: 'Gastos',
                                 data: monthlyData.gastos || [],
-                                borderColor: '#AE0001',
-                                backgroundColor: 'rgba(174, 0, 1, 0.2)',
+                                borderColor: '#E20025',
+                                backgroundColor: 'rgba(226, 0, 37, 0.2)',
                                 borderWidth: 2,
                                 tension: 0.3,
                                 fill: false,
@@ -1776,7 +1626,7 @@
                             {
                                 label: 'Saldo',
                                 data: monthlyData.saldos || [],
-                                borderColor: '#0E1A40',
+                                borderColor: '#FFED10',
                                 backgroundColor: 'transparent',
                                 borderWidth: 2,
                                 borderDash: [8, 4],
@@ -1797,7 +1647,7 @@
                         plugins: {
                             legend: { 
                                 labels: { 
-                                    color: '#fff',
+                                    color: '#2c2c2c',
                                     font: { size: 12 },
                                     padding: 15,
                                     usePointStyle: true
@@ -1821,17 +1671,17 @@
                         scales: {
                             x: { 
                                 ticks: { 
-                                    color: '#aaa',
+                                    color: '#888',
                                     font: { size: 11 }
                                 }, 
                                 grid: { 
-                                    color: '#222',
+                                    color: '#ddd',
                                     drawBorder: false
                                 } 
                             },
                             y: {
                                 ticks: {
-                                    color: '#aaa',
+                                    color: '#888',
                                     font: { size: 11 },
                                     callback: (value) => {
                                         if (value >= 1000) return 'R$ ' + (value / 1000).toFixed(1) + 'k';
@@ -1839,7 +1689,7 @@
                                     }
                                 },
                                 grid: { 
-                                    color: '#222',
+                                    color: '#ddd',
                                     drawBorder: false
                                 },
                                 beginAtZero: true
@@ -1861,12 +1711,11 @@
                             datasets: [{
                                 data: [totalDebito, totalMercadoPago, totalNubank],
                                 backgroundColor: [
-                                    '#AE0001',
-                                    '#D3A625',
-                                    '#0E1A40',
-                                    '#1A472A'
+                                    '#E20025',
+                                    '#FFED10',
+                                    '#0060AA'
                                 ],
-                                borderColor: '#0a0a0a',
+                                borderColor: '#ffffff',
                                 borderWidth: 2
                             }]
                         },
@@ -1877,18 +1726,18 @@
                             plugins: {
                                 legend: { 
                                     labels: { 
-                                        color: '#fff',
+                                        color: '#2c2c2c',
                                         font: { size: 12 },
                                         padding: 12,
                                         usePointStyle: true
                                     }, 
                                     position: 'bottom'
                                 },
-                                tooltip: {
-                                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                                    titleColor: '#fff',
-                                    bodyColor: '#fff',
-                                    borderColor: '#333',
+                            tooltip: {
+                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                                titleColor: '#0060AA',
+                                bodyColor: '#2c2c2c',
+                                borderColor: '#0060AA',
                                     borderWidth: 1,
                                     padding: 12,
                                     callbacks: {
@@ -1905,7 +1754,7 @@
                 } else {
                     // Se não houver gastos, mostra mensagem
                     ctx2.clearRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
-                    ctx2.fillStyle = '#888';
+                    ctx2.fillStyle = '#5D5D5D';
                     ctx2.font = '14px sans-serif';
                     ctx2.textAlign = 'center';
                     ctx2.fillText('Nenhum gasto registrado', ctx2.canvas.width / 2, ctx2.canvas.height / 2);
@@ -2444,7 +2293,7 @@
                         <td>${formatDate(abatimento.data)}</td>
                         <td>${cartaoLabel}</td>
                         <td>${abatimento.descricao || '-'}</td>
-                        <td style="font-weight: 500; color: #D3A625;">${formatCurrency(abatimento.valor)}</td>
+                        <td style="font-weight: 500; color: #0060AA;">${formatCurrency(abatimento.valor)}</td>
                         <td>
                             <div class="btn-group">
                                 <button class="edit-btn" onclick="openEditAbatimentoModal(${JSON.stringify(abatimento).replace(/"/g, '&quot;')})">Editar</button>
