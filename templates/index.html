@@ -16,15 +16,17 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #fafafa;
-            color: #000000;
+            background: #f8f9fa;
+            color: #1a1a1a;
             min-height: 100vh;
             padding: 0;
             margin: 0;
             position: relative;
             overflow-x: hidden;
             padding-bottom: 80px;
-            line-height: 1.6;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
         }
 
         @media (min-width: 768px) {
@@ -41,120 +43,125 @@
         .header {
             background: #ffffff;
             border: none;
-            border-bottom: 1px solid #000000;
-            padding: 24px 20px;
+            border-bottom: 1px solid #e8e8e8;
+            padding: 28px 24px;
             position: sticky;
             top: 0;
             z-index: 100;
             overflow: hidden;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
         }
 
         @media (min-width: 768px) {
             .header {
-                padding: 32px 40px;
+                padding: 36px 48px;
             }
         }
 
         .header h1 {
             font-family: 'Inter', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
-            color: #000000;
+            font-size: 1.625rem;
+            font-weight: 700;
+            letter-spacing: -0.8px;
+            color: #1a1a1a;
             text-transform: none;
             position: relative;
             margin: 0;
             text-align: left;
+            line-height: 1.2;
         }
 
         @media (min-width: 768px) {
             .header h1 {
-                font-size: 2rem;
-                letter-spacing: -1px;
+                font-size: 2.25rem;
+                letter-spacing: -1.2px;
             }
         }
 
         .header .subtitle {
             font-size: 0.875rem;
-            color: #666666;
-            margin-top: 4px;
+            color: #6b7280;
+            margin-top: 6px;
             text-align: left;
             font-weight: 400;
+            letter-spacing: 0.2px;
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 12px 10px;
+            padding: 20px 16px;
         }
 
         @media (min-width: 768px) {
             .container {
-                padding: 30px 40px;
+                padding: 40px 48px;
             }
         }
 
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         @media (min-width: 640px) {
             .dashboard-grid {
                 grid-template-columns: repeat(2, 1fr);
-                gap: 15px;
+                gap: 20px;
             }
         }
 
         @media (min-width: 1024px) {
             .dashboard-grid {
-                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-                gap: 20px;
+                grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+                gap: 24px;
             }
         }
 
         .card {
             background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
         }
 
         @media (min-width: 768px) {
             .card {
-                padding: 28px;
+                padding: 32px;
             }
         }
 
         @media (hover: hover) {
             .card:hover {
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-                border-color: #d0d0d0;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+                border-color: #d1d5db;
+                transform: translateY(-2px);
             }
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
+            align-items: flex-start;
+            margin-bottom: 12px;
         }
 
         .card-title {
             font-family: 'Inter', sans-serif;
             font-size: 0.75rem;
-            color: #666666;
+            color: #6b7280;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 500;
+            letter-spacing: 0.8px;
+            font-weight: 600;
             position: relative;
             z-index: 1;
-            margin-bottom: 8px;
+            margin-bottom: 0;
         }
 
         @media (min-width: 768px) {
@@ -175,40 +182,42 @@
 
         .card-value {
             font-family: 'Inter', sans-serif;
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            letter-spacing: -0.5px;
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -1px;
             position: relative;
             z-index: 1;
-            color: #000000;
+            color: #1a1a1a;
+            line-height: 1.2;
         }
 
         @media (min-width: 768px) {
             .card-value {
-                font-size: 2rem;
-                margin-bottom: 8px;
+                font-size: 2.5rem;
+                margin-bottom: 12px;
             }
         }
 
         .card-value.positive {
-            color: #000000;
+            color: #1a1a1a;
         }
 
         .card-value.negative {
-            color: #000000;
+            color: #1a1a1a;
         }
 
         .card-footer {
-            font-size: 0.75rem;
-            color: #666666;
-            margin-top: 8px;
+            font-size: 0.8125rem;
+            color: #6b7280;
+            margin-top: 12px;
+            line-height: 1.5;
         }
 
         @media (min-width: 768px) {
             .card-footer {
-                font-size: 0.8125rem;
-                margin-top: 12px;
+                font-size: 0.875rem;
+                margin-top: 16px;
             }
         }
 
@@ -218,28 +227,28 @@
         }
 
         .card.receitas {
-            border-left: 3px solid #000000;
+            border-left: 4px solid #1a1a1a;
         }
 
         .card.gastos {
-            border-left: 3px solid #000000;
+            border-left: 4px solid #1a1a1a;
         }
 
         .section {
             background: #ffffff;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             padding: 32px;
             margin-bottom: 32px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
             position: relative;
             overflow: hidden;
         }
 
         @media (min-width: 768px) {
             .section {
-                padding: 40px;
-                margin-bottom: 40px;
+                padding: 48px;
+                margin-bottom: 48px;
             }
         }
 
@@ -247,32 +256,34 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         @media (min-width: 768px) {
             .section-header {
-                margin-bottom: 32px;
-                padding-bottom: 20px;
+                margin-bottom: 36px;
+                padding-bottom: 24px;
             }
         }
 
         .section-title {
             font-family: 'Inter', sans-serif;
-            font-size: 1.125rem;
-            font-weight: 600;
-            letter-spacing: -0.5px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.8px;
             text-transform: none;
-            color: #000000;
+            color: #1a1a1a;
             position: relative;
             z-index: 1;
+            line-height: 1.3;
         }
 
         @media (min-width: 768px) {
             .section-title {
-                font-size: 1.5rem;
+                font-size: 1.75rem;
+                letter-spacing: -1px;
             }
         }
 
@@ -304,19 +315,20 @@
             align-items: center;
             gap: 4px;
             padding: 8px 16px;
-            color: #666666;
+            color: #6b7280;
             text-decoration: none;
-            border-radius: 0;
+            border-radius: 8px;
             min-width: 60px;
             font-size: 0.75rem;
             font-weight: 500;
             text-transform: none;
             letter-spacing: 0;
+            transition: all 0.2s ease;
         }
 
         .nav-item.active {
-            color: #000000;
-            background: #f5f5f5;
+            color: #1a1a1a;
+            background: #f9fafb;
         }
 
 
@@ -438,22 +450,27 @@
             width: 100%;
             padding: 12px 16px;
             background-color: #ffffff;
-            border: 1px solid #d0d0d0;
-            border-radius: 6px;
-            color: #000000;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            color: #1a1a1a;
             font-size: 0.875rem;
             font-weight: 400;
             min-height: 44px;
             -webkit-appearance: none;
             appearance: none;
             font-family: 'Inter', sans-serif;
+            transition: all 0.2s ease;
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: #000000;
-            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
+            border-color: #1a1a1a;
+            box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.08);
             background-color: #ffffff;
+        }
+
+        input::placeholder {
+            color: #9ca3af;
         }
 
         @media (min-width: 768px) {
@@ -466,31 +483,38 @@
         }
 
         button {
-            background: #000000;
+            background: #1a1a1a;
             color: #ffffff;
-            border: 1px solid #000000;
+            border: 1px solid #1a1a1a;
             padding: 12px 24px;
             font-family: 'Inter', sans-serif;
             font-size: 0.875rem;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            border-radius: 6px;
+            border-radius: 8px;
             text-transform: none;
-            letter-spacing: 0;
+            letter-spacing: 0.2px;
             min-height: 44px;
             touch-action: manipulation;
+            transition: all 0.2s ease;
         }
 
         @media (min-width: 768px) {
             button {
-                padding: 14px 28px;
+                padding: 14px 32px;
                 font-size: 0.9375rem;
             }
         }
 
         button:hover {
-            background-color: #333333;
-            border-color: #333333;
+            background-color: #2d2d2d;
+            border-color: #2d2d2d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(26, 26, 26, 0.15);
+        }
+
+        button:active {
+            transform: translateY(0);
         }
 
         .transactions-table {
@@ -506,15 +530,15 @@
         }
 
         .transactions-table th {
-            background-color: #fafafa;
-            padding: 12px 16px;
+            background-color: #f9fafb;
+            padding: 14px 16px;
             text-align: left;
             font-size: 0.75rem;
-            color: #000000;
+            color: #374151;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-weight: 600;
-            border-bottom: 1px solid #e0e0e0;
+            letter-spacing: 0.8px;
+            font-weight: 700;
+            border-bottom: 1px solid #e5e7eb;
             display: block;
             font-family: 'Inter', sans-serif;
         }
@@ -529,8 +553,8 @@
         }
 
         .transactions-table td {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e5e5e5;
+            padding: 16px;
+            border-bottom: 1px solid #f3f4f6;
             font-size: 0.875rem;
             font-weight: 400;
             display: block;
@@ -538,6 +562,7 @@
             position: relative;
             padding-left: 50%;
             background-color: #ffffff;
+            color: #1a1a1a;
         }
 
         .transactions-table td::before {
@@ -546,11 +571,11 @@
             left: 16px;
             width: 45%;
             text-align: left;
-            font-weight: 500;
-            color: #666666;
+            font-weight: 600;
+            color: #6b7280;
             font-size: 0.75rem;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.8px;
             font-family: 'Inter', sans-serif;
         }
 
@@ -569,91 +594,98 @@
         }
 
         .transactions-table tr:active {
-            background-color: #f5f5f5;
+            background-color: #f9fafb;
         }
 
         @media (hover: hover) {
             .transactions-table tr:hover {
-                background-color: #f5f5f5;
+                background-color: #f9fafb;
             }
         }
 
         .badge {
             display: inline-block;
-            padding: 4px 10px;
-            border-radius: 4px;
+            padding: 5px 12px;
+            border-radius: 6px;
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
 
         @media (min-width: 768px) {
             .badge {
-                padding: 5px 12px;
+                padding: 6px 14px;
                 font-size: 0.8125rem;
             }
         }
 
         .badge.receita {
-            background-color: #f5f5f5;
-            color: #000000;
+            background-color: #f3f4f6;
+            color: #1a1a1a;
             border: none;
         }
 
         .badge.debito {
-            background-color: #f5f5f5;
-            color: #000000;
+            background-color: #f3f4f6;
+            color: #1a1a1a;
             border: none;
         }
 
         .badge.mercado-pago {
-            background-color: #f5f5f5;
-            color: #000000;
+            background-color: #f3f4f6;
+            color: #1a1a1a;
             border: none;
         }
 
         .badge.nubank {
-            background-color: #f5f5f5;
-            color: #000000;
+            background-color: #f3f4f6;
+            color: #1a1a1a;
             border: none;
         }
 
         .badge.parcela {
-            background-color: #f5f5f5;
-            color: #000000;
+            background-color: #f3f4f6;
+            color: #1a1a1a;
             border: none;
         }
 
         .delete-btn {
             background: #ffffff;
-            color: #000000;
-            border: 1px solid #d0d0d0;
-            padding: 6px 12px;
+            color: #1a1a1a;
+            border: 1px solid #d1d5db;
+            padding: 8px 16px;
             font-size: 0.8125rem;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             margin-left: 8px;
             font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
         .delete-btn:hover {
-            background-color: #f5f5f5;
-            border-color: #000000;
+            background-color: #f9fafb;
+            border-color: #1a1a1a;
+            color: #1a1a1a;
         }
 
         .edit-btn {
             background: #ffffff;
-            color: #000000;
-            border: 1px solid #d0d0d0;
-            padding: 6px 12px;
+            color: #1a1a1a;
+            border: 1px solid #d1d5db;
+            padding: 8px 16px;
             font-size: 0.8125rem;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 6px;
             font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
         .edit-btn:hover {
-            background-color: #f5f5f5;
-            border-color: #000000;
+            background-color: #f9fafb;
+            border-color: #1a1a1a;
+            color: #1a1a1a;
         }
 
         .modal {
@@ -671,39 +703,42 @@
         .modal-content {
             background: #ffffff;
             margin: 5% auto;
-            padding: 32px;
-            border: 1px solid #e0e0e0;
-            border-radius: 8px;
+            padding: 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             width: 90%;
             max-width: 600px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
         }
 
         .modal-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 24px;
-            padding-bottom: 16px;
-            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 28px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e5e7eb;
         }
 
         .modal-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #000000;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1a1a1a;
             font-family: 'Inter', sans-serif;
+            letter-spacing: -0.8px;
         }
 
         .close {
-            color: #000000;
-            font-size: 24px;
+            color: #6b7280;
+            font-size: 28px;
             font-weight: 400;
             cursor: pointer;
+            transition: color 0.2s ease;
+            line-height: 1;
         }
 
         .close:hover {
-            color: #666666;
+            color: #1a1a1a;
         }
 
         .btn-group {
@@ -747,32 +782,37 @@
 
         .stat-item {
             text-align: center;
-            padding: 24px;
+            padding: 28px;
             background-color: #ffffff;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            transition: all 0.2s ease;
         }
 
         .stat-item:hover {
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            border-color: #d0d0d0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            border-color: #d1d5db;
+            transform: translateY(-2px);
         }
 
         .stat-label {
             font-size: 0.75rem;
-            color: #666666;
+            color: #6b7280;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
+            letter-spacing: 0.8px;
+            margin-bottom: 16px;
             font-family: 'Inter', sans-serif;
+            font-weight: 600;
         }
 
         .stat-value {
-            font-size: 1.75rem;
-            font-weight: 600;
-            color: #000000;
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a1a;
             font-family: 'Inter', sans-serif;
+            letter-spacing: -1px;
+            line-height: 1.2;
         }
 
         .alert {
@@ -783,27 +823,30 @@
         }
 
         .alert.success {
-            background-color: #f5f5f5;
-            border-color: #d0d0d0;
-            color: #000000;
-            border-left-width: 3px;
-            border-radius: 4px;
+            background-color: #f9fafb;
+            border-color: #e5e7eb;
+            color: #1a1a1a;
+            border-left-width: 4px;
+            border-left-color: #1a1a1a;
+            border-radius: 8px;
         }
 
         .alert.error {
-            background-color: #f5f5f5;
-            border-color: #d0d0d0;
-            color: #000000;
-            border-left-width: 3px;
-            border-radius: 4px;
+            background-color: #f9fafb;
+            border-color: #e5e7eb;
+            color: #1a1a1a;
+            border-left-width: 4px;
+            border-left-color: #1a1a1a;
+            border-radius: 8px;
         }
 
         .alert.info {
-            background-color: #f5f5f5;
-            border-color: #d0d0d0;
-            color: #000000;
-            border-left-width: 3px;
-            border-radius: 4px;
+            background-color: #f9fafb;
+            border-color: #e5e7eb;
+            color: #1a1a1a;
+            border-left-width: 4px;
+            border-left-color: #1a1a1a;
+            border-radius: 8px;
         }
 
         @media (max-width: 768px) {
@@ -1039,17 +1082,17 @@
                 <div class="stat-item">
                     <div class="stat-label">Gastos em Débito</div>
                     <div class="stat-value" id="statDebito">R$ 0,00</div>
-                    <div style="font-size: 0.75rem; color: #666666; margin-top: 8px;" id="pctDebito">0%</div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 8px;" id="pctDebito">0%</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Gastos Mercado Pago</div>
                     <div class="stat-value" id="statMercadoPago">R$ 0,00</div>
-                    <div style="font-size: 0.75rem; color: #666666; margin-top: 8px;" id="pctMercadoPago">0%</div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 8px;" id="pctMercadoPago">0%</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-label">Gastos Nubank</div>
                     <div class="stat-value" id="statNubank">R$ 0,00</div>
-                    <div style="font-size: 0.75rem; color: #666666; margin-top: 8px;" id="pctNubank">0%</div>
+                    <div style="font-size: 0.75rem; color: #6b7280; margin-top: 8px;" id="pctNubank">0%</div>
                 </div>
             </div>
         </div>
@@ -1072,7 +1115,7 @@
                     </thead>
                     <tbody id="abatimentosTableBody">
                         <tr>
-                            <td colspan="5" style="text-align: center; color: #666666; padding: 40px;">Carregando abatimentos...</td>
+                            <td colspan="5" style="text-align: center; color: #6b7280; padding: 40px;">Carregando abatimentos...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1106,7 +1149,7 @@
                     <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
                 </div>
                 <div class="filter-group" style="margin-left: auto;">
-                    <button type="button" id="deleteSelectedBtn" style="background: #000000; color: #ffffff; padding: 12px 24px; border: 1px solid #000000; border-radius: 6px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
+                    <button type="button" id="deleteSelectedBtn" style="background: #1a1a1a; color: #ffffff; padding: 12px 24px; border: 1px solid #1a1a1a; border-radius: 8px; cursor: pointer; display: none; font-weight: 600;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
                 </div>
             </div>
             <div style="overflow-x: auto;">
@@ -1126,7 +1169,7 @@
                     </thead>
                     <tbody id="transactionsTableBody">
                         <tr>
-                            <td colspan="6" style="text-align: center; color: #666666; padding: 40px;">Carregando transações...</td>
+                            <td colspan="6" style="text-align: center; color: #6b7280; padding: 40px;">Carregando transações...</td>
                         </tr>
                     </tbody>
                 </table>
@@ -1169,7 +1212,7 @@
                     </div>
                 </div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeEditAbatimentoModal()" style="background: #ffffff; border: 1px solid #000000; color: #000000;">Cancelar</button>
+                    <button type="button" onclick="closeEditAbatimentoModal()" style="background: #ffffff; border: 1px solid #d1d5db; color: #1a1a1a; border-radius: 8px; padding: 12px 24px; font-weight: 500;">Cancelar</button>
                     <button type="submit">Salvar Alterações</button>
                 </div>
             </form>
@@ -1221,9 +1264,9 @@
                         <input type="number" id="editNumParcelas" min="1" value="1">
                     </div>
                 </div>
-                <div id="editParcelasInfo" style="display: none; padding: 16px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 24px; color: #000000; font-size: 0.875rem;"></div>
+                <div id="editParcelasInfo" style="display: none; padding: 16px; background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 24px; color: #1a1a1a; font-size: 0.875rem;"></div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
-                    <button type="button" onclick="closeEditModal()" style="background: #ffffff; border: 1px solid #000000; color: #000000;">Cancelar</button>
+                    <button type="button" onclick="closeEditModal()" style="background: #ffffff; border: 1px solid #d1d5db; color: #1a1a1a; border-radius: 8px; padding: 12px 24px; font-weight: 500;">Cancelar</button>
                     <button type="submit">Salvar Alterações</button>
                 </div>
             </form>
