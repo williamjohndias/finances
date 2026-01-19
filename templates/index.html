@@ -16,7 +16,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background: #ffffff;
+            background: #fafafa;
             color: #000000;
             min-height: 100vh;
             padding: 0;
@@ -117,12 +117,12 @@
 
         .card {
             background: #ffffff;
-            border: 1px solid #000000;
-            border-radius: 0;
-            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 24px;
             position: relative;
             overflow: hidden;
-            box-shadow: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         @media (min-width: 768px) {
@@ -133,7 +133,8 @@
 
         @media (hover: hover) {
             .card:hover {
-                background: #f5f5f5;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                border-color: #d0d0d0;
             }
         }
 
@@ -217,22 +218,20 @@
         }
 
         .card.receitas {
-            border-color: #000000;
-            border-left-width: 3px;
+            border-left: 3px solid #000000;
         }
 
         .card.gastos {
-            border-color: #000000;
-            border-left-width: 3px;
+            border-left: 3px solid #000000;
         }
 
         .section {
             background: #ffffff;
-            border: 1px solid #000000;
-            border-radius: 0;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: none;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
             position: relative;
             overflow: hidden;
         }
@@ -250,7 +249,7 @@
             align-items: center;
             margin-bottom: 24px;
             padding-bottom: 16px;
-            border-bottom: 1px solid #000000;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         @media (min-width: 768px) {
@@ -439,8 +438,8 @@
             width: 100%;
             padding: 12px 16px;
             background-color: #ffffff;
-            border: 1px solid #000000;
-            border-radius: 0;
+            border: 1px solid #d0d0d0;
+            border-radius: 6px;
             color: #000000;
             font-size: 0.875rem;
             font-weight: 400;
@@ -453,7 +452,7 @@
         input:focus, select:focus {
             outline: none;
             border-color: #000000;
-            box-shadow: none;
+            box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.05);
             background-color: #ffffff;
         }
 
@@ -475,7 +474,7 @@
             font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            border-radius: 0;
+            border-radius: 6px;
             text-transform: none;
             letter-spacing: 0;
             min-height: 44px;
@@ -490,9 +489,8 @@
         }
 
         button:hover {
-            color: #000000;
-            background-color: #ffffff;
-            border-color: #000000;
+            background-color: #333333;
+            border-color: #333333;
         }
 
         .transactions-table {
@@ -508,7 +506,7 @@
         }
 
         .transactions-table th {
-            background-color: #ffffff;
+            background-color: #fafafa;
             padding: 12px 16px;
             text-align: left;
             font-size: 0.75rem;
@@ -516,7 +514,7 @@
             text-transform: uppercase;
             letter-spacing: 0.5px;
             font-weight: 600;
-            border-bottom: 1px solid #000000;
+            border-bottom: 1px solid #e0e0e0;
             display: block;
             font-family: 'Inter', sans-serif;
         }
@@ -582,81 +580,80 @@
 
         .badge {
             display: inline-block;
-            padding: 3px 8px;
-            border-radius: 8px;
-            font-size: 0.65rem;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
             font-weight: 500;
         }
 
         @media (min-width: 768px) {
             .badge {
-                padding: 4px 10px;
-                border-radius: 12px;
-                font-size: 0.75rem;
+                padding: 5px 12px;
+                font-size: 0.8125rem;
             }
         }
 
         .badge.receita {
-            background-color: #ffffff;
+            background-color: #f5f5f5;
             color: #000000;
-            border: 1px solid #000000;
+            border: none;
         }
 
         .badge.debito {
-            background-color: #ffffff;
+            background-color: #f5f5f5;
             color: #000000;
-            border: 1px solid #000000;
+            border: none;
         }
 
         .badge.mercado-pago {
-            background-color: #ffffff;
+            background-color: #f5f5f5;
             color: #000000;
-            border: 1px solid #000000;
+            border: none;
         }
 
         .badge.nubank {
-            background-color: #ffffff;
+            background-color: #f5f5f5;
             color: #000000;
-            border: 1px solid #000000;
+            border: none;
         }
 
         .badge.parcela {
-            background-color: #ffffff;
+            background-color: #f5f5f5;
             color: #000000;
-            border: 1px solid #000000;
+            border: none;
         }
 
         .delete-btn {
             background: #ffffff;
             color: #000000;
-            border: 1px solid #000000;
-            padding: 8px 16px;
+            border: 1px solid #d0d0d0;
+            padding: 6px 12px;
             font-size: 0.8125rem;
             cursor: pointer;
-            border-radius: 0;
+            border-radius: 4px;
             margin-left: 8px;
             font-family: 'Inter', sans-serif;
         }
 
         .delete-btn:hover {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #f5f5f5;
+            border-color: #000000;
         }
 
         .edit-btn {
             background: #ffffff;
             color: #000000;
-            border: 1px solid #000000;
-            padding: 8px 16px;
+            border: 1px solid #d0d0d0;
+            padding: 6px 12px;
             font-size: 0.8125rem;
             cursor: pointer;
-            border-radius: 0;
+            border-radius: 4px;
             font-family: 'Inter', sans-serif;
         }
 
         .edit-btn:hover {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #f5f5f5;
+            border-color: #000000;
         }
 
         .modal {
@@ -675,11 +672,11 @@
             background: #ffffff;
             margin: 5% auto;
             padding: 32px;
-            border: 1px solid #000000;
-            border-radius: 0;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
             width: 90%;
             max-width: 600px;
-            box-shadow: none;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
         }
 
         .modal-header {
@@ -688,7 +685,7 @@
             align-items: center;
             margin-bottom: 24px;
             padding-bottom: 16px;
-            border-bottom: 1px solid #000000;
+            border-bottom: 1px solid #e0e0e0;
         }
 
         .modal-title {
@@ -752,12 +749,14 @@
             text-align: center;
             padding: 24px;
             background-color: #ffffff;
-            border-radius: 0;
-            border: 1px solid #000000;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
         }
 
         .stat-item:hover {
-            background-color: #f5f5f5;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            border-color: #d0d0d0;
         }
 
         .stat-label {
@@ -784,24 +783,27 @@
         }
 
         .alert.success {
-            background-color: #ffffff;
-            border-color: #000000;
+            background-color: #f5f5f5;
+            border-color: #d0d0d0;
             color: #000000;
             border-left-width: 3px;
+            border-radius: 4px;
         }
 
         .alert.error {
-            background-color: #ffffff;
-            border-color: #000000;
+            background-color: #f5f5f5;
+            border-color: #d0d0d0;
             color: #000000;
             border-left-width: 3px;
+            border-radius: 4px;
         }
 
         .alert.info {
-            background-color: #ffffff;
-            border-color: #000000;
+            background-color: #f5f5f5;
+            border-color: #d0d0d0;
             color: #000000;
             border-left-width: 3px;
+            border-radius: 4px;
         }
 
         @media (max-width: 768px) {
@@ -829,15 +831,15 @@
     <div class="container">
         <!-- Filtro de Mês para Cards -->
         <div style="margin-bottom: 30px; display: flex; align-items: center; gap: 15px;">
-            <label for="dashboardMonth" style="color: #888; font-size: 0.85rem;">Mês:</label>
-            <select id="dashboardMonth" style="padding: 8px 12px; background-color: rgba(1, 1, 1, 0.6); border: 2px solid #0060AA; border-radius: 6px; color: #fff; font-size: 0.9rem; min-width: 200px;">
+            <label for="dashboardMonth" style="color: #666666; font-size: 0.875rem;">Mês:</label>
+            <select id="dashboardMonth" style="padding: 12px 16px; background-color: #ffffff; border: 1px solid #d0d0d0; border-radius: 6px; color: #000000; font-size: 0.875rem; min-width: 200px;">
                 <option value="">Carregando...</option>
             </select>
         </div>
 
         <!-- Dashboard Cards -->
         <div id="dashboard" class="dashboard-grid">
-            <div class="card" style="border-left: 3px solid #000000;">
+            <div class="card">
                 <div class="card-header">
                     <div class="card-title">Saldo Atual</div>
                     <div class="card-icon"></div>
@@ -846,7 +848,7 @@
                 <div class="card-footer">Saldo acumulado até o mês selecionado</div>
             </div>
 
-            <div class="card" style="border-left: 3px solid #000000;">
+            <div class="card">
                 <div class="card-header">
                     <div class="card-title">Saldo Projetado</div>
                     <div class="card-icon"></div>
@@ -885,7 +887,7 @@
 
         <!-- Cards de Faturas dos Cartões -->
         <div class="dashboard-grid" style="margin-top: 30px;">
-            <div class="card" style="border-left: 3px solid #000000;">
+            <div class="card">
                 <div class="card-header">
                     <div class="card-title">Mercado Pago - Fatura Atual</div>
                     <div class="card-icon"></div>
@@ -894,7 +896,7 @@
                 <div class="card-footer">Pendente de pagamento</div>
             </div>
 
-            <div class="card" style="border-left: 3px solid #000000;">
+            <div class="card">
                 <div class="card-header">
                     <div class="card-title">Mercado Pago - Abatido</div>
                     <div class="card-icon"></div>
@@ -903,7 +905,7 @@
                 <div class="card-footer">Total já abatido</div>
             </div>
 
-            <div class="card" style="border-left: 3px solid #000000;">
+            <div class="card">
                 <div class="card-header">
                     <div class="card-title">Nubank - Fatura Atual</div>
                     <div class="card-icon"></div>
@@ -912,7 +914,7 @@
                 <div class="card-footer">Pendente de pagamento</div>
             </div>
 
-            <div class="card" style="border-left: 3px solid #000000;">
+            <div class="card">
                 <div class="card-header">
                     <div class="card-title">Nubank - Abatido</div>
                     <div class="card-icon"></div>
@@ -1104,7 +1106,7 @@
                     <input type="text" id="filterBusca" placeholder="Descrição..." style="width: auto; min-width: 200px;">
                 </div>
                 <div class="filter-group" style="margin-left: auto;">
-                    <button type="button" id="deleteSelectedBtn" style="background: #000000; color: #ffffff; padding: 12px 24px; border: 1px solid #000000; border-radius: 0; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
+                    <button type="button" id="deleteSelectedBtn" style="background: #000000; color: #ffffff; padding: 12px 24px; border: 1px solid #000000; border-radius: 6px; cursor: pointer; display: none;" onclick="deleteSelectedTransactions()">Excluir Selecionados</button>
                 </div>
             </div>
             <div style="overflow-x: auto;">
@@ -1219,7 +1221,7 @@
                         <input type="number" id="editNumParcelas" min="1" value="1">
                     </div>
                 </div>
-                <div id="editParcelasInfo" style="display: none; padding: 16px; background: #ffffff; border: 1px solid #000000; border-radius: 0; margin-bottom: 24px; color: #000000; font-size: 0.875rem;"></div>
+                <div id="editParcelasInfo" style="display: none; padding: 16px; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 6px; margin-bottom: 24px; color: #000000; font-size: 0.875rem;"></div>
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button type="button" onclick="closeEditModal()" style="background: #ffffff; border: 1px solid #000000; color: #000000;">Cancelar</button>
                     <button type="submit">Salvar Alterações</button>
