@@ -996,6 +996,15 @@
 
             <div class="card">
                 <div class="card-header">
+                    <div class="card-title">Gastos Debito</div>
+                    <div class="card-icon"></div>
+                </div>
+                <div class="card-value negative" id="totalDebitoCard">R$ 0,00</div>
+                <div class="card-footer">Total gasto no debito</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
                     <div class="card-title">Nubank - Abatido</div>
                     <div class="card-icon"></div>
                 </div>
@@ -1832,6 +1841,7 @@
                 const stats = await response.json();
                 
                 document.getElementById('statDebito').textContent = formatCurrency(stats.total_debito);
+                document.getElementById('totalDebitoCard').textContent = formatCurrency(stats.total_debito);
                 document.getElementById('statMercadoPago').textContent = formatCurrency(stats.total_mercado_pago);
                 document.getElementById('statNubank').textContent = formatCurrency(stats.total_nubank);
                 
