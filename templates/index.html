@@ -31,7 +31,7 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--white);
+            background: var(--gray-50);
             color: var(--black);
             min-height: 100vh;
             padding: 0;
@@ -58,7 +58,7 @@
         .header {
             background: var(--white);
             border: none;
-            border-bottom: 1px solid var(--black);
+            border-bottom: 1px solid var(--gray-200);
             padding: 24px 20px;
             position: sticky;
             top: 0;
@@ -129,10 +129,10 @@
         .dashboard-grid {
             display: grid;
             grid-template-columns: 1fr;
-            gap: 1px;
+            gap: 16px;
             margin-bottom: 24px;
-            background: var(--black);
-            border: 1px solid var(--black);
+            background: transparent;
+            border: none;
         }
 
         @media (min-width: 640px) {
@@ -149,12 +149,13 @@
 
         .card {
             background: var(--white);
-            border: none;
-            border-radius: 0;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
             padding: 20px;
             position: relative;
             overflow: hidden;
-            transition: background-color 0.2s ease;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
 
         @media (min-width: 768px) {
@@ -165,7 +166,10 @@
 
         @media (hover: hover) {
             .card:hover {
-                background-color: var(--gray-50);
+                background-color: var(--white);
+                border-color: var(--gray-300);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+                transform: translateY(-2px);
             }
         }
 
@@ -241,13 +245,21 @@
         }
 
         .card.saldo {
-            background: var(--black);
+            background: var(--gray-900);
+            border-color: var(--gray-900);
         }
 
         .card.saldo .card-title,
         .card.saldo .card-value,
         .card.saldo .card-footer {
             color: var(--white);
+        }
+
+        @media (hover: hover) {
+            .card.saldo:hover {
+                background-color: var(--gray-800);
+                border-color: var(--gray-800);
+            }
         }
 
         .card.receitas {
@@ -260,12 +272,13 @@
 
         .section {
             background: var(--white);
-            border: 1px solid var(--black);
-            border-radius: 0;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
             padding: 24px;
             margin-bottom: 24px;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
 
         @media (min-width: 768px) {
@@ -281,7 +294,7 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 16px;
-            border-bottom: 1px solid var(--gray-200);
+            border-bottom: 1px solid var(--gray-100);
         }
 
         @media (min-width: 768px) {
@@ -404,10 +417,11 @@
 
         .form-section {
             background: var(--white);
-            border: 1px solid var(--black);
-            border-radius: 0;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
             padding: 20px;
             margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
 
         @media (min-width: 768px) {
@@ -469,7 +483,7 @@
             padding: 12px;
             background-color: var(--white);
             border: 1px solid var(--gray-300);
-            border-radius: 0;
+            border-radius: 6px;
             color: var(--black);
             font-size: 0.8125rem;
             font-weight: 400;
@@ -477,12 +491,13 @@
             -webkit-appearance: none;
             appearance: none;
             font-family: 'Inter', sans-serif;
-            transition: border-color 0.2s ease;
+            transition: all 0.2s ease;
         }
 
         input:focus, select:focus {
             outline: none;
-            border-color: var(--black);
+            border-color: var(--gray-500);
+            box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
         }
 
         input::placeholder {
@@ -498,15 +513,15 @@
         }
 
         button {
-            background: var(--black);
+            background: var(--gray-900);
             color: var(--white);
-            border: 1px solid var(--black);
+            border: 1px solid var(--gray-900);
             padding: 12px 24px;
             font-family: 'Inter', sans-serif;
             font-size: 0.5625rem;
             font-weight: 500;
             cursor: pointer;
-            border-radius: 0;
+            border-radius: 6px;
             text-transform: uppercase;
             letter-spacing: 1px;
             min-height: 42px;
@@ -523,12 +538,14 @@
         }
 
         button:hover {
-            background-color: var(--white);
-            color: var(--black);
+            background-color: var(--gray-800);
+            border-color: var(--gray-800);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
         button:active {
-            transform: none;
+            transform: translateY(0);
         }
 
         .transactions-table {
@@ -544,15 +561,15 @@
         }
 
         .transactions-table th {
-            background-color: var(--gray-50);
+            background-color: var(--gray-100);
             padding: 12px;
             text-align: left;
             font-size: 0.5625rem;
-            color: var(--gray-500);
+            color: var(--gray-700);
             text-transform: uppercase;
             letter-spacing: 1px;
-            font-weight: 500;
-            border-bottom: 1px solid var(--black);
+            font-weight: 600;
+            border-bottom: 1px solid var(--gray-300);
             display: block;
             font-family: 'Inter', sans-serif;
         }
@@ -620,13 +637,13 @@
         .badge {
             display: inline-block;
             padding: 4px 8px;
-            border-radius: 0;
+            border-radius: 4px;
             font-size: 0.5rem;
             font-weight: 500;
             letter-spacing: 0.5px;
-            border: 1px solid var(--black);
-            background-color: var(--white);
-            color: var(--black);
+            border: 1px solid var(--gray-300);
+            background-color: var(--gray-50);
+            color: var(--gray-700);
             text-transform: uppercase;
         }
 
@@ -638,43 +655,43 @@
         }
 
         .badge.receita {
-            background-color: var(--black);
+            background-color: var(--gray-900);
             color: var(--white);
-            border-color: var(--black);
+            border-color: var(--gray-900);
         }
 
         .badge.debito {
-            background-color: var(--white);
-            color: var(--black);
-            border-color: var(--black);
+            background-color: var(--gray-100);
+            color: var(--gray-800);
+            border-color: var(--gray-300);
         }
 
         .badge.mercado-pago {
-            background-color: var(--gray-100);
-            color: var(--black);
+            background-color: var(--gray-200);
+            color: var(--gray-800);
             border-color: var(--gray-400);
         }
 
         .badge.nubank {
-            background-color: var(--gray-200);
-            color: var(--black);
+            background-color: var(--gray-300);
+            color: var(--gray-900);
             border-color: var(--gray-500);
         }
 
         .badge.parcela {
             background-color: var(--white);
             color: var(--gray-600);
-            border-color: var(--gray-400);
+            border-color: var(--gray-300);
         }
 
         .delete-btn {
             background: var(--white);
-            color: var(--black);
+            color: var(--gray-700);
             border: 1px solid var(--gray-300);
             padding: 6px 10px;
             font-size: 0.5rem;
             cursor: pointer;
-            border-radius: 0;
+            border-radius: 4px;
             margin-left: 6px;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
@@ -684,19 +701,19 @@
         }
 
         .delete-btn:hover {
-            background-color: var(--black);
-            border-color: var(--black);
-            color: var(--white);
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
         }
 
         .edit-btn {
             background: var(--white);
-            color: var(--black);
+            color: var(--gray-700);
             border: 1px solid var(--gray-300);
             padding: 6px 10px;
             font-size: 0.5rem;
             cursor: pointer;
-            border-radius: 0;
+            border-radius: 4px;
             font-family: 'Inter', sans-serif;
             font-weight: 500;
             text-transform: uppercase;
@@ -705,9 +722,9 @@
         }
 
         .edit-btn:hover {
-            background-color: var(--black);
-            border-color: var(--black);
-            color: var(--white);
+            background-color: var(--gray-100);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
         }
 
         .modal {
@@ -726,10 +743,11 @@
             background: var(--white);
             margin: 5% auto;
             padding: 28px;
-            border: 1px solid var(--black);
-            border-radius: 0;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
             width: 90%;
             max-width: 600px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
         }
 
         .modal-header {
@@ -799,22 +817,27 @@
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-            gap: 1px;
+            gap: 16px;
             margin-top: 16px;
-            background: var(--black);
-            border: 1px solid var(--black);
+            background: transparent;
+            border: none;
         }
 
         .stat-item {
             text-align: center;
             padding: 24px 20px;
             background-color: var(--white);
-            border-radius: 0;
-            transition: background-color 0.2s ease;
+            border: 1px solid var(--gray-200);
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
         }
 
         .stat-item:hover {
-            background-color: var(--gray-50);
+            background-color: var(--white);
+            border-color: var(--gray-300);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transform: translateY(-2px);
         }
 
         .stat-label {
@@ -845,21 +868,21 @@
         }
 
         .alert.success {
-            background-color: var(--white);
-            border-color: var(--black);
-            color: var(--black);
+            background-color: var(--gray-50);
+            border-color: var(--gray-300);
+            color: var(--gray-800);
         }
 
         .alert.error {
             background-color: var(--gray-100);
-            border-color: var(--black);
-            color: var(--black);
+            border-color: var(--gray-400);
+            color: var(--gray-900);
         }
 
         .alert.info {
             background-color: var(--gray-50);
             border-color: var(--gray-300);
-            color: var(--black);
+            color: var(--gray-800);
         }
 
         @media (max-width: 768px) {
