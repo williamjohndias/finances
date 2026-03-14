@@ -824,7 +824,6 @@ async function atualizarSaldos() {
         const sortedMonths = Object.keys(monthlyData).sort();
         
         let saldoAcumuladoAtual = 0;
-        let saldoMesAnterior = 0;
         let mesAtualData = null;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
@@ -838,7 +837,6 @@ async function atualizarSaldos() {
             const saldoMes = monthData.receitas - monthData.debito - monthData.abatimentos;
 
             if (dashboardMonth && month === dashboardMonth) {
-                saldoMesAnterior = saldoAcumuladoAtual;
                 mesAtualData = monthData;
                 saldoAcumuladoAtual += saldoMes;
                 break;
@@ -847,11 +845,12 @@ async function atualizarSaldos() {
             saldoAcumuladoAtual += saldoMes;
         }
 
-        // Saldo Projetado: saldo guardado do mês anterior + receitas do mês − todos os gastos do mês
+        // Saldo Projetado: resultado líquido do mês selecionado (receitas − todos os gastos do mês)
+        // Dinâmico por mês, sem acumulação histórica
         const receitasMes = mesAtualData ? mesAtualData.receitas : 0;
         const debitoMes = mesAtualData ? mesAtualData.debito : 0;
         const faturasMes = mesAtualData ? mesAtualData.faturas : 0;
-        const saldoProjetado = saldoMesAnterior + receitasMes - debitoMes - faturasMes;
+        const saldoProjetado = receitasMes - debitoMes - faturasMes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -874,7 +873,7 @@ async function atualizarSaldos() {
         
         // Aviso explicativo
         if (diagAviso) {
-            let aviso = `Saldo Projetado = Saldo anterior (${formatCurrency(saldoMesAnterior)}) + Receitas do mês (${formatCurrency(receitasMes)}) − Débito (${formatCurrency(debitoMes)}) − Compras no cartão (${formatCurrency(faturasMes)}).`;
+            let aviso = `Saldo Projetado = Receitas (${formatCurrency(receitasMes)}) − Débito (${formatCurrency(debitoMes)}) − Compras no cartão (${formatCurrency(faturasMes)}) = ${formatCurrency(saldoProjetado)}.`;
             diagAviso.textContent = aviso;
         }
     } catch (error) {
