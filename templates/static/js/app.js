@@ -783,6 +783,9 @@ async function atualizarSaldos() {
         const abatimentosResponse = await fetch('/api/abatimentos');
         const abatimentos = await abatimentosResponse.json();
 
+        const monthParam = dashboardMonth ? `?month=${dashboardMonth}` : '';
+        const faturasData = await (await fetch('/api/faturas' + monthParam)).json();
+
         const monthlyData = {};
         
         (data.receitas || []).forEach(t => {
@@ -823,12 +826,10 @@ async function atualizarSaldos() {
         
         const sortedMonths = Object.keys(monthlyData).sort();
         
-        // saldoAcumuladoAtual  → fluxo de caixa real (receitas − débito − abatimentos) → "Saldo Atual"
-        // sobrouAnterior       → accrual (receitas − débito − faturas) meses anteriores  → "Sobrou do Mês Anterior"
-        // saldoProjetado       → sobrouAnterior + resultado do mês (accrual)             → "Saldo Projetado"
+        // saldoAcumuladoAtual → caixa real (receitas − débito − abatimentos) acumulado até o mês
+        // sobrouAnterior      → accrual (receitas − débito − faturas) dos meses anteriores
         let saldoAcumuladoAtual = 0;
         let sobrouAnterior = 0;
-        let mesAtualData = null;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
         for (const month of sortedMonths) {
@@ -838,25 +839,20 @@ async function atualizarSaldos() {
             totalFaturas += monthData.faturas;
             totalAbatimentos += monthData.abatimentos;
 
-            const saldoCaixa  = monthData.receitas - monthData.debito - monthData.abatimentos;
-            const saldoAccrual = monthData.receitas - monthData.debito - monthData.faturas;
+            const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos;
 
             if (dashboardMonth && month === dashboardMonth) {
-                mesAtualData = monthData;
                 saldoAcumuladoAtual += saldoCaixa;
-                // sobrouAnterior já contém o acumulado accrual até o mês anterior
                 break;
             }
 
             saldoAcumuladoAtual += saldoCaixa;
-            sobrouAnterior += saldoAccrual;
+            sobrouAnterior += monthData.receitas - monthData.debito - monthData.faturas;
         }
 
-        const receitasMes = mesAtualData ? mesAtualData.receitas : 0;
-        const debitoMes   = mesAtualData ? mesAtualData.debito   : 0;
-        const faturasMes  = mesAtualData ? mesAtualData.faturas  : 0;
-        // Saldo Projetado = Sobrou do Mês Anterior + Receitas − Total Gastos do mês
-        const saldoProjetado = sobrouAnterior + receitasMes - debitoMes - faturasMes;
+        // Saldo Projetado = Saldo Atual − Faturas pendentes (o que falta pagar)
+        const faturasPendentes = (faturasData.nubank?.atual || 0) + (faturasData.mercado_pago?.atual || 0);
+        const saldoProjetado = saldoAcumuladoAtual - faturasPendentes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -885,7 +881,7 @@ async function atualizarSaldos() {
         
         // Aviso explicativo
         if (diagAviso) {
-            let aviso = `Saldo Projetado = Sobrou anterior (${formatCurrency(sobrouAnterior)}) + Receitas (${formatCurrency(receitasMes)}) − Débito (${formatCurrency(debitoMes)}) − Compras no cartão (${formatCurrency(faturasMes)}) = ${formatCurrency(saldoProjetado)}.`;
+            let aviso = `Saldo Projetado = Saldo Atual (${formatCurrency(saldoAcumuladoAtual)}) − Faturas pendentes (${formatCurrency(faturasPendentes)}) = ${formatCurrency(saldoProjetado)}.`;
             diagAviso.textContent = aviso;
         }
     } catch (error) {
