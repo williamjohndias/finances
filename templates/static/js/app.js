@@ -783,10 +783,6 @@ async function atualizarSaldos() {
         const abatimentosResponse = await fetch('/api/abatimentos');
         const abatimentos = await abatimentosResponse.json();
         
-        const monthParam = dashboardMonth ? `?month=${dashboardMonth}` : '';
-        const faturasResponse = await fetch('/api/faturas' + monthParam);
-        const faturasData = await faturasResponse.json();
-        
         const monthlyData = {};
         
         (data.receitas || []).forEach(t => {
@@ -828,27 +824,34 @@ async function atualizarSaldos() {
         const sortedMonths = Object.keys(monthlyData).sort();
         
         let saldoAcumuladoAtual = 0;
+        let saldoMesAnterior = 0;
+        let mesAtualData = null;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
-        
+
         for (const month of sortedMonths) {
             const monthData = monthlyData[month];
             totalReceitas += monthData.receitas;
             totalDebito += monthData.debito;
             totalFaturas += monthData.faturas;
             totalAbatimentos += monthData.abatimentos;
-            
-            const saldoMesAtual = monthData.receitas - monthData.debito - monthData.abatimentos;
-            saldoAcumuladoAtual += saldoMesAtual;
-            
+
+            const saldoMes = monthData.receitas - monthData.debito - monthData.abatimentos;
+
             if (dashboardMonth && month === dashboardMonth) {
+                saldoMesAnterior = saldoAcumuladoAtual;
+                mesAtualData = monthData;
+                saldoAcumuladoAtual += saldoMes;
                 break;
             }
+
+            saldoAcumuladoAtual += saldoMes;
         }
-        
-        const monthData = dashboardMonth && monthlyData[dashboardMonth] ? monthlyData[dashboardMonth] : null;
-        const saldoProjetado = monthData 
-            ? (monthData.receitas - monthData.debito - monthData.faturas) 
-            : 0;
+
+        // Saldo Projetado: saldo guardado do mês anterior + receitas do mês − todos os gastos do mês
+        const receitasMes = mesAtualData ? mesAtualData.receitas : 0;
+        const debitoMes = mesAtualData ? mesAtualData.debito : 0;
+        const faturasMes = mesAtualData ? mesAtualData.faturas : 0;
+        const saldoProjetado = saldoMesAnterior + receitasMes - debitoMes - faturasMes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -858,21 +861,20 @@ async function atualizarSaldos() {
         saldoProjetadoEl.textContent = formatCurrency(saldoProjetado);
         saldoProjetadoEl.className = 'card-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
         
-        // Preencher painel de diagnóstico (valores do mês selecionado para o Saldo Projetado)
+        // Preencher painel de diagnóstico
         const diagReceitas = document.getElementById('diagReceitas');
         const diagDebito = document.getElementById('diagDebito');
         const diagFaturas = document.getElementById('diagFaturas');
         const diagAbatimentos = document.getElementById('diagAbatimentos');
         const diagAviso = document.getElementById('diagAviso');
-        if (diagReceitas) diagReceitas.textContent = formatCurrency(monthData ? monthData.receitas : totalReceitas);
-        if (diagDebito) diagDebito.textContent = formatCurrency(monthData ? monthData.debito : totalDebito);
-        if (diagFaturas) diagFaturas.textContent = formatCurrency(monthData ? monthData.faturas : totalFaturas);
-        if (diagAbatimentos) diagAbatimentos.textContent = formatCurrency(monthData ? monthData.abatimentos : totalAbatimentos);
+        if (diagReceitas) diagReceitas.textContent = formatCurrency(totalReceitas);
+        if (diagDebito) diagDebito.textContent = formatCurrency(totalDebito);
+        if (diagFaturas) diagFaturas.textContent = formatCurrency(totalFaturas);
+        if (diagAbatimentos) diagAbatimentos.textContent = formatCurrency(totalAbatimentos);
         
         // Aviso explicativo
         if (diagAviso) {
-            let aviso = 'Saldo Projetado = projeção do mês selecionado: Receitas − Débito − Faturas (apenas do mês). ';
-            aviso += 'Mostra quanto o mês vai gerar de saldo positivo ou negativo.';
+            let aviso = `Saldo Projetado = Saldo anterior (${formatCurrency(saldoMesAnterior)}) + Receitas do mês (${formatCurrency(receitasMes)}) − Débito (${formatCurrency(debitoMes)}) − Compras no cartão (${formatCurrency(faturasMes)}).`;
             diagAviso.textContent = aviso;
         }
     } catch (error) {
