@@ -783,6 +783,10 @@ async function atualizarSaldos() {
         const abatimentosResponse = await fetch('/api/abatimentos');
         const abatimentos = await abatimentosResponse.json();
         
+        const monthParam = dashboardMonth ? `?month=${dashboardMonth}` : '';
+        const faturasResponse = await fetch('/api/faturas' + monthParam);
+        const faturasData = await faturasResponse.json();
+        
         const monthlyData = {};
         
         (data.receitas || []).forEach(t => {
@@ -824,7 +828,6 @@ async function atualizarSaldos() {
         const sortedMonths = Object.keys(monthlyData).sort();
         
         let saldoAcumuladoAtual = 0;
-        let saldoAcumuladoProjetado = 0;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
         
         for (const month of sortedMonths) {
@@ -835,23 +838,23 @@ async function atualizarSaldos() {
             totalAbatimentos += monthData.abatimentos;
             
             const saldoMesAtual = monthData.receitas - monthData.debito - monthData.abatimentos;
-            const saldoMesProjetado = monthData.receitas - monthData.debito - monthData.faturas;
-            
             saldoAcumuladoAtual += saldoMesAtual;
-            saldoAcumuladoProjetado += saldoMesProjetado;
             
             if (dashboardMonth && month === dashboardMonth) {
                 break;
             }
         }
         
+        const faturasPendentes = (faturasData.nubank?.atual || 0) + (faturasData.mercado_pago?.atual || 0);
+        const saldoProjetado = saldoAcumuladoAtual - faturasPendentes;
+        
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
         saldoAtualEl.className = 'card-value ' + (saldoAcumuladoAtual >= 0 ? 'positive' : 'negative');
         
         const saldoProjetadoEl = document.getElementById('saldoProjetado');
-        saldoProjetadoEl.textContent = formatCurrency(saldoAcumuladoProjetado);
-        saldoProjetadoEl.className = 'card-value ' + (saldoAcumuladoProjetado >= 0 ? 'positive' : 'negative');
+        saldoProjetadoEl.textContent = formatCurrency(saldoProjetado);
+        saldoProjetadoEl.className = 'card-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
         
         // Preencher painel de diagnóstico
         const diagReceitas = document.getElementById('diagReceitas');
@@ -866,12 +869,9 @@ async function atualizarSaldos() {
         
         // Aviso explicativo
         if (diagAviso) {
-            let aviso = 'Todos os valores acima são acumulados até o mês selecionado. ';
-            aviso += 'A diferença Saldo Atual − Saldo Projetado = ' + formatCurrency(saldoAcumuladoAtual - saldoAcumuladoProjetado) + ' (equivale a Faturas − Abatimentos). ';
-            if (totalFaturas > 0 && totalAbatimentos === 0) {
-                aviso += 'Você ainda não registrou abatimentos (pagamentos de cartão). ';
-            }
-            aviso += 'Se a fatura real do Nubank/MP for diferente do valor "Faturas cartão" acima, verifique se todas as compras estão cadastradas.';
+            let aviso = 'Saldo Projetado = Saldo Atual − Faturas Pendentes (Nubank + MP do mês). ';
+            aviso += 'Faturas pendentes: ' + formatCurrency(faturasPendentes) + '. ';
+            aviso += 'Se a fatura real do Nubank/MP for diferente, verifique se todas as compras estão cadastradas.';
             diagAviso.textContent = aviso;
         }
     } catch (error) {
