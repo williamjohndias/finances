@@ -824,6 +824,7 @@ async function atualizarSaldos() {
         const sortedMonths = Object.keys(monthlyData).sort();
         
         let saldoAcumuladoAtual = 0;
+        let saldoMesAnterior = 0;
         let mesAtualData = null;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
@@ -837,6 +838,7 @@ async function atualizarSaldos() {
             const saldoMes = monthData.receitas - monthData.debito - monthData.abatimentos;
 
             if (dashboardMonth && month === dashboardMonth) {
+                saldoMesAnterior = saldoAcumuladoAtual;
                 mesAtualData = monthData;
                 saldoAcumuladoAtual += saldoMes;
                 break;
@@ -855,7 +857,13 @@ async function atualizarSaldos() {
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
         saldoAtualEl.className = 'card-value ' + (saldoAcumuladoAtual >= 0 ? 'positive' : 'negative');
-        
+
+        const saldoAnteriorEl = document.getElementById('saldoMesAnterior');
+        if (saldoAnteriorEl) {
+            saldoAnteriorEl.textContent = formatCurrency(saldoMesAnterior);
+            saldoAnteriorEl.className = 'card-value ' + (saldoMesAnterior >= 0 ? 'positive' : 'negative');
+        }
+
         const saldoProjetadoEl = document.getElementById('saldoProjetado');
         saldoProjetadoEl.textContent = formatCurrency(saldoProjetado);
         saldoProjetadoEl.className = 'card-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
