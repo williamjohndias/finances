@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Sistema inteligente de controle financeiro pessoal">
+    <meta name="theme-color" content="#4f46e5">
+    <title>FINANCES - Controle Financeiro Inteligente</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<!-- Sidebar Overlay (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+        <div class="brand-icon">₿</div>
+        <div class="brand-text">
+            <div class="brand-name">FINANCES</div>
+            <div class="brand-subtitle">Controle Inteligente</div>
+        </div>
+        <button class="sidebar-close" onclick="closeSidebar()" title="Fechar menu">✕</button>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section-label">Principal</div>
+
+        <a class="nav-link active" data-page="dashboard" onclick="navigateTo('dashboard')">
+            <span class="nav-icon">🏠</span>
+            <span class="nav-label">Dashboard</span>
+        </a>
+
+        <a class="nav-link" data-page="transacoes" onclick="navigateTo('transacoes')">
+            <span class="nav-icon">📋</span>
+            <span class="nav-label">Transações</span>
+        </a>
+
+        <a class="nav-link" data-page="abatimentos" onclick="navigateTo('abatimentos')">
+            <span class="nav-icon">💳</span>
+            <span class="nav-label">Abatimentos</span>
+        </a>
+
+        <div class="nav-section-label">Análises</div>
+
+        <a class="nav-link" data-page="graficos" onclick="navigateTo('graficos')">
+            <span class="nav-icon">📈</span>
+            <span class="nav-label">Gráficos</span>
+        </a>
+
+        <a class="nav-link" data-page="analises" onclick="navigateTo('analises')">
+            <span class="nav-icon">📊</span>
+            <span class="nav-label">Análises</span>
+        </a>
+
+        <a class="nav-link" data-page="calendario" onclick="navigateTo('calendario')">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Calendário</span>
+        </a>
+    </nav>
+
+    <div class="sidebar-footer">
+        <button id="themeToggle" onclick="toggleTheme()">
+            <span class="theme-icon">🌙</span>
+            <span class="hide-mobile">Modo Escuro</span>
+        </button>
+    </div>
+</aside>
+
+<!-- Main Wrapper -->
+<div class="main-wrapper" id="mainWrapper">
+
+    <!-- Topbar -->
+    <header class="topbar">
+        <div class="topbar-left">
+            <button class="hamburger" onclick="toggleSidebar()" title="Menu" aria-label="Abrir menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <h1 class="topbar-title" id="pageTitle">Dashboard</h1>
+        </div>
+        <div class="topbar-right">
+            <div class="month-filter-wrap">
+                <label for="dashboardMonth">Mês:</label>
+                <select id="dashboardMonth">
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+            <button onclick="exportToCSV()" class="topbar-btn" title="Exportar CSV">📥 CSV</button>
+            <button onclick="exportToPDF()" class="topbar-btn" title="Imprimir / PDF">🖨 PDF</button>
+        </div>
+    </header>
+
+    <!-- Pages -->
+    <main class="main-content">
+
+        <!-- ==================== PAGE: DASHBOARD ==================== -->
+        <section id="page-dashboard" class="page active">
+
+            <!-- KPI Cards -->
+            <div id="dashboard" class="dashboard-grid">
+                <div class="card highlight">
+                    <div class="card-header">
+                        <div class="card-title">Saldo Atual</div>
+                    </div>
+                    <div class="card-value" id="saldoAtual">R$ 0,00</div>
+                    <div class="card-footer">Saldo acumulado até o mês selecionado</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Saldo Projetado</div>
+                    </div>
+                    <div class="card-value" id="saldoProjetado">R$ 0,00</div>
+                    <div class="card-footer">Com faturas de cartão incluídas</div>
+                </div>
+
+                <div class="card receitas">
+                    <div class="card-header">
+                        <div class="card-title">Total Receitas</div>
+                    </div>
+                    <div class="card-value positive" id="totalReceitas">R$ 0,00</div>
+                    <div class="card-footer" id="mediaReceitas">Média mensal: R$ 0,00</div>
+                </div>
+
+                <div class="card gastos">
+                    <div class="card-header">
+                        <div class="card-title">Total Gastos</div>
+                    </div>
+                    <div class="card-value negative" id="totalGastos">R$ 0,00</div>
+                    <div class="card-footer" id="mediaGastos">Média mensal: R$ 0,00</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Transações</div>
+                    </div>
+                    <div class="card-value" id="totalTransacoes">0</div>
+                    <div class="card-footer" id="parceladasInfo">0 compras parceladas</div>
+                </div>
+            </div>
+
+            <!-- Faturas Cards -->
+            <div class="dashboard-grid" style="margin-top: 0;">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Mercado Pago - Fatura</div>
+                    </div>
+                    <div class="card-value negative" id="faturaAtualMP">R$ 0,00</div>
+                    <div class="card-footer">Pendente de pagamento</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Mercado Pago - Pago</div>
+                    </div>
+                    <div class="card-value" id="faturaAbatidaMP">R$ 0,00</div>
+                    <div class="card-footer">Total já pago</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Nubank - Fatura</div>
+                    </div>
+                    <div class="card-value negative" id="faturaAtualNubank">R$ 0,00</div>
+                    <div class="card-footer">Pendente de pagamento</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Gastos Débito</div>
+                    </div>
+                    <div class="card-value negative" id="totalDebitoCard">R$ 0,00</div>
+                    <div class="card-footer">Total gasto em débito</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Nubank - Pago</div>
+                    </div>
+                    <div class="card-value" id="faturaAbatidaNubank">R$ 0,00</div>
+                    <div class="card-footer">Total já pago</div>
+                </div>
+            </div>
+
+            <!-- Diagnóstico dos Saldos -->
+            <div class="diagnostico-saldos" style="margin-top: 1rem;">
+                <button type="button" class="diagnostico-toggle" id="diagnosticoToggle" onclick="toggleDiagnostico()">
+                    🔍 Ver como os saldos são calculados
+                </button>
+                <div id="diagnosticoContent" class="diagnostico-content" style="display: none;">
+                    <div class="diagnostico-grid">
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Receitas (acumulado)</span>
+                            <span class="diagnostico-valor" id="diagReceitas">R$ 0,00</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Débito (acumulado)</span>
+                            <span class="diagnostico-valor negative" id="diagDebito">R$ 0,00</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Faturas cartão (acumulado)</span>
+                            <span class="diagnostico-valor negative" id="diagFaturas">R$ 0,00</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Abatimentos (pagamentos)</span>
+                            <span class="diagnostico-valor negative" id="diagAbatimentos">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="diagnostico-formulas">
+                        <p><strong>Saldo Atual</strong> = Receitas − Débito − Abatimentos</p>
+                        <p><strong>Saldo Projetado</strong> = Receitas − Débito − Faturas</p>
+                    </div>
+                    <p class="diagnostico-aviso" id="diagAviso"></p>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div id="charts" class="charts-grid">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Evolução Mensal</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Distribuição de Gastos</h2>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="gastosChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Gastos -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Maiores Gastos do Mês</h2>
+                </div>
+                <div id="topExpenses" class="top-expenses-list"></div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PAGE: TRANSAÇÕES ==================== -->
+        <section id="page-transacoes" class="page">
+
+            <!-- Formulário Nova Transação -->
+            <div class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">Nova Transação</h2>
+                </div>
+                <form id="transactionForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tipo">Tipo de Transação</label>
+                            <select id="tipo" name="tipo" required>
+                                <option value="">Selecione...</option>
+                                <option value="receita">💰 Receita</option>
+                                <option value="debito">💸 Gasto - Débito</option>
+                                <option value="mercado_pago">💳 Gasto - Cartão Mercado Pago</option>
+                                <option value="nubank">💜 Gasto - Cartão Nubank</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="valor">Valor Total (R$)</label>
+                            <input type="number" id="valor" name="valor" step="0.01" min="0" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="num_parcelas">Número de Parcelas</label>
+                            <input type="number" id="num_parcelas" name="num_parcelas" min="1" value="1" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="descricao">Descrição</label>
+                            <input type="text" id="descricao" name="descricao" required placeholder="Ex: Salário, Supermercado, Netflix...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="data">Data da Primeira Parcela</label>
+                            <input type="date" id="data" name="data" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button type="submit">Adicionar Transação</button>
+                        </div>
+                    </div>
+                    <div id="parcelasInfo" class="alert info" style="display: none;"></div>
+                    <div id="successMessage" class="alert" style="display: none;"></div>
+                </form>
+            </div>
+
+            <!-- Histórico de Transações -->
+            <div id="transactions" class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Histórico de Transações</h2>
+                </div>
+
+                <div class="filters">
+                    <div class="filter-group">
+                        <label for="filterMes">Mês:</label>
+                        <select id="filterMes">
+                            <option value="">Carregando...</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterTipo">Tipo:</label>
+                        <select id="filterTipo">
+                            <option value="">Todos</option>
+                            <option value="receita">Receitas</option>
+                            <option value="debito">Débito</option>
+                            <option value="mercado_pago">Mercado Pago</option>
+                            <option value="nubank">Nubank</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="filterBusca">Buscar:</label>
+                        <input type="text" id="filterBusca" placeholder="Descrição...">
+                    </div>
+                    <div class="filter-group" style="margin-left: auto;">
+                        <button type="button" id="deleteSelectedBtn" class="btn-danger btn-sm" style="display: none;" onclick="deleteSelectedTransactions()">
+                            Excluir Selecionados
+                        </button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">
+                                    <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                </th>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Parcela</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transactionsTableBody">
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    <div class="loading-spinner"></div>
+                                    Carregando transações...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PAGE: ABATIMENTOS ==================== -->
+        <section id="page-abatimentos" class="page">
+
+            <!-- Formulário Abatimento -->
+            <div id="abatimentos" class="form-section">
+                <div class="section-header">
+                    <h2 class="section-title">Abater Fatura</h2>
+                </div>
+                <form id="abatimentoForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="tipo_cartao_abatimento">Cartão</label>
+                            <select id="tipo_cartao_abatimento" name="tipo_cartao" required>
+                                <option value="">Selecione...</option>
+                                <option value="mercado_pago">Mercado Pago</option>
+                                <option value="nubank">Nubank</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="valor_abatimento">Valor do Abatimento (R$)</label>
+                            <input type="number" id="valor_abatimento" name="valor" step="0.01" min="0" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="data_abatimento">Data</label>
+                            <input type="date" id="data_abatimento" name="data" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="descricao_abatimento">Descrição (opcional)</label>
+                            <input type="text" id="descricao_abatimento" name="descricao" placeholder="Ex: Depósito para pagar fatura...">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button type="submit">Adicionar Abatimento</button>
+                        </div>
+                    </div>
+                    <div id="abatimentoMessage" class="alert" style="display: none;"></div>
+                </form>
+            </div>
+
+            <!-- Histórico de Abatimentos -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Histórico de Abatimentos</h2>
+                </div>
+                <div style="overflow-x: auto;">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Cartão</th>
+                                <th>Descrição</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="abatimentosTableBody">
+                            <tr>
+                                <td colspan="5" class="loading">
+                                    <div class="loading-spinner"></div>
+                                    Carregando abatimentos...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PAGE: GRÁFICOS ==================== -->
+        <section id="page-graficos" class="page">
+
+            <!-- Evolução Patrimonial -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Evolução Patrimonial</h2>
+                </div>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Análise por Tipo de Pagamento -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Análise por Tipo de Pagamento</h2>
+                </div>
+                <div class="payment-analysis-grid">
+                    <div class="payment-card">
+                        <div class="payment-icon">💸</div>
+                        <div class="payment-info">
+                            <div class="payment-label">Débito</div>
+                            <div class="payment-value" id="paymentDebito">R$ 0,00</div>
+                            <div class="payment-percentage" id="paymentDebitoPct">0%</div>
+                            <div class="payment-bar">
+                                <div class="payment-bar-fill" id="paymentDebitoBar" style="width: 0%; background: linear-gradient(90deg, #10b981, #059669);"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="payment-card">
+                        <div class="payment-icon">💳</div>
+                        <div class="payment-info">
+                            <div class="payment-label">Mercado Pago</div>
+                            <div class="payment-value" id="paymentMercadoPago">R$ 0,00</div>
+                            <div class="payment-percentage" id="paymentMercadoPagoPct">0%</div>
+                            <div class="payment-bar">
+                                <div class="payment-bar-fill" id="paymentMercadoPagoBar" style="width: 0%; background: linear-gradient(90deg, #3b82f6, #2563eb);"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="payment-card">
+                        <div class="payment-icon">💜</div>
+                        <div class="payment-info">
+                            <div class="payment-label">Nubank</div>
+                            <div class="payment-value" id="paymentNubank">R$ 0,00</div>
+                            <div class="payment-percentage" id="paymentNubankPct">0%</div>
+                            <div class="payment-bar">
+                                <div class="payment-bar-fill" id="paymentNubankBar" style="width: 0%; background: linear-gradient(90deg, #a855f7, #9333ea);"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PAGE: ANÁLISES ==================== -->
+        <section id="page-analises" class="page">
+
+            <!-- Saúde Financeira -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Análise de Saúde Financeira</h2>
+                </div>
+                <div class="health-score-container">
+                    <div class="health-score-main">
+                        <div class="score-circle">
+                            <svg width="160" height="160">
+                                <defs>
+                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:rgb(79, 70, 229);stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:rgb(245, 158, 11);stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle cx="80" cy="80" r="70" class="score-bg"></circle>
+                                <circle cx="80" cy="80" r="70" class="score-fill" id="scoreCircle"></circle>
+                            </svg>
+                            <div class="score-value" id="healthScore">0</div>
+                            <div class="score-label" id="healthLabel">Analisando...</div>
+                        </div>
+                    </div>
+                    <div class="health-metrics">
+                        <div class="metric-item">
+                            <div class="metric-icon">💰</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Taxa de Poupança</div>
+                                <div class="metric-value" id="savingsRate">0%</div>
+                                <div class="metric-desc">Do que você ganha</div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-icon">📊</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Estabilidade</div>
+                                <div class="metric-value" id="stability">Baixa</div>
+                                <div class="metric-desc">Variação de gastos</div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-icon">🎯</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Maior Gasto</div>
+                                <div class="metric-value" id="topCategory">-</div>
+                                <div class="metric-desc">Categoria dominante</div>
+                            </div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-icon">⚡</div>
+                            <div class="metric-content">
+                                <div class="metric-label">Tendência</div>
+                                <div class="metric-value" id="trend">Estável</div>
+                                <div class="metric-desc">Últimos 3 meses</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Estatísticas Detalhadas -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Estatísticas Detalhadas</h2>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Gastos em Débito</div>
+                        <div class="stat-value" id="statDebito">R$ 0,00</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;" id="pctDebito">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Gastos Mercado Pago</div>
+                        <div class="stat-value" id="statMercadoPago">R$ 0,00</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;" id="pctMercadoPago">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Gastos Nubank</div>
+                        <div class="stat-value" id="statNubank">R$ 0,00</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;" id="pctNubank">0%</div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PAGE: CALENDÁRIO ==================== -->
+        <section id="page-calendario" class="page">
+
+            <div class="section calendar-section">
+                <div class="section-header">
+                    <h2 class="section-title">Calendário Financeiro</h2>
+                    <div class="calendar-controls">
+                        <button class="btn-icon" onclick="previousMonth()" title="Mês Anterior">◀</button>
+                        <span id="calendarMonth" style="font-weight: 600; margin: 0 12px;"></span>
+                        <button class="btn-icon" onclick="nextMonth()" title="Próximo Mês">▶</button>
+                    </div>
+                </div>
+                <div id="calendar" class="calendar-grid"></div>
+            </div>
+
+        </section>
+
+    </main>
+</div>
+
+<!-- FAB Button -->
+<button class="fab" onclick="toggleQuickAdd()" title="Cadastro Rápido">
+    <span class="fab-icon">+</span>
+</button>
+
+<!-- Quick Add Menu -->
+<div id="quickAddMenu" class="quick-add-menu">
+    <button class="quick-add-item" onclick="quickAddReceita()">
+        <span class="quick-icon">💰</span>
+        <span>Receita</span>
+    </button>
+    <button class="quick-add-item" onclick="quickAddGasto()">
+        <span class="quick-icon">💸</span>
+        <span>Gasto</span>
+    </button>
+    <button class="quick-add-item" onclick="openFavorites()">
+        <span class="quick-icon">⭐</span>
+        <span>Favoritos</span>
+    </button>
+</div>
+
+<!-- Modal: Favoritos -->
+<div id="favoritesModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <h2>Transações Favoritas</h2>
+        <div id="favoritesList" class="favorites-list"></div>
+        <button class="btn-secondary" style="width: 100%; margin-top: 16px;" onclick="closeFavoritesModal()">Fechar</button>
+    </div>
+</div>
+
+<!-- Modal: Cadastro Rápido -->
+<div id="quickAddModal" class="modal">
+    <div class="modal-content" style="max-width: 400px;">
+        <h2 id="quickAddTitle">Cadastro Rápido</h2>
+        <form id="quickAddForm" onsubmit="submitQuickAdd(event)">
+            <div class="form-group">
+                <label for="quickDescricao">Descrição</label>
+                <input type="text" id="quickDescricao" required>
+            </div>
+            <div class="form-group">
+                <label for="quickValor">Valor (R$)</label>
+                <input type="number" id="quickValor" step="0.01" required>
+            </div>
+            <div class="form-group" id="quickTipoGroup">
+                <label for="quickTipo">Tipo</label>
+                <select id="quickTipo" required>
+                    <option value="debito">Débito</option>
+                    <option value="mercado_pago">Mercado Pago</option>
+                    <option value="nubank">Nubank</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>
+                    <input type="checkbox" id="quickSaveFavorite">
+                    Salvar como favorito
+                </label>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn-secondary" onclick="closeQuickAddModal()">Cancelar</button>
+                <button type="submit">Adicionar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Editar Abatimento -->
+<div id="editAbatimentoModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Editar Abatimento</h2>
+            <span class="close" onclick="closeEditAbatimentoModal()">&times;</span>
+        </div>
+        <form id="editAbatimentoForm">
+            <input type="hidden" id="editAbatimentoId">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editAbatimentoTipoCartao">Cartão</label>
+                    <select id="editAbatimentoTipoCartao" required>
+                        <option value="">Selecione...</option>
+                        <option value="mercado_pago">Mercado Pago</option>
+                        <option value="nubank">Nubank</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editAbatimentoValor">Valor do Abatimento (R$)</label>
+                    <input type="number" id="editAbatimentoValor" step="0.01" min="0" required placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label for="editAbatimentoData">Data</label>
+                    <input type="date" id="editAbatimentoData" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="editAbatimentoDescricao">Descrição (opcional)</label>
+                    <input type="text" id="editAbatimentoDescricao" placeholder="Ex: Depósito para pagar fatura...">
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn-secondary" onclick="closeEditAbatimentoModal()">Cancelar</button>
+                <button type="submit">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Editar Transação -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 class="modal-title">Editar Transação</h2>
+            <span class="close" onclick="closeEditModal()">&times;</span>
+        </div>
+        <form id="editForm">
+            <input type="hidden" id="editId">
+            <input type="hidden" id="editTipo">
+            <input type="hidden" id="editParcelGroupId">
+            <input type="hidden" id="editParcelado">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editTipoSelect">Tipo de Transação</label>
+                    <select id="editTipoSelect" required>
+                        <option value="">Selecione...</option>
+                        <option value="receita">Receita</option>
+                        <option value="debito">Gasto - Débito</option>
+                        <option value="mercado_pago">Gasto - Cartão Mercado Pago</option>
+                        <option value="nubank">Gasto - Cartão Nubank</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editValor">Valor</label>
+                    <input type="number" id="editValor" step="0.01" min="0" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group full-width">
+                    <label for="editDescricao">Descrição</label>
+                    <input type="text" id="editDescricao" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="editData">Data</label>
+                    <input type="date" id="editData" required>
+                </div>
+                <div class="form-group" id="editParcelasGroup" style="display: none;">
+                    <label for="editNumParcelas">Número de Parcelas</label>
+                    <input type="number" id="editNumParcelas" min="1" value="1">
+                </div>
+            </div>
+            <div id="editParcelasInfo" class="alert info" style="display: none;"></div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn-secondary" onclick="closeEditModal()">Cancelar</button>
+                <button type="submit">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bottom Navigation (mobile) -->
+<nav class="bottom-nav">
+    <a class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
+        <div class="nav-icon">🏠</div>
+        <span>Dashboard</span>
+    </a>
+    <a class="nav-item" data-page="transacoes" onclick="navigateTo('transacoes')">
+        <div class="nav-icon">📋</div>
+        <span>Transações</span>
+    </a>
+    <a class="nav-item" data-page="graficos" onclick="navigateTo('graficos')">
+        <div class="nav-icon">📈</div>
+        <span>Gráficos</span>
+    </a>
+    <a class="nav-item" data-page="abatimentos" onclick="navigateTo('abatimentos')">
+        <div class="nav-icon">💳</div>
+        <span>Abatimentos</span>
+    </a>
+</nav>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
