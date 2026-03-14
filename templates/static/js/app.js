@@ -845,8 +845,10 @@ async function atualizarSaldos() {
             }
         }
         
-        const faturasPendentes = (faturasData.nubank?.atual || 0) + (faturasData.mercado_pago?.atual || 0);
-        const saldoProjetado = saldoAcumuladoAtual - faturasPendentes;
+        const monthData = dashboardMonth && monthlyData[dashboardMonth] ? monthlyData[dashboardMonth] : null;
+        const saldoProjetado = monthData 
+            ? (monthData.receitas - monthData.debito - monthData.faturas) 
+            : 0;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -856,22 +858,21 @@ async function atualizarSaldos() {
         saldoProjetadoEl.textContent = formatCurrency(saldoProjetado);
         saldoProjetadoEl.className = 'card-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
         
-        // Preencher painel de diagnóstico
+        // Preencher painel de diagnóstico (valores do mês selecionado para o Saldo Projetado)
         const diagReceitas = document.getElementById('diagReceitas');
         const diagDebito = document.getElementById('diagDebito');
         const diagFaturas = document.getElementById('diagFaturas');
         const diagAbatimentos = document.getElementById('diagAbatimentos');
         const diagAviso = document.getElementById('diagAviso');
-        if (diagReceitas) diagReceitas.textContent = formatCurrency(totalReceitas);
-        if (diagDebito) diagDebito.textContent = formatCurrency(totalDebito);
-        if (diagFaturas) diagFaturas.textContent = formatCurrency(totalFaturas);
-        if (diagAbatimentos) diagAbatimentos.textContent = formatCurrency(totalAbatimentos);
+        if (diagReceitas) diagReceitas.textContent = formatCurrency(monthData ? monthData.receitas : totalReceitas);
+        if (diagDebito) diagDebito.textContent = formatCurrency(monthData ? monthData.debito : totalDebito);
+        if (diagFaturas) diagFaturas.textContent = formatCurrency(monthData ? monthData.faturas : totalFaturas);
+        if (diagAbatimentos) diagAbatimentos.textContent = formatCurrency(monthData ? monthData.abatimentos : totalAbatimentos);
         
         // Aviso explicativo
         if (diagAviso) {
-            let aviso = 'Saldo Projetado = Saldo Atual − Faturas Pendentes (Nubank + MP do mês). ';
-            aviso += 'Faturas pendentes: ' + formatCurrency(faturasPendentes) + '. ';
-            aviso += 'Se a fatura real do Nubank/MP for diferente, verifique se todas as compras estão cadastradas.';
+            let aviso = 'Saldo Projetado = projeção do mês selecionado: Receitas − Débito − Faturas (apenas do mês). ';
+            aviso += 'Mostra quanto o mês vai gerar de saldo positivo ou negativo.';
             diagAviso.textContent = aviso;
         }
     } catch (error) {

@@ -115,7 +115,7 @@
                         <div class="card-title">Saldo Projetado</div>
                     </div>
                     <div class="card-value" id="saldoProjetado">R$ 0,00</div>
-                    <div class="card-footer">Saldo Atual − Faturas pendentes (após pagar cartões)</div>
+                    <div class="card-footer">Projeção do mês: Receitas − Débito − Faturas</div>
                 </div>
 
                 <div class="card receitas">
@@ -194,25 +194,25 @@
                 <div id="diagnosticoContent" class="diagnostico-content" style="display: none;">
                     <div class="diagnostico-grid">
                         <div class="diagnostico-item">
-                            <span class="diagnostico-label">Receitas (acumulado)</span>
+                            <span class="diagnostico-label">Receitas do mês</span>
                             <span class="diagnostico-valor" id="diagReceitas">R$ 0,00</span>
                         </div>
                         <div class="diagnostico-item">
-                            <span class="diagnostico-label">Débito (acumulado)</span>
+                            <span class="diagnostico-label">Débito do mês</span>
                             <span class="diagnostico-valor negative" id="diagDebito">R$ 0,00</span>
                         </div>
                         <div class="diagnostico-item">
-                            <span class="diagnostico-label">Faturas cartão (acumulado)</span>
+                            <span class="diagnostico-label">Faturas cartão do mês</span>
                             <span class="diagnostico-valor negative" id="diagFaturas">R$ 0,00</span>
                         </div>
                         <div class="diagnostico-item">
-                            <span class="diagnostico-label">Abatimentos (pagamentos)</span>
+                            <span class="diagnostico-label">Abatimentos do mês</span>
                             <span class="diagnostico-valor negative" id="diagAbatimentos">R$ 0,00</span>
                         </div>
                     </div>
                     <div class="diagnostico-formulas">
-                        <p><strong>Saldo Atual</strong> = Receitas − Débito − Abatimentos (acumulado)</p>
-                        <p><strong>Saldo Projetado</strong> = Saldo Atual − Faturas Pendentes (o que você terá após pagar os cartões)</p>
+                        <p><strong>Saldo Atual</strong> = Receitas − Débito − Abatimentos (acumulado até o mês)</p>
+                        <p><strong>Saldo Projetado</strong> = Receitas − Débito − Faturas (apenas do mês selecionado)</p>
                     </div>
                     <p class="diagnostico-aviso" id="diagAviso"></p>
                 </div>
