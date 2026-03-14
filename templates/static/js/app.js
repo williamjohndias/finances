@@ -823,8 +823,11 @@ async function atualizarSaldos() {
         
         const sortedMonths = Object.keys(monthlyData).sort();
         
+        // saldoAcumuladoAtual  → fluxo de caixa real (receitas − débito − abatimentos) → "Saldo Atual"
+        // sobrouAnterior       → accrual (receitas − débito − faturas) meses anteriores  → "Sobrou do Mês Anterior"
+        // saldoProjetado       → sobrouAnterior + resultado do mês (accrual)             → "Saldo Projetado"
         let saldoAcumuladoAtual = 0;
-        let saldoMesAnterior = 0;
+        let sobrouAnterior = 0;
         let mesAtualData = null;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
@@ -835,24 +838,25 @@ async function atualizarSaldos() {
             totalFaturas += monthData.faturas;
             totalAbatimentos += monthData.abatimentos;
 
-            const saldoMes = monthData.receitas - monthData.debito - monthData.abatimentos;
+            const saldoCaixa  = monthData.receitas - monthData.debito - monthData.abatimentos;
+            const saldoAccrual = monthData.receitas - monthData.debito - monthData.faturas;
 
             if (dashboardMonth && month === dashboardMonth) {
-                saldoMesAnterior = saldoAcumuladoAtual;
                 mesAtualData = monthData;
-                saldoAcumuladoAtual += saldoMes;
+                saldoAcumuladoAtual += saldoCaixa;
+                // sobrouAnterior já contém o acumulado accrual até o mês anterior
                 break;
             }
 
-            saldoAcumuladoAtual += saldoMes;
+            saldoAcumuladoAtual += saldoCaixa;
+            sobrouAnterior += saldoAccrual;
         }
 
-        // Saldo Projetado: resultado líquido do mês selecionado (receitas − todos os gastos do mês)
-        // Dinâmico por mês, sem acumulação histórica
         const receitasMes = mesAtualData ? mesAtualData.receitas : 0;
-        const debitoMes = mesAtualData ? mesAtualData.debito : 0;
-        const faturasMes = mesAtualData ? mesAtualData.faturas : 0;
-        const saldoProjetado = receitasMes - debitoMes - faturasMes;
+        const debitoMes   = mesAtualData ? mesAtualData.debito   : 0;
+        const faturasMes  = mesAtualData ? mesAtualData.faturas  : 0;
+        // Saldo Projetado = Sobrou do Mês Anterior + Receitas − Total Gastos do mês
+        const saldoProjetado = sobrouAnterior + receitasMes - debitoMes - faturasMes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -860,8 +864,8 @@ async function atualizarSaldos() {
 
         const saldoAnteriorEl = document.getElementById('saldoMesAnterior');
         if (saldoAnteriorEl) {
-            saldoAnteriorEl.textContent = formatCurrency(saldoMesAnterior);
-            saldoAnteriorEl.className = 'card-value ' + (saldoMesAnterior >= 0 ? 'positive' : 'negative');
+            saldoAnteriorEl.textContent = formatCurrency(sobrouAnterior);
+            saldoAnteriorEl.className = 'card-value ' + (sobrouAnterior >= 0 ? 'positive' : 'negative');
         }
 
         const saldoProjetadoEl = document.getElementById('saldoProjetado');
@@ -881,7 +885,7 @@ async function atualizarSaldos() {
         
         // Aviso explicativo
         if (diagAviso) {
-            let aviso = `Saldo Projetado = Receitas (${formatCurrency(receitasMes)}) − Débito (${formatCurrency(debitoMes)}) − Compras no cartão (${formatCurrency(faturasMes)}) = ${formatCurrency(saldoProjetado)}.`;
+            let aviso = `Saldo Projetado = Sobrou anterior (${formatCurrency(sobrouAnterior)}) + Receitas (${formatCurrency(receitasMes)}) − Débito (${formatCurrency(debitoMes)}) − Compras no cartão (${formatCurrency(faturasMes)}) = ${formatCurrency(saldoProjetado)}.`;
             diagAviso.textContent = aviso;
         }
     } catch (error) {
