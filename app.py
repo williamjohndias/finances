@@ -730,6 +730,17 @@ def update_meta(meta_id):
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/version', methods=['GET'])
+def get_version():
+    """Retorna data e hash do último commit git"""
+    try:
+        import subprocess
+        commit_hash = subprocess.check_output(['git', 'rev-parse', '--short', 'HEAD'], stderr=subprocess.DEVNULL).decode().strip()
+        commit_date = subprocess.check_output(['git', 'log', '-1', '--format=%ci'], stderr=subprocess.DEVNULL).decode().strip()
+        return jsonify({'hash': commit_hash, 'date': commit_date})
+    except Exception:
+        return jsonify({'hash': 'N/A', 'date': 'N/A'})
+
 @app.route('/api/metas/<meta_id>', methods=['DELETE'])
 def delete_meta(meta_id):
     """Remove uma meta financeira"""

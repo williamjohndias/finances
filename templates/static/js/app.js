@@ -1083,7 +1083,18 @@ function toggleExportMenu() {
 // ===================================
 document.addEventListener('DOMContentLoaded', () => {
     initTheme();
-    
+
+    // Exibe data/hora do último deploy
+    fetch('/api/version').then(r => r.json()).then(v => {
+        const el = document.getElementById('deployDate');
+        if (el && v.date && v.date !== 'N/A') {
+            const d = new Date(v.date);
+            el.textContent = d.toLocaleString('pt-BR') + ' (commit ' + v.hash + ')';
+        } else if (el) {
+            el.textContent = 'N/A';
+        }
+    }).catch(() => {});
+
     // Transaction Form
     document.getElementById('transactionForm').addEventListener('submit', async (e) => {
         e.preventDefault();
