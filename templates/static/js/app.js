@@ -783,10 +783,6 @@ async function atualizarSaldos() {
         const abatimentosResponse = await fetch('/api/abatimentos');
         const abatimentos = await abatimentosResponse.json();
 
-        const monthParam = dashboardMonth ? `?month=${dashboardMonth}` : '';
-        const faturasResponse = await fetch('/api/faturas' + monthParam);
-        const faturasData = await faturasResponse.json();
-
         const monthlyData = {};
         
         (data.receitas || []).forEach(t => {
@@ -862,12 +858,9 @@ async function atualizarSaldos() {
         // Saldo Projetado = Sobrou do Mês Anterior + Receitas − Total Gastos do mês
         const saldoProjetado = sobrouAnterior + receitasMes - debitoMes - faturasMes;
         
-        const faturasPendentes = (faturasData.nubank?.atual || 0) + (faturasData.mercado_pago?.atual || 0);
-        const saldoAtualReal = saldoAcumuladoAtual - faturasPendentes;
-
         const saldoAtualEl = document.getElementById('saldoAtual');
-        saldoAtualEl.textContent = formatCurrency(saldoAtualReal);
-        saldoAtualEl.className = 'card-value ' + (saldoAtualReal >= 0 ? 'positive' : 'negative');
+        saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
+        saldoAtualEl.className = 'card-value ' + (saldoAcumuladoAtual >= 0 ? 'positive' : 'negative');
 
         const saldoAnteriorEl = document.getElementById('saldoMesAnterior');
         if (saldoAnteriorEl) {
