@@ -100,30 +100,14 @@
         <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page active">
 
-            <!-- KPI Cards -->
+            <!-- KPI Cards - Ordem: Entrada → Gastos → Resultados -->
             <div id="dashboard" class="dashboard-grid">
-                <div class="card highlight">
-                    <div class="card-header">
-                        <div class="card-title">Saldo Atual</div>
-                    </div>
-                    <div class="card-value" id="saldoAtual">R$ 0,00</div>
-                    <div class="card-footer">Acumulado anterior + Receitas − Débitos − Abatimentos</div>
-                </div>
-
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">Sobrou do Mês Anterior</div>
                     </div>
                     <div class="card-value" id="saldoMesAnterior">R$ 0,00</div>
-                    <div class="card-footer">Saldo Atual do mês passado (caixa real que rolou)</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Saldo Projetado</div>
-                    </div>
-                    <div class="card-value" id="saldoProjetado">R$ 0,00</div>
-                    <div class="card-footer">Saldo Atual − Faturas pendentes dos cartões</div>
+                    <div class="card-footer">Caixa real que entrou neste mês</div>
                 </div>
 
                 <div class="card receitas">
@@ -140,6 +124,22 @@
                     </div>
                     <div class="card-value negative" id="totalGastos">R$ 0,00</div>
                     <div class="card-footer" id="mediaGastos">Média mensal: R$ 0,00</div>
+                </div>
+
+                <div class="card highlight">
+                    <div class="card-header">
+                        <div class="card-title">Saldo Atual</div>
+                    </div>
+                    <div class="card-value" id="saldoAtual">R$ 0,00</div>
+                    <div class="card-footer">Acumulado + Receitas − Débitos − Abatimentos</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Saldo Projetado</div>
+                    </div>
+                    <div class="card-value" id="saldoProjetado">R$ 0,00</div>
+                    <div class="card-footer">Projetado anterior + Receitas − Débito − Faturas (rola)</div>
                 </div>
 
                 <div class="card">
@@ -191,38 +191,6 @@
                     </div>
                     <div class="card-value" id="faturaAbatidaNubank">R$ 0,00</div>
                     <div class="card-footer">Total já pago</div>
-                </div>
-            </div>
-
-            <!-- Diagnóstico dos Saldos -->
-            <div class="diagnostico-saldos" style="margin-top: 1rem;">
-                <button type="button" class="diagnostico-toggle" id="diagnosticoToggle" onclick="toggleDiagnostico()">
-                    🔍 Ver como os saldos são calculados
-                </button>
-                <div id="diagnosticoContent" class="diagnostico-content" style="display: none;">
-                    <div class="diagnostico-grid">
-                        <div class="diagnostico-item">
-                            <span class="diagnostico-label">Receitas (acumulado)</span>
-                            <span class="diagnostico-valor" id="diagReceitas">R$ 0,00</span>
-                        </div>
-                        <div class="diagnostico-item">
-                            <span class="diagnostico-label">Débito (acumulado)</span>
-                            <span class="diagnostico-valor negative" id="diagDebito">R$ 0,00</span>
-                        </div>
-                        <div class="diagnostico-item">
-                            <span class="diagnostico-label">Faturas cartão (acumulado)</span>
-                            <span class="diagnostico-valor negative" id="diagFaturas">R$ 0,00</span>
-                        </div>
-                        <div class="diagnostico-item">
-                            <span class="diagnostico-label">Abatimentos (pagamentos)</span>
-                            <span class="diagnostico-valor negative" id="diagAbatimentos">R$ 0,00</span>
-                        </div>
-                    </div>
-                    <div class="diagnostico-formulas">
-                        <p><strong>Saldo Atual</strong> = Acumulado anterior + Receitas − Débitos − Abatimentos (caixa real)</p>
-                        <p><strong>Saldo Projetado</strong> = Receitas do mês − Débito − Compras no cartão (resultado líquido do mês)</p>
-                    </div>
-                    <p class="diagnostico-aviso" id="diagAviso"></p>
                 </div>
             </div>
 
@@ -585,6 +553,39 @@
                         <div class="stat-value" id="statNubank">R$ 0,00</div>
                         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;" id="pctNubank">0%</div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Como os saldos são calculados -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Como os saldos são calculados</h2>
+                </div>
+                <div class="diagnostico-saldos">
+                    <div class="diagnostico-grid">
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Receitas (acumulado)</span>
+                            <span class="diagnostico-valor" id="diagReceitas">R$ 0,00</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Débito (acumulado)</span>
+                            <span class="diagnostico-valor negative" id="diagDebito">R$ 0,00</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Faturas cartão (acumulado)</span>
+                            <span class="diagnostico-valor negative" id="diagFaturas">R$ 0,00</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Abatimentos (pagamentos)</span>
+                            <span class="diagnostico-valor negative" id="diagAbatimentos">R$ 0,00</span>
+                        </div>
+                    </div>
+                    <div class="diagnostico-formulas">
+                        <p><strong>Sobrou do Mês Anterior</strong> = Saldo Atual do mês passado (caixa real)</p>
+                        <p><strong>Saldo Atual</strong> = Acumulado anterior + Receitas − Débitos − Abatimentos</p>
+                        <p><strong>Saldo Projetado</strong> = Projetado anterior + Receitas − Débito − Faturas (rola mês a mês)</p>
+                    </div>
+                    <p class="diagnostico-aviso" id="diagAviso"></p>
                 </div>
             </div>
 

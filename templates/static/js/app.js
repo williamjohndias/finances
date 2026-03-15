@@ -784,7 +784,8 @@ async function atualizarSaldos() {
         const abatimentos = await abatimentosResponse.json();
 
         const monthParam = dashboardMonth ? `?month=${dashboardMonth}` : '';
-        const faturasData = await (await fetch('/api/faturas' + monthParam)).json();
+        const faturasResponse = await fetch('/api/faturas' + monthParam);
+        const faturasData = await faturasResponse.json();
 
         const monthlyData = {};
         
@@ -828,8 +829,10 @@ async function atualizarSaldos() {
         
         // saldoAcumuladoAtual → caixa real (receitas − débito − abatimentos) acumulado até o mês
         // sobrouAnterior      → Saldo Atual dos meses anteriores (o que rola para o próximo mês)
+        // saldoProjetado     → acumulado (receitas − débito − faturas) — rola mês a mês
         let saldoAcumuladoAtual = 0;
         let sobrouAnterior = 0;
+        let saldoProjetado = 0;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
         for (const month of sortedMonths) {
@@ -840,19 +843,18 @@ async function atualizarSaldos() {
             totalAbatimentos += monthData.abatimentos;
 
             const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos;
+            const saldoProjMes = monthData.receitas - monthData.debito - monthData.faturas;
 
             if (dashboardMonth && month === dashboardMonth) {
                 saldoAcumuladoAtual += saldoCaixa;
+                saldoProjetado += saldoProjMes;
                 break;
             }
 
             saldoAcumuladoAtual += saldoCaixa;
             sobrouAnterior += saldoCaixa;
+            saldoProjetado += saldoProjMes;
         }
-
-        // Saldo Projetado = Saldo Atual − Faturas pendentes (o que falta pagar)
-        const faturasPendentes = (faturasData.nubank?.atual || 0) + (faturasData.mercado_pago?.atual || 0);
-        const saldoProjetado = saldoAcumuladoAtual - faturasPendentes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -879,25 +881,12 @@ async function atualizarSaldos() {
         if (diagFaturas) diagFaturas.textContent = formatCurrency(totalFaturas);
         if (diagAbatimentos) diagAbatimentos.textContent = formatCurrency(totalAbatimentos);
         
-        // Aviso explicativo
+        // Aviso explicativo (página Análises)
         if (diagAviso) {
-            let aviso = `Saldo Projetado = Saldo Atual (${formatCurrency(saldoAcumuladoAtual)}) − Faturas pendentes (${formatCurrency(faturasPendentes)}) = ${formatCurrency(saldoProjetado)}.`;
-            diagAviso.textContent = aviso;
+            diagAviso.textContent = `Saldo Projetado = acumulado (Receitas − Débito − Faturas) até o mês selecionado. Rola para o próximo mês.`;
         }
     } catch (error) {
         console.error('Erro ao calcular saldos:', error);
-    }
-}
-
-function toggleDiagnostico() {
-    const content = document.getElementById('diagnosticoContent');
-    const btn = document.getElementById('diagnosticoToggle');
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        if (btn) btn.textContent = '🔍 Ocultar detalhes do cálculo';
-    } else {
-        content.style.display = 'none';
-        if (btn) btn.textContent = '🔍 Ver como os saldos são calculados';
     }
 }
 
