@@ -127,8 +127,17 @@ def add_transaction():
             return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
         
         tipo = data.get('tipo')
+        if not tipo or tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+            return jsonify({'success': False, 'error': 'Tipo de transação inválido. Selecione: Receita, Débito, Mercado Pago ou Nubank.'}), 400
+        
+        if not data.get('descricao') or not str(data.get('descricao', '')).strip():
+            return jsonify({'success': False, 'error': 'Descrição é obrigatória.'}), 400
+        
+        valor = float(data.get('valor', 0))
+        if valor <= 0:
+            return jsonify({'success': False, 'error': 'Valor deve ser maior que zero.'}), 400
         num_parcelas = int(data.get('num_parcelas', 1))
-        valor_total = float(data.get('valor', 0))
+        valor_total = valor
         valor_parcela = valor_total / num_parcelas
         data_inicial = datetime.strptime(data.get('data', datetime.now().strftime('%Y-%m-%d')), '%Y-%m-%d')
         

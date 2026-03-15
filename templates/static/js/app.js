@@ -122,11 +122,20 @@ function formatDateInput(dateString) {
 }
 
 function showMessage(text, type = 'info') {
-    const msg = document.getElementById('successMessage');
-    msg.textContent = text;
-    msg.className = 'alert ' + type;
-    msg.style.display = 'block';
-    setTimeout(() => msg.style.display = 'none', 4000);
+    const toast = document.getElementById('globalToast');
+    const legacyMsg = document.getElementById('successMessage');
+    if (toast) {
+        toast.textContent = text;
+        toast.className = 'global-toast ' + type;
+        toast.style.display = 'block';
+        setTimeout(() => { toast.style.display = 'none'; }, 5000);
+    }
+    if (legacyMsg) {
+        legacyMsg.textContent = text;
+        legacyMsg.className = 'alert ' + type;
+        legacyMsg.style.display = 'block';
+        setTimeout(() => { legacyMsg.style.display = 'none'; }, 5000);
+    }
 }
 
 function showAbatimentoMessage(text, type = 'info') {
@@ -313,6 +322,23 @@ function renderTransactions() {
 }
 
 async function addTransaction(formData) {
+    if (!formData.tipo || !['receita', 'debito', 'mercado_pago', 'nubank'].includes(formData.tipo)) {
+        showMessage('✗ Selecione o tipo de transação', 'error');
+        return;
+    }
+    const valor = formData.valor;
+    if (valor === undefined || valor === null || isNaN(valor) || valor <= 0) {
+        showMessage('✗ Informe um valor válido', 'error');
+        return;
+    }
+    if (!formData.descricao || !formData.descricao.trim()) {
+        showMessage('✗ Informe a descrição', 'error');
+        return;
+    }
+    if (!formData.data) {
+        showMessage('✗ Informe a data', 'error');
+        return;
+    }
     try {
         const response = await fetch('/api/transactions', {
             method: 'POST',
@@ -320,7 +346,13 @@ async function addTransaction(formData) {
             body: JSON.stringify(formData)
         });
         
-        const result = await response.json();
+        let result;
+        try {
+            result = await response.json();
+        } catch (parseErr) {
+            showMessage('✗ Erro no servidor. Verifique se o Supabase está configurado.', 'error');
+            return;
+        }
         
         if (response.ok && result.success) {
             const currentFilterMes = document.getElementById('filterMes').value;
@@ -339,10 +371,12 @@ async function addTransaction(formData) {
             document.getElementById('filterBusca').value = currentFilterBusca;
             renderTransactions();
         } else {
-            showMessage('✗ Erro: ' + (result.error || 'Erro ao adicionar'), 'error');
+            const errMsg = result.error || 'Erro ao adicionar';
+            const details = result.details ? ' ' + result.details : '';
+            showMessage('✗ Erro: ' + errMsg + details, 'error');
         }
     } catch (error) {
-        showMessage('✗ Erro de conexão: ' + error.message, 'error');
+        showMessage('✗ Erro de conexão: ' + (error.message || 'Verifique sua internet'), 'error');
     }
 }
 
@@ -1127,19 +1161,38 @@ document.addEventListener('DOMContentLoaded', () => {
     }).catch(() => {});
 
     // Transaction Form
-    document.getElementById('transactionForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const formData = {
-            tipo: document.getElementById('tipo').value,
-            descricao: document.getElementById('descricao').value,
-            valor: parseFloat(document.getElementById('valor').value),
-            data: document.getElementById('data').value,
-            num_parcelas: parseInt(document.getElementById('num_parcelas').value) || 1
-        };
-        
-        await addTransaction(formData);
-    });
+    const transactionForm = document.getElementById('transactionForm');
+    if (transactionForm) {
+        transactionForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const tipoEl = document.getElementById('tipo');
+            const descricaoEl = document.getElementById('descricao');
+            const valorEl = document.getElementById('valor');
+            const dataEl = document.getElementById('data');
+            const numParcelasEl = document.getElementById('num_parcelas');
+            if (!tipoEl || !descricaoEl || !valorEl || !dataEl || !numParcelasEl) {
+                showMessage('✗ Formulário incompleto. Recarregue a página.', 'error');
+                return;
+            }
+            const formData = {
+                tipo: tipoEl.value,
+                descricao: descricaoEl.value.trim(),
+                valor: parseFloat(valorEl.value) || 0,
+                data: dataEl.value,
+                num_parcelas: parseInt(numParcelasEl.value) || 1
+            };
+            const submitBtn = transactionForm.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Salvando...';
+            }
+            await addTransaction(formData);
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Adicionar Transação';
+            }
+        });
+    }
     
     // Edit Transaction Form
     document.getElementById('editForm').addEventListener('submit', async (e) => {
