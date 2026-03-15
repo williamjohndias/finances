@@ -826,10 +826,12 @@ async function atualizarSaldos() {
         });
         
         const sortedMonths = Object.keys(monthlyData).sort();
+        const hoje = new Date();
+        const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
+        const isMesFuturo = dashboardMonth && dashboardMonth > mesAtual;
         
         // saldoAcumuladoAtual → caixa real (receitas − débito − abatimentos) acumulado até o mês
         // sobrouAnterior      → Saldo Atual dos meses anteriores (o que realmente rolou)
-        // saldoProjetado     → Sobrou (Saldo Atual anterior) + Receitas − Total Gastos
         let saldoAcumuladoAtual = 0;
         let sobrouAnterior = 0;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
@@ -852,10 +854,33 @@ async function atualizarSaldos() {
             sobrouAnterior += saldoCaixa;
         }
 
-        // Saldo Projetado = Sobrou (Saldo Atual anterior) + Receitas − Total Gastos
         const monthData = dashboardMonth && monthlyData[dashboardMonth] ? monthlyData[dashboardMonth] : { receitas: 0, debito: 0, faturas: 0 };
         const totalGastosMes = monthData.debito + monthData.faturas;
-        const saldoProjetado = sobrouAnterior + monthData.receitas - totalGastosMes;
+        let saldoProjetado;
+        let sobrouExibido = sobrouAnterior;
+
+        if (isMesFuturo) {
+            // Mês futuro: rola Saldo Projetado a partir do mês atual
+            const mesAtualData = monthlyData[mesAtual] || { receitas: 0, debito: 0, faturas: 0 };
+            let saldoProjRolado = sobrouAnterior + mesAtualData.receitas - (mesAtualData.debito + mesAtualData.faturas);
+            
+            let monthKey = mesAtual;
+            while (true) {
+                const [ano, mes] = monthKey.split('-').map(Number);
+                const nextMes = mes === 12 ? 1 : mes + 1;
+                const nextAno = mes === 12 ? ano + 1 : ano;
+                monthKey = nextAno + '-' + String(nextMes).padStart(2, '0');
+                if (monthKey > dashboardMonth) break;
+                sobrouExibido = saldoProjRolado;
+                const md = monthlyData[monthKey] || { receitas: 0, debito: 0, faturas: 0 };
+                const gastos = (md.debito || 0) + (md.faturas || 0);
+                saldoProjRolado = saldoProjRolado + (md.receitas || 0) - gastos;
+            }
+            saldoProjetado = saldoProjRolado;
+        } else {
+            // Mês atual ou anterior: usa Sobrou real (Saldo Atual)
+            saldoProjetado = sobrouAnterior + monthData.receitas - totalGastosMes;
+        }
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -863,8 +888,14 @@ async function atualizarSaldos() {
 
         const saldoAnteriorEl = document.getElementById('saldoMesAnterior');
         if (saldoAnteriorEl) {
-            saldoAnteriorEl.textContent = formatCurrency(sobrouAnterior);
-            saldoAnteriorEl.className = 'card-value ' + (sobrouAnterior >= 0 ? 'positive' : 'negative');
+            saldoAnteriorEl.textContent = formatCurrency(sobrouExibido);
+            saldoAnteriorEl.className = 'card-value ' + (sobrouExibido >= 0 ? 'positive' : 'negative');
+        }
+        const saldoAnteriorFooter = document.getElementById('saldoMesAnteriorFooter');
+        if (saldoAnteriorFooter) {
+            saldoAnteriorFooter.textContent = isMesFuturo 
+                ? 'Saldo Projetado do mês passado (projeção que rolou)' 
+                : 'Saldo Atual do mês passado (caixa real que rolou)';
         }
 
         const saldoProjetadoEl = document.getElementById('saldoProjetado');
@@ -884,7 +915,9 @@ async function atualizarSaldos() {
         
         // Aviso explicativo (página Análises)
         if (diagAviso) {
-            diagAviso.textContent = `Saldo Atual = Receitas + Sobrou − Débitos − Abatimentos. Saldo Projetado = Receitas + Sobrou − Total Gastos (Débito + Faturas).`;
+            let txt = `Saldo Atual = Receitas + Sobrou − Débitos − Abatimentos. Saldo Projetado = Receitas + Sobrou − Total Gastos.`;
+            if (isMesFuturo) txt += ` Para meses futuros, o Saldo Projetado rola mês a mês (projeção).`;
+            diagAviso.textContent = txt;
         }
     } catch (error) {
         console.error('Erro ao calcular saldos:', error);
