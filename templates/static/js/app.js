@@ -828,11 +828,10 @@ async function atualizarSaldos() {
         const sortedMonths = Object.keys(monthlyData).sort();
         
         // saldoAcumuladoAtual → caixa real (receitas − débito − abatimentos) acumulado até o mês
-        // sobrouAnterior      → Saldo Atual dos meses anteriores (o que rola para o próximo mês)
-        // saldoProjetado     → Sobrou Projetado anterior + Receitas − Total Gastos (rola)
+        // sobrouAnterior      → Saldo Atual dos meses anteriores (o que realmente rolou)
+        // saldoProjetado     → Sobrou (Saldo Atual anterior) + Receitas − Total Gastos
         let saldoAcumuladoAtual = 0;
         let sobrouAnterior = 0;
-        let sobrouProjetadoAnterior = 0;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
         for (const month of sortedMonths) {
@@ -843,8 +842,6 @@ async function atualizarSaldos() {
             totalAbatimentos += monthData.abatimentos;
 
             const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos;
-            const totalGastosMes = monthData.debito + monthData.faturas;
-            const saldoProjMes = monthData.receitas - totalGastosMes;
 
             if (dashboardMonth && month === dashboardMonth) {
                 saldoAcumuladoAtual += saldoCaixa;
@@ -853,13 +850,12 @@ async function atualizarSaldos() {
 
             saldoAcumuladoAtual += saldoCaixa;
             sobrouAnterior += saldoCaixa;
-            sobrouProjetadoAnterior += saldoProjMes;
         }
 
-        // Saldo Projetado = Sobrou Projetado anterior + Receitas − Total Gastos (rola)
+        // Saldo Projetado = Sobrou (Saldo Atual anterior) + Receitas − Total Gastos
         const monthData = dashboardMonth && monthlyData[dashboardMonth] ? monthlyData[dashboardMonth] : { receitas: 0, debito: 0, faturas: 0 };
         const totalGastosMes = monthData.debito + monthData.faturas;
-        const saldoProjetado = sobrouProjetadoAnterior + monthData.receitas - totalGastosMes;
+        const saldoProjetado = sobrouAnterior + monthData.receitas - totalGastosMes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
