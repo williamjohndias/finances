@@ -829,10 +829,8 @@ async function atualizarSaldos() {
         
         // saldoAcumuladoAtual → caixa real (receitas − débito − abatimentos) acumulado até o mês
         // sobrouAnterior      → Saldo Atual dos meses anteriores (o que rola para o próximo mês)
-        // saldoProjetado     → acumulado (receitas − débito − faturas) — rola mês a mês
         let saldoAcumuladoAtual = 0;
         let sobrouAnterior = 0;
-        let saldoProjetado = 0;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
         for (const month of sortedMonths) {
@@ -843,18 +841,19 @@ async function atualizarSaldos() {
             totalAbatimentos += monthData.abatimentos;
 
             const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos;
-            const saldoProjMes = monthData.receitas - monthData.debito - monthData.faturas;
 
             if (dashboardMonth && month === dashboardMonth) {
                 saldoAcumuladoAtual += saldoCaixa;
-                saldoProjetado += saldoProjMes;
                 break;
             }
 
             saldoAcumuladoAtual += saldoCaixa;
             sobrouAnterior += saldoCaixa;
-            saldoProjetado += saldoProjMes;
         }
+
+        // Saldo Projetado = Saldo Atual − Faturas pendentes (o que falta pagar)
+        const faturasPendentes = (faturasData.nubank?.atual || 0) + (faturasData.mercado_pago?.atual || 0);
+        const saldoProjetado = saldoAcumuladoAtual - faturasPendentes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -883,7 +882,7 @@ async function atualizarSaldos() {
         
         // Aviso explicativo (página Análises)
         if (diagAviso) {
-            diagAviso.textContent = `Saldo Projetado = acumulado (Receitas − Débito − Faturas) até o mês selecionado. Rola para o próximo mês.`;
+            diagAviso.textContent = `Saldo Projetado = Saldo Atual (${formatCurrency(saldoAcumuladoAtual)}) − Faturas pendentes (${formatCurrency(faturasPendentes)}) = ${formatCurrency(saldoProjetado)}.`;
         }
     } catch (error) {
         console.error('Erro ao calcular saldos:', error);

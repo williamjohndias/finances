@@ -100,14 +100,30 @@
         <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page active">
 
-            <!-- KPI Cards - Ordem: Entrada → Gastos → Resultados -->
+            <!-- KPI Cards -->
             <div id="dashboard" class="dashboard-grid">
+                <div class="card highlight">
+                    <div class="card-header">
+                        <div class="card-title">Saldo Atual</div>
+                    </div>
+                    <div class="card-value" id="saldoAtual">R$ 0,00</div>
+                    <div class="card-footer">Acumulado anterior + Receitas − Débitos − Abatimentos</div>
+                </div>
+
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">Sobrou do Mês Anterior</div>
                     </div>
                     <div class="card-value" id="saldoMesAnterior">R$ 0,00</div>
-                    <div class="card-footer">Caixa real que entrou neste mês</div>
+                    <div class="card-footer">Saldo Atual do mês passado (caixa real que rolou)</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Saldo Projetado</div>
+                    </div>
+                    <div class="card-value" id="saldoProjetado">R$ 0,00</div>
+                    <div class="card-footer">Saldo Atual − Faturas pendentes (após pagar cartões)</div>
                 </div>
 
                 <div class="card receitas">
@@ -124,22 +140,6 @@
                     </div>
                     <div class="card-value negative" id="totalGastos">R$ 0,00</div>
                     <div class="card-footer" id="mediaGastos">Média mensal: R$ 0,00</div>
-                </div>
-
-                <div class="card highlight">
-                    <div class="card-header">
-                        <div class="card-title">Saldo Atual</div>
-                    </div>
-                    <div class="card-value" id="saldoAtual">R$ 0,00</div>
-                    <div class="card-footer">Acumulado + Receitas − Débitos − Abatimentos</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Saldo Projetado</div>
-                    </div>
-                    <div class="card-value" id="saldoProjetado">R$ 0,00</div>
-                    <div class="card-footer">Projetado anterior + Receitas − Débito − Faturas (rola)</div>
                 </div>
 
                 <div class="card">
