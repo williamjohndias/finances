@@ -861,8 +861,15 @@ async function atualizarSaldos() {
 
         if (isMesFuturo) {
             // Mês futuro: rola Saldo Projetado a partir do mês atual
+            // Precisamos do Sobrou ANTES do mês atual (para calcular Saldo Projetado do mês atual)
+            let sobrouAntesMesAtual = 0;
+            for (const month of sortedMonths) {
+                if (month >= mesAtual) break;
+                const md = monthlyData[month];
+                sobrouAntesMesAtual += md.receitas - md.debito - md.abatimentos;
+            }
             const mesAtualData = monthlyData[mesAtual] || { receitas: 0, debito: 0, faturas: 0 };
-            let saldoProjRolado = sobrouAnterior + mesAtualData.receitas - (mesAtualData.debito + mesAtualData.faturas);
+            let saldoProjRolado = sobrouAntesMesAtual + mesAtualData.receitas - (mesAtualData.debito + mesAtualData.faturas);
             
             let monthKey = mesAtual;
             while (true) {
