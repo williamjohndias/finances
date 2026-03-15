@@ -829,8 +829,10 @@ async function atualizarSaldos() {
         
         // saldoAcumuladoAtual → caixa real (receitas − débito − abatimentos) acumulado até o mês
         // sobrouAnterior      → Saldo Atual dos meses anteriores (o que rola para o próximo mês)
+        // saldoProjetado     → Sobrou Projetado anterior + Receitas − Total Gastos (rola)
         let saldoAcumuladoAtual = 0;
         let sobrouAnterior = 0;
+        let sobrouProjetadoAnterior = 0;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
 
         for (const month of sortedMonths) {
@@ -841,6 +843,8 @@ async function atualizarSaldos() {
             totalAbatimentos += monthData.abatimentos;
 
             const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos;
+            const totalGastosMes = monthData.debito + monthData.faturas;
+            const saldoProjMes = monthData.receitas - totalGastosMes;
 
             if (dashboardMonth && month === dashboardMonth) {
                 saldoAcumuladoAtual += saldoCaixa;
@@ -849,11 +853,13 @@ async function atualizarSaldos() {
 
             saldoAcumuladoAtual += saldoCaixa;
             sobrouAnterior += saldoCaixa;
+            sobrouProjetadoAnterior += saldoProjMes;
         }
 
-        // Saldo Projetado = Saldo Atual − Faturas pendentes (o que falta pagar)
-        const faturasPendentes = (faturasData.nubank?.atual || 0) + (faturasData.mercado_pago?.atual || 0);
-        const saldoProjetado = saldoAcumuladoAtual - faturasPendentes;
+        // Saldo Projetado = Sobrou Projetado anterior + Receitas − Total Gastos (rola)
+        const monthData = dashboardMonth && monthlyData[dashboardMonth] ? monthlyData[dashboardMonth] : { receitas: 0, debito: 0, faturas: 0 };
+        const totalGastosMes = monthData.debito + monthData.faturas;
+        const saldoProjetado = sobrouProjetadoAnterior + monthData.receitas - totalGastosMes;
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
@@ -882,7 +888,7 @@ async function atualizarSaldos() {
         
         // Aviso explicativo (página Análises)
         if (diagAviso) {
-            diagAviso.textContent = `Saldo Projetado = Saldo Atual (${formatCurrency(saldoAcumuladoAtual)}) − Faturas pendentes (${formatCurrency(faturasPendentes)}) = ${formatCurrency(saldoProjetado)}.`;
+            diagAviso.textContent = `Saldo Projetado = Sobrou Projetado anterior (${formatCurrency(sobrouProjetadoAnterior)}) + Receitas (${formatCurrency(monthData.receitas)}) − Total Gastos (${formatCurrency(totalGastosMes)}) = ${formatCurrency(saldoProjetado)}. Rola mês a mês.`;
         }
     } catch (error) {
         console.error('Erro ao calcular saldos:', error);
