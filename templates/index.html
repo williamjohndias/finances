@@ -107,7 +107,7 @@
                         <div class="card-title">Saldo Atual</div>
                     </div>
                     <div class="card-value" id="saldoAtual">R$ 0,00</div>
-                    <div class="card-footer">Acumulado anterior + Receitas − Débitos − Abatimentos</div>
+                    <div class="card-footer">Receitas + Sobrou mês anterior − Débitos − Abatimentos</div>
                 </div>
 
                 <div class="card">
@@ -123,7 +123,7 @@
                         <div class="card-title">Saldo Projetado</div>
                     </div>
                     <div class="card-value" id="saldoProjetado">R$ 0,00</div>
-                    <div class="card-footer">Sobrou do Mês Anterior + Receitas − Total Gastos (rola)</div>
+                    <div class="card-footer">Receitas + Sobrou mês anterior − Total Gastos</div>
                 </div>
 
                 <div class="card receitas">
@@ -582,8 +582,8 @@
                     </div>
                     <div class="diagnostico-formulas">
                         <p><strong>Sobrou do Mês Anterior</strong> = Saldo Atual do mês passado (caixa real)</p>
-                        <p><strong>Saldo Atual</strong> = Acumulado anterior + Receitas − Débitos − Abatimentos</p>
-                        <p><strong>Saldo Projetado</strong> = Projetado anterior + Receitas − Débito − Faturas (rola mês a mês)</p>
+                        <p><strong>Saldo Atual</strong> = Receitas + Sobrou mês anterior − Débitos − Abatimentos</p>
+                        <p><strong>Saldo Projetado</strong> = Receitas + Sobrou mês anterior − Total Gastos</p>
                     </div>
                     <p class="diagnostico-aviso" id="diagAviso"></p>
                 </div>

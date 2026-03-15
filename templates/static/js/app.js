@@ -888,7 +888,7 @@ async function atualizarSaldos() {
         
         // Aviso explicativo (página Análises)
         if (diagAviso) {
-            diagAviso.textContent = `Saldo Projetado = Sobrou Projetado anterior (${formatCurrency(sobrouProjetadoAnterior)}) + Receitas (${formatCurrency(monthData.receitas)}) − Total Gastos (${formatCurrency(totalGastosMes)}) = ${formatCurrency(saldoProjetado)}. Rola mês a mês.`;
+            diagAviso.textContent = `Saldo Atual = Receitas + Sobrou − Débitos − Abatimentos. Saldo Projetado = Receitas + Sobrou − Total Gastos (Débito + Faturas).`;
         }
     } catch (error) {
         console.error('Erro ao calcular saldos:', error);
