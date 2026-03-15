@@ -827,7 +827,7 @@ async function atualizarSaldos() {
         const sortedMonths = Object.keys(monthlyData).sort();
         
         // saldoAcumuladoAtual → caixa real (receitas − débito − abatimentos) acumulado até o mês
-        // sobrouAnterior      → accrual (receitas − débito − faturas) dos meses anteriores
+        // sobrouAnterior      → Sobrou do mês anterior = Receitas + Sobrou anterior − Débito − Faturas (acumulado)
         let saldoAcumuladoAtual = 0;
         let sobrouAnterior = 0;
         let totalReceitas = 0, totalDebito = 0, totalFaturas = 0, totalAbatimentos = 0;
@@ -840,6 +840,7 @@ async function atualizarSaldos() {
             totalAbatimentos += monthData.abatimentos;
 
             const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos;
+            const sobrouMes = monthData.receitas - monthData.debito - monthData.faturas;
 
             if (dashboardMonth && month === dashboardMonth) {
                 saldoAcumuladoAtual += saldoCaixa;
@@ -847,7 +848,7 @@ async function atualizarSaldos() {
             }
 
             saldoAcumuladoAtual += saldoCaixa;
-            sobrouAnterior += monthData.receitas - monthData.debito - monthData.faturas;
+            sobrouAnterior += sobrouMes;
         }
 
         // Saldo Projetado = Saldo Atual − Faturas pendentes (o que falta pagar)
