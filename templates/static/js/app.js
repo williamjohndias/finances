@@ -521,6 +521,7 @@ async function updateDashboardOnMonthChange() {
         await loadFaturas();
         await atualizarSaldos();
         await loadStatistics();
+        await displayTopExpenses();
     } catch (error) {
         console.error('Erro ao atualizar dashboard:', error);
     }
@@ -743,8 +744,8 @@ async function loadStatistics() {
         document.getElementById('pctMercadoPago').textContent = stats.pct_mercado_pago.toFixed(1) + '% do total';
         document.getElementById('pctNubank').textContent = stats.pct_nubank.toFixed(1) + '% do total';
         
-        document.getElementById('parceladasInfo').textContent = 
-            stats.compras_parceladas + ' compras parceladas';
+        document.getElementById('parceladasInfo').textContent =
+            stats.compras_parceladas + ' parceladas';
     } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
     }
@@ -1470,8 +1471,10 @@ async function displayTopExpenses() {
     try {
         const months = getUniqueMonths();
         if (months.length < 1) return;
-        
-        const currentMonth = months[0];
+
+        const dashboardMonth = document.getElementById('dashboardMonth').value;
+        const currentMonth = dashboardMonth || months[0];
+
         const expenses = allTransactions.filter(t => {
             const tDate = new Date((t.data_parcela || t.data) + 'T00:00:00');
             const tMonth = `${tDate.getFullYear()}-${String(tDate.getMonth() + 1).padStart(2, '0')}`;
