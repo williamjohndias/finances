@@ -112,14 +112,6 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Sobrou do Mês Anterior</div>
-                    </div>
-                    <div class="card-value" id="saldoMesAnterior">R$ 0,00</div>
-                    <div class="card-footer" id="saldoMesAnteriorFooter">Saldo Atual do mês passado (caixa real que rolou)</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
                         <div class="card-title">Saldo Projetado</div>
                     </div>
                     <div class="card-value" id="saldoProjetado">R$ 0,00</div>
@@ -132,6 +124,14 @@
                     </div>
                     <div class="card-value positive" id="totalReceitas">R$ 0,00</div>
                     <div class="card-footer" id="mediaReceitas">Média mensal: R$ 0,00</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Sobrou do Mês Anterior</div>
+                    </div>
+                    <div class="card-value" id="saldoMesAnterior">R$ 0,00</div>
+                    <div class="card-footer" id="saldoMesAnteriorFooter">Saldo Atual do mês passado (caixa real que rolou)</div>
                 </div>
 
                 <div class="card gastos">
@@ -150,6 +150,22 @@
             <div class="dashboard-grid" style="margin-top: 0;">
                 <div class="card">
                     <div class="card-header">
+                        <div class="card-title">Nubank - Fatura</div>
+                    </div>
+                    <div class="card-value negative" id="faturaAtualNubank">R$ 0,00</div>
+                    <div class="card-footer">Pendente de pagamento</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Nubank - Pago</div>
+                    </div>
+                    <div class="card-value" id="faturaAbatidaNubank">R$ 0,00</div>
+                    <div class="card-footer">Total já pago</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
                         <div class="card-title">Mercado Pago - Fatura</div>
                     </div>
                     <div class="card-value negative" id="faturaAtualMP">R$ 0,00</div>
@@ -166,26 +182,10 @@
 
                 <div class="card">
                     <div class="card-header">
-                        <div class="card-title">Nubank - Fatura</div>
-                    </div>
-                    <div class="card-value negative" id="faturaAtualNubank">R$ 0,00</div>
-                    <div class="card-footer">Pendente de pagamento</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
                         <div class="card-title">Gastos Débito</div>
                     </div>
                     <div class="card-value negative" id="totalDebitoCard">R$ 0,00</div>
                     <div class="card-footer">Total gasto em débito</div>
-                </div>
-
-                <div class="card">
-                    <div class="card-header">
-                        <div class="card-title">Nubank - Pago</div>
-                    </div>
-                    <div class="card-value" id="faturaAbatidaNubank">R$ 0,00</div>
-                    <div class="card-footer">Total já pago</div>
                 </div>
             </div>
 
