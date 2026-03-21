@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,6 +10,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+
+<!-- Shader Background - fundo animado em todas as telas -->
+<canvas id="shaderBackground" class="shader-background" aria-hidden="true"></canvas>
 
 <!-- Toast global para mensagens (sempre visível) -->
 <div id="globalToast" class="global-toast" style="display: none;" role="alert"></div>
@@ -788,6 +791,7 @@
     </a>
 </nav>
 
+<script src="{{ url_for('static', filename='js/shader-background.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

@@ -4,12 +4,17 @@
    =================================== */
 
 /* ===================================
-   RESET & BASE
+   SHADER BACKGROUND (todas as telas)
    =================================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+.shader-background {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    background: #000;
+    object-fit: cover;
+    pointer-events: auto;
 }
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap');
@@ -130,22 +135,31 @@ html {
 
 body {
     font-family: var(--manga-body-font);
-    background: var(--bg-gradient);
-    background-image:
-        radial-gradient(circle, rgba(79, 70, 229, 0.07) 1px, transparent 1px);
-    background-size: 22px 22px;
+    background: transparent;
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
     overflow-x: hidden;
     padding-bottom: 80px;
-    transition: background-color var(--transition-base), color var(--transition-base);
+    transition: color var(--transition-base);
 }
 
-[data-theme="dark"] body {
-    background-image:
-        radial-gradient(circle, rgba(99, 102, 241, 0.09) 1px, transparent 1px);
-    background-size: 22px 22px;
+/* Overlay sutil para legibilidade sobre o shader */
+body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(180deg, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.45) 100%);
+    pointer-events: none;
+}
+
+[data-theme="light"] body::before {
+    background: linear-gradient(180deg, rgba(248,250,252,0.65) 0%, rgba(241,245,249,0.5) 50%, rgba(226,232,240,0.7) 100%);
+}
+
+[data-theme="dark"] body::before {
+    background: linear-gradient(180deg, rgba(15,23,42,0.78) 0%, rgba(30,41,59,0.68) 50%, rgba(15,23,42,0.85) 100%);
 }
 
 @media (min-width: 768px) {
@@ -2917,6 +2931,17 @@ body {
     padding: 20px 16px;
     max-width: 100%;
     overflow-x: hidden;
+    perspective: 1200px;
+    perspective-origin: center top;
+}
+
+/* Scroll 3D minimalista - transform sutil nos cards */
+.main-content .card,
+.main-content .section,
+.main-content .form-section {
+    transform-style: preserve-3d;
+    transition: transform 0.2s ease-out;
+    will-change: transform;
 }
 
 @media (min-width: 768px) {

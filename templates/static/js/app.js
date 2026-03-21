@@ -1866,7 +1866,7 @@ async function submitQuickAdd(event) {
     };
     
     try {
-        const response = await fetch('/api/transacao', {
+        const response = await fetch('/api/transactions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1969,7 +1969,7 @@ async function useFavorite(index) {
     };
     
     try {
-        const response = await fetch('/api/transacao', {
+        const response = await fetch('/api/transactions', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
@@ -1997,9 +1997,46 @@ function deleteFavorite(index) {
 }
 
 // ===================================
+// SCROLL 3D MINIMALISTA
+// ===================================
+function initScroll3D() {
+    const mainContent = document.querySelector('.main-content');
+    if (!mainContent) return;
+
+    const cards = () => mainContent.querySelectorAll('.card, .section, .form-section');
+    let ticking = false;
+
+    function updateScroll3D() {
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        const viewportH = window.innerHeight;
+        cards().forEach((el, i) => {
+            const rect = el.getBoundingClientRect();
+            const centerY = rect.top + rect.height / 2;
+            const viewportCenter = viewportH / 2;
+            const offset = (centerY - viewportCenter) / viewportH;
+            const rot = Math.max(-1, Math.min(1, offset * 1.5));
+            el.style.transform = `perspective(1200px) rotateX(${rot}deg)`;
+        });
+        ticking = false;
+    }
+
+    function onScroll() {
+        if (!ticking) {
+            requestAnimationFrame(updateScroll3D);
+            ticking = true;
+        }
+    }
+
+    mainContent.addEventListener('scroll', onScroll);
+    window.addEventListener('scroll', onScroll);
+    setTimeout(updateScroll3D, 100);
+}
+
+// ===================================
 // INITIALIZE NEW FEATURES
 // ===================================
 document.addEventListener('DOMContentLoaded', function() {
+    initScroll3D();
     setTimeout(() => {
         updateEvolutionChart();
         updatePaymentAnalysis();
