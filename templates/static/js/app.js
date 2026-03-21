@@ -619,7 +619,7 @@ async function loadCharts() {
                     {
                         label: 'Saldo',
                         data: monthlyData.saldos || [],
-                        borderColor: '#6366f1',
+                        borderColor: '#0d9488',
                         backgroundColor: 'transparent',
                         borderWidth: 3,
                         borderDash: [8, 4],
@@ -627,7 +627,7 @@ async function loadCharts() {
                         fill: false,
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: '#6366f1',
+                        pointBackgroundColor: '#0d9488',
                         pointBorderColor: '#fff',
                         pointBorderWidth: 2
                     }
@@ -655,7 +655,7 @@ async function loadCharts() {
                         backgroundColor: isDark ? '#1e293b' : '#0f172a',
                         titleColor: '#ffffff',
                         bodyColor: '#e2e8f0',
-                        borderColor: '#4f46e5',
+                        borderColor: '#0d9488',
                         borderWidth: 2,
                         padding: 14,
                         cornerRadius: 8,
@@ -732,7 +732,7 @@ async function loadCharts() {
                             backgroundColor: isDark ? '#1e293b' : '#0f172a',
                             titleColor: '#ffffff',
                             bodyColor: '#e2e8f0',
-                            borderColor: '#4f46e5',
+                            borderColor: '#0d9488',
                             borderWidth: 2,
                             padding: 14,
                             cornerRadius: 8,
@@ -1997,46 +1997,9 @@ function deleteFavorite(index) {
 }
 
 // ===================================
-// SCROLL 3D MINIMALISTA
-// ===================================
-function initScroll3D() {
-    const mainContent = document.querySelector('.main-content');
-    if (!mainContent) return;
-
-    const cards = () => mainContent.querySelectorAll('.card, .section, .form-section');
-    let ticking = false;
-
-    function updateScroll3D() {
-        const scrollY = window.scrollY || document.documentElement.scrollTop;
-        const viewportH = window.innerHeight;
-        cards().forEach((el, i) => {
-            const rect = el.getBoundingClientRect();
-            const centerY = rect.top + rect.height / 2;
-            const viewportCenter = viewportH / 2;
-            const offset = (centerY - viewportCenter) / viewportH;
-            const rot = Math.max(-1, Math.min(1, offset * 1.5));
-            el.style.transform = `perspective(1200px) rotateX(${rot}deg)`;
-        });
-        ticking = false;
-    }
-
-    function onScroll() {
-        if (!ticking) {
-            requestAnimationFrame(updateScroll3D);
-            ticking = true;
-        }
-    }
-
-    mainContent.addEventListener('scroll', onScroll);
-    window.addEventListener('scroll', onScroll);
-    setTimeout(updateScroll3D, 100);
-}
-
-// ===================================
 // INITIALIZE NEW FEATURES
 // ===================================
 document.addEventListener('DOMContentLoaded', function() {
-    initScroll3D();
     setTimeout(() => {
         updateEvolutionChart();
         updatePaymentAnalysis();
