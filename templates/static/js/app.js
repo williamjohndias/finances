@@ -76,9 +76,10 @@ let allAbatimentos = [];
 // THEME MANAGEMENT
 // ===================================
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'light';
+    const savedTheme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', savedTheme);
     updateThemeIcon(savedTheme);
+    applyDayTradeChartDefaults();
 }
 
 function toggleTheme() {
@@ -87,18 +88,65 @@ function toggleTheme() {
     document.documentElement.setAttribute('data-theme', newTheme);
     localStorage.setItem('theme', newTheme);
     updateThemeIcon(newTheme);
-    
-    // Recarrega gráficos para ajustar cores
+    applyDayTradeChartDefaults();
+
+    // Recarrega graficos para ajustar cores
     if (monthlyChart) loadCharts();
 }
 
 function updateThemeIcon(theme) {
     const btn = document.getElementById('themeToggle');
     if (btn) {
-        btn.innerHTML = theme === 'dark' 
-            ? '<span class="theme-icon">☀</span><span class="hide-mobile">Modo Claro</span>' 
-            : '<span class="theme-icon">☾</span><span class="hide-mobile">Modo Escuro</span>';
+        btn.innerHTML = theme === 'dark'
+            ? '<span class="theme-icon">CL</span><span class="hide-mobile">Modo Claro</span>'
+            : '<span class="theme-icon">ES</span><span class="hide-mobile">Modo Escuro</span>';
     }
+}
+
+function getChartPalette() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+        return {
+            text: '#95abd0',
+            grid: 'rgba(74, 102, 145, 0.32)',
+            tooltipBg: '#0e1728',
+            tooltipText: '#d8ebff',
+            tooltipBorder: '#00d9ff',
+            bull: '#00ff9c',
+            bullFill: 'rgba(0, 255, 156, 0.14)',
+            bear: '#ff406a',
+            bearFill: 'rgba(255, 64, 106, 0.12)',
+            neutral: '#00d9ff',
+            neutralFill: 'rgba(0, 217, 255, 0.12)',
+            doughnutColors: ['#00d9ff', '#ffb100', '#b98bff'],
+            pointBorder: '#0b1424'
+        };
+    }
+
+    return {
+        text: '#4a5f80',
+        grid: 'rgba(80, 110, 150, 0.2)',
+        tooltipBg: '#13243b',
+        tooltipText: '#e8f2ff',
+        tooltipBorder: '#0ea5e9',
+        bull: '#00c57a',
+        bullFill: 'rgba(0, 197, 122, 0.12)',
+        bear: '#e11d48',
+        bearFill: 'rgba(225, 29, 72, 0.1)',
+        neutral: '#0284c7',
+        neutralFill: 'rgba(2, 132, 199, 0.1)',
+        doughnutColors: ['#0284c7', '#d97706', '#7c3aed'],
+        pointBorder: '#ffffff'
+    };
+}
+
+function applyDayTradeChartDefaults() {
+    if (typeof Chart === 'undefined') return;
+    const palette = getChartPalette();
+    Chart.defaults.color = palette.text;
+    Chart.defaults.font.family = "'IBM Plex Mono', monospace";
+    Chart.defaults.borderColor = palette.grid;
+    Chart.defaults.plugins.legend.labels.usePointStyle = true;
 }
 
 // ===================================
@@ -577,9 +625,9 @@ async function loadCharts() {
         const totalNubank = (transactionsData.gastos_nubank || []).reduce((sum, t) => sum + t.valor, 0);
         const totalGastos = totalDebito + totalMercadoPago + totalNubank;
         
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const textColor = isDark ? '#cbd5e1' : '#475569';
-        const gridColor = isDark ? '#334155' : '#e2e8f0';
+        const palette = getChartPalette();
+        const textColor = palette.text;
+        const gridColor = palette.grid;
         
         if (monthlyChart) monthlyChart.destroy();
         const ctx1 = document.getElementById('monthlyChart').getContext('2d');
@@ -591,44 +639,44 @@ async function loadCharts() {
                     {
                         label: 'Receitas',
                         data: monthlyData.receitas || [],
-                        borderColor: '#22c55e',
-                        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                        borderColor: palette.bull,
+                        backgroundColor: palette.bullFill,
                         borderWidth: 3,
                         tension: 0.4,
                         fill: true,
                         pointRadius: 5,
                         pointHoverRadius: 7,
-                        pointBackgroundColor: '#22c55e',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: palette.bull,
+                        pointBorderColor: palette.pointBorder,
                         pointBorderWidth: 2
                     },
                     {
                         label: 'Gastos',
                         data: monthlyData.gastos || [],
-                        borderColor: '#ef4444',
-                        backgroundColor: 'rgba(239, 68, 68, 0.08)',
+                        borderColor: palette.bear,
+                        backgroundColor: palette.bearFill,
                         borderWidth: 3,
                         tension: 0.4,
                         fill: false,
                         pointRadius: 5,
                         pointHoverRadius: 7,
-                        pointBackgroundColor: '#ef4444',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: palette.bear,
+                        pointBorderColor: palette.pointBorder,
                         pointBorderWidth: 2
                     },
                     {
                         label: 'Saldo',
                         data: monthlyData.saldos || [],
-                        borderColor: '#0d9488',
-                        backgroundColor: 'transparent',
+                        borderColor: palette.neutral,
+                        backgroundColor: palette.neutralFill,
                         borderWidth: 3,
                         borderDash: [8, 4],
                         tension: 0.4,
                         fill: false,
                         pointRadius: 4,
                         pointHoverRadius: 6,
-                        pointBackgroundColor: '#0d9488',
-                        pointBorderColor: '#fff',
+                        pointBackgroundColor: palette.neutral,
+                        pointBorderColor: palette.pointBorder,
                         pointBorderWidth: 2
                     }
                 ]
@@ -644,7 +692,7 @@ async function loadCharts() {
                     legend: { 
                         labels: { 
                             color: textColor,
-                            font: { size: 13, weight: '600', family: 'Inter' },
+                            font: { size: 12, weight: '600', family: 'IBM Plex Mono' },
                             padding: 16,
                             usePointStyle: true,
                             pointStyle: 'circle'
@@ -652,10 +700,10 @@ async function loadCharts() {
                         position: 'top'
                     },
                     tooltip: {
-                        backgroundColor: isDark ? '#1e293b' : '#0f172a',
-                        titleColor: '#ffffff',
-                        bodyColor: '#e2e8f0',
-                        borderColor: '#0d9488',
+                        backgroundColor: palette.tooltipBg,
+                        titleColor: palette.tooltipText,
+                        bodyColor: palette.tooltipText,
+                        borderColor: palette.tooltipBorder,
                         borderWidth: 2,
                         padding: 14,
                         cornerRadius: 8,
@@ -672,7 +720,7 @@ async function loadCharts() {
                     x: { 
                         ticks: { 
                             color: textColor,
-                            font: { size: 11, family: 'Inter' }
+                            font: { size: 10, family: 'IBM Plex Mono' }
                         }, 
                         grid: { 
                             color: gridColor,
@@ -682,7 +730,7 @@ async function loadCharts() {
                     y: {
                         ticks: {
                             color: textColor,
-                            font: { size: 11, family: 'Inter' },
+                            font: { size: 10, family: 'IBM Plex Mono' },
                             callback: (value) => {
                                 if (value >= 1000) return 'R$ ' + (value / 1000).toFixed(1) + 'k';
                                 return formatCurrency(value);
@@ -708,8 +756,8 @@ async function loadCharts() {
                     labels: ['Débito', 'Mercado Pago', 'Nubank'],
                     datasets: [{
                         data: [totalDebito, totalMercadoPago, totalNubank],
-                        backgroundColor: ['#0ea5e9', '#f59e0b', '#8b5cf6'],
-                        borderColor: isDark ? '#0f172a' : '#ffffff',
+                        backgroundColor: palette.doughnutColors,
+                        borderColor: palette.pointBorder,
                         borderWidth: 3,
                         hoverOffset: 12
                     }]
@@ -722,17 +770,17 @@ async function loadCharts() {
                         legend: { 
                             labels: { 
                                 color: textColor,
-                                font: { size: 13, weight: '600', family: 'Inter' },
+                                font: { size: 12, weight: '600', family: 'IBM Plex Mono' },
                                 padding: 14,
                                 usePointStyle: true
                             }, 
                             position: 'bottom'
                         },
                         tooltip: {
-                            backgroundColor: isDark ? '#1e293b' : '#0f172a',
-                            titleColor: '#ffffff',
-                            bodyColor: '#e2e8f0',
-                            borderColor: '#0d9488',
+                            backgroundColor: palette.tooltipBg,
+                            titleColor: palette.tooltipText,
+                            bodyColor: palette.tooltipText,
+                            borderColor: palette.tooltipBorder,
                             borderWidth: 2,
                             padding: 14,
                             cornerRadius: 8,
@@ -750,9 +798,9 @@ async function loadCharts() {
         } else {
             ctx2.clearRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
             ctx2.fillStyle = textColor;
-            ctx2.font = '600 12px Inter, sans-serif';
+            ctx2.font = '600 11px IBM Plex Mono, monospace';
             ctx2.textAlign = 'center';
-            ctx2.fillText('NENHUM GASTO REGISTRADO', ctx2.canvas.width / 2, ctx2.canvas.height / 2);
+            ctx2.fillText('SEM OPERACOES NO PERIODO', ctx2.canvas.width / 2, ctx2.canvas.height / 2);
         }
     } catch (error) {
         console.error('Erro ao carregar gráficos:', error);
@@ -1621,9 +1669,9 @@ async function updateEvolutionChart() {
         const ctx = document.getElementById('evolutionChart');
         if (!ctx) return;
         
-        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-        const gridColor = isDark ? 'rgba(71, 85, 105, 0.3)' : 'rgba(203, 213, 225, 0.5)';
-        const textColor = isDark ? 'rgba(203, 213, 225, 0.8)' : 'rgba(71, 85, 105, 0.8)';
+        const palette = getChartPalette();
+        const gridColor = palette.grid;
+        const textColor = palette.text;
         
         if (evolutionChart) evolutionChart.destroy();
         
@@ -1634,15 +1682,15 @@ async function updateEvolutionChart() {
                 datasets: [{
                     label: 'Saldo Acumulado',
                     data: balances,
-                    borderColor: 'rgb(16, 185, 129)',
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    borderColor: palette.bull,
+                    backgroundColor: palette.bullFill,
                     borderWidth: 3,
                     fill: true,
                     tension: 0.4,
                     pointRadius: 5,
                     pointHoverRadius: 7,
-                    pointBackgroundColor: 'rgb(16, 185, 129)',
-                    pointBorderColor: '#fff',
+                    pointBackgroundColor: palette.bull,
+                    pointBorderColor: palette.pointBorder,
                     pointBorderWidth: 2
                 }]
             },
@@ -1652,6 +1700,11 @@ async function updateEvolutionChart() {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: palette.tooltipBg,
+                        titleColor: palette.tooltipText,
+                        bodyColor: palette.tooltipText,
+                        borderColor: palette.tooltipBorder,
+                        borderWidth: 2,
                         callbacks: {
                             label: function(context) {
                                 return 'Saldo: ' + formatCurrency(context.parsed.y);
