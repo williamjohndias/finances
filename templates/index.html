@@ -1,13 +1,14 @@
 <!DOCTYPE html>
-<html lang="pt-BR" data-theme="dark">
+<html lang="pt-BR" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Sistema inteligente de controle financeiro pessoal">
-    <meta name="theme-color" content="#4f46e5">
-    <title>FINANCES - Controle Financeiro Inteligente</title>
+    <meta name="theme-color" content="#0b1220">
+    <title>FINANCES - Trading Desk Financeiro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}">
 </head>
 <body>
 
@@ -23,54 +24,54 @@
 <!-- Sidebar -->
 <aside class="sidebar" id="sidebar">
     <div class="sidebar-brand">
-        <div class="brand-icon">₿</div>
+        <div class="brand-icon">FD</div>
         <div class="brand-text">
             <div class="brand-name">FINANCES</div>
-            <div class="brand-subtitle">Controle Inteligente</div>
+            <div class="brand-subtitle">Trading Desk</div>
         </div>
-        <button class="sidebar-close" onclick="closeSidebar()" title="Fechar menu">✕</button>
+        <button class="sidebar-close" onclick="closeSidebar()" title="Fechar menu">X</button>
     </div>
 
     <nav class="sidebar-nav">
-        <div class="nav-section-label">Principal</div>
+        <div class="nav-section-label">Painel</div>
 
         <a class="nav-link active" data-page="dashboard" onclick="navigateTo('dashboard')">
-            <span class="nav-icon">🏠</span>
+            <span class="nav-icon">DB</span>
             <span class="nav-label">Dashboard</span>
         </a>
 
         <a class="nav-link" data-page="transacoes" onclick="navigateTo('transacoes')">
-            <span class="nav-icon">📋</span>
-            <span class="nav-label">Transações</span>
+            <span class="nav-icon">TX</span>
+            <span class="nav-label">Transacoes</span>
         </a>
 
         <a class="nav-link" data-page="abatimentos" onclick="navigateTo('abatimentos')">
-            <span class="nav-icon">💳</span>
-            <span class="nav-label">Abatimentos</span>
+            <span class="nav-icon">FT</span>
+            <span class="nav-label">Faturas</span>
         </a>
 
-        <div class="nav-section-label">Análises</div>
+        <div class="nav-section-label">Inteligencia</div>
 
         <a class="nav-link" data-page="graficos" onclick="navigateTo('graficos')">
-            <span class="nav-icon">📈</span>
-            <span class="nav-label">Gráficos</span>
+            <span class="nav-icon">GR</span>
+            <span class="nav-label">Graficos</span>
         </a>
 
         <a class="nav-link" data-page="analises" onclick="navigateTo('analises')">
-            <span class="nav-icon">📊</span>
-            <span class="nav-label">Análises</span>
+            <span class="nav-icon">AN</span>
+            <span class="nav-label">Analises</span>
         </a>
 
         <a class="nav-link" data-page="calendario" onclick="navigateTo('calendario')">
-            <span class="nav-icon">📅</span>
-            <span class="nav-label">Calendário</span>
+            <span class="nav-icon">CL</span>
+            <span class="nav-label">Calendario</span>
         </a>
     </nav>
 
     <div class="sidebar-footer">
         <button id="themeToggle" onclick="toggleTheme()">
-            <span class="theme-icon">🌙</span>
-            <span class="hide-mobile">Modo Escuro</span>
+            <span class="theme-icon">ES</span>
+            <span class="hide-mobile">Trocar Tema</span>
         </button>
     </div>
 </aside>
@@ -90,21 +91,59 @@
         </div>
         <div class="topbar-right">
             <div class="month-filter-wrap">
-                <label for="dashboardMonth">Mês:</label>
+                <label for="dashboardMonth">Mes:</label>
                 <select id="dashboardMonth">
                     <option value="">Carregando...</option>
                 </select>
             </div>
-            <button onclick="exportToCSV()" class="topbar-btn" title="Exportar CSV">📥 CSV</button>
-            <button onclick="exportToPDF()" class="topbar-btn" title="Imprimir / PDF">🖨 PDF</button>
+            <button onclick="exportToCSV()" class="topbar-btn" title="Exportar CSV">Exportar CSV</button>
+            <button onclick="exportToPDF()" class="topbar-btn" title="Imprimir / PDF">Gerar PDF</button>
         </div>
     </header>
+
+    <section class="market-ticker-strip" aria-label="Indicadores de mercado">
+        <div class="ticker-track">
+            <div class="ticker-item positive">
+                <span class="ticker-symbol">IBOV</span>
+                <span class="ticker-price">127.450</span>
+                <span class="ticker-change">+1.24%</span>
+            </div>
+            <div class="ticker-item negative">
+                <span class="ticker-symbol">DOLAR</span>
+                <span class="ticker-price">5.38</span>
+                <span class="ticker-change">-0.32%</span>
+            </div>
+            <div class="ticker-item negative">
+                <span class="ticker-symbol">SELIC</span>
+                <span class="ticker-price">10.75%</span>
+                <span class="ticker-change">-0.50pp</span>
+            </div>
+            <div class="ticker-item positive">
+                <span class="ticker-symbol">CAIXA</span>
+                <span class="ticker-price">Fluxo</span>
+                <span class="ticker-change">ONLINE</span>
+            </div>
+        </div>
+    </section>
 
     <!-- Pages -->
     <main class="main-content">
 
         <!-- ==================== PAGE: DASHBOARD ==================== -->
         <section id="page-dashboard" class="page active">
+
+            <div class="market-hero">
+                <div>
+                    <p class="market-kicker">MESA FINANCEIRA</p>
+                    <h2 class="market-title">Controle de caixa em ritmo de mercado</h2>
+                    <p class="market-subtitle">Acompanhe saldo, projecao, risco de fatura e ritmo das transacoes com leitura rapida.</p>
+                </div>
+                <div class="market-pills" role="list" aria-label="Indicadores-chave">
+                    <span class="market-pill" role="listitem">Fluxo Diario</span>
+                    <span class="market-pill" role="listitem">Radar de Gastos</span>
+                    <span class="market-pill" role="listitem">Carteira Cartoes</span>
+                </div>
+            </div>
 
             <!-- KPI Cards -->
             <div id="dashboard" class="dashboard-grid">
@@ -153,7 +192,7 @@
             </div>
 
             <!-- Faturas Cards -->
-            <div class="dashboard-grid" style="margin-top: 0;">
+            <div class="dashboard-grid credit-grid" style="margin-top: 0;">
                 <div class="card">
                     <div class="card-header">
                         <div class="card-title">Nubank - Fatura</div>
@@ -196,7 +235,7 @@
             </div>
 
             <!-- Charts -->
-            <div id="charts" class="charts-grid">
+            <div id="charts" class="charts-grid trading-charts">
                 <div class="section">
                     <div class="section-header">
                         <h2 class="section-title">Evolução Mensal</h2>
@@ -231,7 +270,7 @@
         </section>
 
         <!-- ==================== PAGE: TRANSAÇÕES ==================== -->
-        <section id="page-transacoes" class="page">
+        <section id="page-transacoes" class="page market-page">
 
             <!-- Formulário Nova Transação -->
             <div class="form-section">
@@ -343,7 +382,7 @@
         </section>
 
         <!-- ==================== PAGE: ABATIMENTOS ==================== -->
-        <section id="page-abatimentos" class="page">
+        <section id="page-abatimentos" class="page market-page">
 
             <!-- Formulário Abatimento -->
             <div id="abatimentos" class="form-section">
@@ -415,7 +454,7 @@
         </section>
 
         <!-- ==================== PAGE: GRÁFICOS ==================== -->
-        <section id="page-graficos" class="page">
+        <section id="page-graficos" class="page market-page">
 
             <!-- Evolução Patrimonial -->
             <div class="section">
@@ -472,7 +511,7 @@
         </section>
 
         <!-- ==================== PAGE: ANÁLISES ==================== -->
-        <section id="page-analises" class="page">
+        <section id="page-analises" class="page market-page">
 
             <!-- Saúde Financeira -->
             <div class="section">
@@ -593,7 +632,7 @@
         </section>
 
         <!-- ==================== PAGE: CALENDÁRIO ==================== -->
-        <section id="page-calendario" class="page">
+        <section id="page-calendario" class="page market-page">
 
             <div class="section calendar-section">
                 <div class="section-header">
@@ -774,20 +813,20 @@
 <!-- Bottom Navigation (mobile) -->
 <nav class="bottom-nav">
     <a class="nav-item active" data-page="dashboard" onclick="navigateTo('dashboard')">
-        <div class="nav-icon">🏠</div>
+        <div class="nav-icon">DB</div>
         <span>Dashboard</span>
     </a>
     <a class="nav-item" data-page="transacoes" onclick="navigateTo('transacoes')">
-        <div class="nav-icon">📋</div>
-        <span>Transações</span>
+        <div class="nav-icon">TX</div>
+        <span>Transacoes</span>
     </a>
     <a class="nav-item" data-page="graficos" onclick="navigateTo('graficos')">
-        <div class="nav-icon">📈</div>
-        <span>Gráficos</span>
+        <div class="nav-icon">GR</div>
+        <span>Graficos</span>
     </a>
     <a class="nav-item" data-page="abatimentos" onclick="navigateTo('abatimentos')">
-        <div class="nav-icon">💳</div>
-        <span>Abatimentos</span>
+        <div class="nav-icon">FT</div>
+        <span>Faturas</span>
     </a>
 </nav>
 
