@@ -12,8 +12,6 @@
 </head>
 <body>
 
-<!-- Shader Background - fundo animado em todas as telas -->
-<canvas id="shaderBackground" class="shader-background" aria-hidden="true"></canvas>
 
 <!-- Toast global para mensagens (sempre visível) -->
 <div id="globalToast" class="global-toast" style="display: none;" role="alert"></div>
@@ -830,7 +828,6 @@
     </a>
 </nav>
 
-<script src="{{ url_for('static', filename='js/shader-background.js') }}"></script>
 <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>
