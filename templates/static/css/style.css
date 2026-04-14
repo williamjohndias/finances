@@ -1698,6 +1698,67 @@ button:disabled {
 }
 
 /* ===================================
+   BUDGET & RECURRING
+   =================================== */
+.budget-alerts {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.budget-alert-item {
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    font-size: 0.8125rem;
+    letter-spacing: 0.02em;
+}
+
+.budget-alert-item.ok {
+    border-color: rgba(16, 185, 129, 0.4);
+    color: #34d399;
+    background: rgba(16, 185, 129, 0.08);
+}
+
+.budget-alert-item.alerta {
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #fbbf24;
+    background: rgba(245, 158, 11, 0.12);
+}
+
+.budget-alert-item.estourado {
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #fb7185;
+    background: rgba(239, 68, 68, 0.12);
+}
+
+.rec-status {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 86px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-medium);
+    font-size: 0.6875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+
+.rec-status.ativo {
+    color: #22c55e;
+    border-color: rgba(34, 197, 94, 0.5);
+    background: rgba(34, 197, 94, 0.1);
+}
+
+.rec-status.inativo {
+    color: #94a3b8;
+    border-color: rgba(148, 163, 184, 0.35);
+    background: rgba(100, 116, 139, 0.14);
+}
+
+/* ===================================
    SCROLLBAR
    =================================== */
 ::-webkit-scrollbar {

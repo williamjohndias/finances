@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, jsonify
-from datetime import datetime
+from datetime import datetime, timedelta
+from calendar import monthrange
 from dateutil.relativedelta import relativedelta
 import os
 
@@ -46,6 +47,74 @@ else:
     print("AVISO: SUPABASE_URL ou SUPABASE_KEY nao configurados")
     print(f"  SUPABASE_URL: {'Definido' if SUPABASE_URL else 'NAO DEFINIDO'}")
     print(f"  SUPABASE_KEY: {'Definido' if SUPABASE_KEY else 'NAO DEFINIDO'}\n")
+
+BUDGET_CATEGORIES = {
+    'debito': 'Debito',
+    'mercado_pago': 'Mercado Pago',
+    'nubank': 'Nubank'
+}
+
+
+def parse_date(date_text, default=None):
+    """Converte texto YYYY-MM-DD para datetime."""
+    if not date_text:
+        return default
+    try:
+        return datetime.strptime(date_text, '%Y-%m-%d')
+    except Exception:
+        return default
+
+
+def clamp_day(year, month, day):
+    """Garante que o dia esteja dentro do mês."""
+    return min(max(int(day), 1), monthrange(year, month)[1])
+
+
+def month_key_from_date(date_obj):
+    return date_obj.strftime('%Y-%m')
+
+
+def next_month_key(month_key):
+    base = datetime.strptime(month_key + '-01', '%Y-%m-%d')
+    return (base + relativedelta(months=1)).strftime('%Y-%m')
+
+
+def iter_month_keys(start_month_key, end_month_key):
+    current = datetime.strptime(start_month_key + '-01', '%Y-%m-%d')
+    end = datetime.strptime(end_month_key + '-01', '%Y-%m-%d')
+    while current <= end:
+        yield current.strftime('%Y-%m')
+        current = current + relativedelta(months=1)
+
+
+def normalize_transactions(transactions):
+    """Flatten das listas de transações com tipo normalizado."""
+    normalized = []
+    type_map = {
+        'receitas': 'receita',
+        'gastos_debito': 'debito',
+        'gastos_mercado_pago': 'mercado_pago',
+        'gastos_nubank': 'nubank'
+    }
+    for key, items in transactions.items():
+        normalized_type = type_map.get(key)
+        if not normalized_type:
+            continue
+        for row in items:
+            normalized.append({
+                'id': row.get('id'),
+                'tipo': normalized_type,
+                'descricao': row.get('descricao', ''),
+                'valor': float(row.get('valor', 0) or 0),
+                'data': row.get('data'),
+                'parcelado': row.get('parcelado', False),
+                'parcela_atual': row.get('parcela_atual'),
+                'total_parcelas': row.get('total_parcelas'),
+                'valor_total': row.get('valor_total'),
+                'parcel_group_id': row.get('parcel_group_id')
+            })
+    return normalized
+
 
 def load_transactions():
     """Carrega transações do Supabase"""
@@ -325,11 +394,11 @@ def get_monthly_summary():
                     monthly_data[mes_ano]['receitas'] += transaction['valor']
                 else:
                     monthly_data[mes_ano]['gastos'] += transaction['valor']
-                    if tipo == 'debito':
+                    if tipo == 'gastos_debito':
                         monthly_data[mes_ano]['debito'] += transaction['valor']
-                    elif tipo == 'mercado_pago':
+                    elif tipo == 'gastos_mercado_pago':
                         monthly_data[mes_ano]['mercado_pago'] += transaction['valor']
-                    elif tipo == 'nubank':
+                    elif tipo == 'gastos_nubank':
                         monthly_data[mes_ano]['nubank'] += transaction['valor']
         
         sorted_months = sorted(monthly_data.keys())
@@ -492,6 +561,146 @@ def load_abatimentos():
     except Exception as e:
         print(f"ERRO ao carregar abatimentos: {e}")
         return []
+
+
+def load_orcamentos(month_filter=None):
+    """Carrega orçamentos por categoria."""
+    if supabase is None:
+        return []
+
+    try:
+        query = supabase.table('orcamentos').select('*')
+        if month_filter:
+            query = query.eq('mes_referencia', month_filter)
+        response = query.order('mes_referencia', desc=True).execute()
+        return response.data
+    except Exception as e:
+        print(f"ERRO ao carregar orcamentos: {e}")
+        return []
+
+
+def load_recorrencias(active_only=False):
+    """Carrega regras de recorrência."""
+    if supabase is None:
+        return []
+
+    try:
+        query = supabase.table('recorrencias').select('*')
+        if active_only:
+            query = query.eq('ativo', True)
+        response = query.order('created_at', desc=False).execute()
+        return response.data
+    except Exception as e:
+        print(f"ERRO ao carregar recorrencias: {e}")
+        return []
+
+
+def calculate_cash_balance(today=None):
+    """Saldo de caixa real: receitas - débito - abatimentos."""
+    today_dt = today or datetime.now()
+    today_date = today_dt.date()
+
+    transactions = load_transactions()
+    abatimentos = load_abatimentos()
+
+    saldo = 0.0
+    for tx in normalize_transactions(transactions):
+        tx_date = parse_date(tx.get('data'))
+        if not tx_date or tx_date.date() > today_date:
+            continue
+        if tx['tipo'] == 'receita':
+            saldo += tx['valor']
+        elif tx['tipo'] == 'debito':
+            saldo -= tx['valor']
+
+    for abat in abatimentos:
+        abat_date = parse_date(abat.get('data'))
+        if not abat_date or abat_date.date() > today_date:
+            continue
+        saldo -= float(abat.get('valor', 0) or 0)
+
+    return saldo
+
+
+def get_average_monthly_flow(lookback_days=180):
+    """Média mensal de entradas e saídas no período recente."""
+    end_dt = datetime.now()
+    start_dt = end_dt - timedelta(days=lookback_days)
+
+    monthly = {}
+    for tx in normalize_transactions(load_transactions()):
+        tx_date = parse_date(tx.get('data'))
+        if not tx_date or tx_date < start_dt or tx_date > end_dt:
+            continue
+        key = month_key_from_date(tx_date)
+        if key not in monthly:
+            monthly[key] = {'receitas': 0.0, 'gastos': 0.0}
+        if tx['tipo'] == 'receita':
+            monthly[key]['receitas'] += tx['valor']
+        else:
+            monthly[key]['gastos'] += tx['valor']
+
+    for abat in load_abatimentos():
+        abat_date = parse_date(abat.get('data'))
+        if not abat_date or abat_date < start_dt or abat_date > end_dt:
+            continue
+        key = month_key_from_date(abat_date)
+        if key not in monthly:
+            monthly[key] = {'receitas': 0.0, 'gastos': 0.0}
+        monthly[key]['gastos'] += float(abat.get('valor', 0) or 0)
+
+    if not monthly:
+        return {'media_receitas': 0.0, 'media_gastos': 0.0, 'meses': 0}
+
+    months_count = len(monthly)
+    total_receitas = sum(v['receitas'] for v in monthly.values())
+    total_gastos = sum(v['gastos'] for v in monthly.values())
+    return {
+        'media_receitas': total_receitas / months_count,
+        'media_gastos': total_gastos / months_count,
+        'meses': months_count
+    }
+
+
+def get_recurring_totals_until(days):
+    """Soma valores recorrentes que vencem até D+N."""
+    today = datetime.now().date()
+    horizon = today + timedelta(days=days)
+    recs = load_recorrencias(active_only=True)
+
+    total_receitas = 0.0
+    total_gastos = 0.0
+
+    if not recs:
+        return {'receitas': 0.0, 'gastos': 0.0}
+
+    start_month = month_key_from_date(datetime.combine(today, datetime.min.time()))
+    end_month = month_key_from_date(datetime.combine(horizon, datetime.min.time()))
+
+    for rec in recs:
+        tipo = rec.get('tipo')
+        if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+            continue
+
+        valor = float(rec.get('valor', 0) or 0)
+        dia_mes = int(rec.get('dia_mes', 1) or 1)
+        data_inicio = parse_date(rec.get('data_inicio'), datetime.now())
+        first_month = month_key_from_date(data_inicio)
+
+        month_start = max(start_month, first_month)
+        for month_key in iter_month_keys(month_start, end_month):
+            year, month = map(int, month_key.split('-'))
+            due_day = clamp_day(year, month, dia_mes)
+            due_date = datetime(year, month, due_day).date()
+            if due_date <= today or due_date > horizon:
+                continue
+
+            if tipo == 'receita':
+                total_receitas += valor
+            else:
+                total_gastos += valor
+
+    return {'receitas': total_receitas, 'gastos': total_gastos}
 
 @app.route('/api/abatimentos', methods=['GET'])
 def get_abatimentos():
@@ -659,6 +868,436 @@ def get_faturas():
             'month': month_filter if 'month_filter' in locals() else None,
             'mercado_pago': {'fatura_total': 0, 'abatido': 0, 'atual': 0},
             'nubank': {'fatura_total': 0, 'abatido': 0, 'atual': 0}
+        }), 500
+
+
+@app.route('/api/orcamentos', methods=['GET'])
+def get_orcamentos():
+    """Retorna orcamentos por categoria."""
+    month_filter = request.args.get('month', None)
+    return jsonify(load_orcamentos(month_filter))
+
+
+@app.route('/api/orcamentos', methods=['POST'])
+def upsert_orcamento():
+    """Cria/atualiza orcamento por categoria e mes."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        data = request.json or {}
+        categoria = data.get('categoria')
+        if categoria not in BUDGET_CATEGORIES:
+            return jsonify({'success': False, 'error': 'Categoria invalida'}), 400
+
+        limite = float(data.get('limite', 0) or 0)
+        if limite <= 0:
+            return jsonify({'success': False, 'error': 'Limite deve ser maior que zero'}), 400
+
+        mes_referencia = data.get('mes_referencia') or datetime.now().strftime('%Y-%m')
+        alerta_percentual = float(data.get('alerta_percentual', 80) or 80)
+        alerta_percentual = max(1, min(100, alerta_percentual))
+        now_iso = datetime.now().isoformat()
+
+        existing = supabase.table('orcamentos').select('*') \
+            .eq('categoria', categoria).eq('mes_referencia', mes_referencia).limit(1).execute()
+
+        if existing.data:
+            orcamento_id = existing.data[0]['id']
+            payload = {
+                'limite': limite,
+                'alerta_percentual': alerta_percentual,
+                'updated_at': now_iso
+            }
+            supabase.table('orcamentos').update(payload).eq('id', orcamento_id).execute()
+            return jsonify({
+                'success': True,
+                'updated': True,
+                'orcamento': {
+                    'id': orcamento_id,
+                    'categoria': categoria,
+                    'mes_referencia': mes_referencia,
+                    'limite': limite,
+                    'alerta_percentual': alerta_percentual
+                }
+            })
+
+        orcamento_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+        payload = {
+            'id': orcamento_id,
+            'categoria': categoria,
+            'mes_referencia': mes_referencia,
+            'limite': limite,
+            'alerta_percentual': alerta_percentual,
+            'created_at': now_iso,
+            'updated_at': now_iso
+        }
+        supabase.table('orcamentos').insert(payload).execute()
+        return jsonify({'success': True, 'updated': False, 'orcamento': payload})
+    except Exception as e:
+        print(f"ERRO ao salvar orcamento: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'details': 'Verifique se a tabela orcamentos existe no Supabase'
+        }), 500
+
+
+@app.route('/api/orcamentos/<orcamento_id>', methods=['PUT'])
+def update_orcamento(orcamento_id):
+    """Atualiza um orçamento específico."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        data = request.json or {}
+        payload = {
+            'limite': float(data.get('limite', 0) or 0),
+            'alerta_percentual': float(data.get('alerta_percentual', 80) or 80),
+            'updated_at': datetime.now().isoformat()
+        }
+        if payload['limite'] <= 0:
+            return jsonify({'success': False, 'error': 'Limite deve ser maior que zero'}), 400
+
+        payload['alerta_percentual'] = max(1, min(100, payload['alerta_percentual']))
+        supabase.table('orcamentos').update(payload).eq('id', orcamento_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"ERRO ao atualizar orcamento: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/orcamentos/<orcamento_id>', methods=['DELETE'])
+def delete_orcamento(orcamento_id):
+    """Remove um orçamento."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        supabase.table('orcamentos').delete().eq('id', orcamento_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"ERRO ao deletar orcamento: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/orcamentos/summary', methods=['GET'])
+def get_orcamentos_summary():
+    """Resumo de execução de orçamento com alertas."""
+    try:
+        month_filter = request.args.get('month', datetime.now().strftime('%Y-%m'))
+        budgets = load_orcamentos(month_filter)
+
+        spent = {category: 0.0 for category in BUDGET_CATEGORIES}
+        for tx in normalize_transactions(load_transactions()):
+            tx_date = parse_date(tx.get('data'))
+            if not tx_date:
+                continue
+            if month_key_from_date(tx_date) != month_filter:
+                continue
+            if tx['tipo'] in spent:
+                spent[tx['tipo']] += tx['valor']
+
+        by_category = []
+        for category, label in BUDGET_CATEGORIES.items():
+            budget_row = next((b for b in budgets if b.get('categoria') == category), None)
+            limit_value = float((budget_row or {}).get('limite', 0) or 0)
+            alert_threshold = float((budget_row or {}).get('alerta_percentual', 80) or 80)
+            used_value = spent.get(category, 0.0)
+            remaining_value = limit_value - used_value
+            usage_pct = (used_value / limit_value * 100) if limit_value > 0 else 0
+
+            if limit_value <= 0:
+                status = 'sem_orcamento'
+            elif usage_pct >= 100:
+                status = 'estourado'
+            elif usage_pct >= alert_threshold:
+                status = 'alerta'
+            else:
+                status = 'ok'
+
+            by_category.append({
+                'id': (budget_row or {}).get('id'),
+                'categoria': category,
+                'label': label,
+                'mes_referencia': month_filter,
+                'limite': limit_value,
+                'usado': used_value,
+                'restante': remaining_value,
+                'uso_percentual': usage_pct,
+                'alerta_percentual': alert_threshold,
+                'status': status
+            })
+
+        alerts = [c for c in by_category if c['status'] in ('alerta', 'estourado')]
+        total_limit = sum(item['limite'] for item in by_category)
+        total_spent = sum(item['usado'] for item in by_category)
+
+        return jsonify({
+            'month': month_filter,
+            'categories': by_category,
+            'alerts': alerts,
+            'totals': {
+                'limite_total': total_limit,
+                'usado_total': total_spent,
+                'restante_total': total_limit - total_spent,
+                'uso_percentual_total': (total_spent / total_limit * 100) if total_limit > 0 else 0
+            }
+        })
+    except Exception as e:
+        print(f"ERRO no resumo de orcamentos: {e}")
+        return jsonify({
+            'month': request.args.get('month', datetime.now().strftime('%Y-%m')),
+            'categories': [],
+            'alerts': [],
+            'totals': {
+                'limite_total': 0,
+                'usado_total': 0,
+                'restante_total': 0,
+                'uso_percentual_total': 0
+            }
+        }), 500
+
+
+@app.route('/api/recorrencias', methods=['GET'])
+def get_recorrencias():
+    """Retorna todas as recorrencias."""
+    return jsonify(load_recorrencias(active_only=False))
+
+
+@app.route('/api/recorrencias', methods=['POST'])
+def add_recorrencia():
+    """Cadastra uma recorrencia de transacao."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        data = request.json or {}
+        tipo = data.get('tipo')
+        if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+            return jsonify({'success': False, 'error': 'Tipo invalido'}), 400
+
+        descricao = str(data.get('descricao', '')).strip()
+        if not descricao:
+            return jsonify({'success': False, 'error': 'Descricao obrigatoria'}), 400
+
+        valor = float(data.get('valor', 0) or 0)
+        if valor <= 0:
+            return jsonify({'success': False, 'error': 'Valor deve ser maior que zero'}), 400
+
+        dia_mes = int(data.get('dia_mes', 1) or 1)
+        dia_mes = max(1, min(31, dia_mes))
+        data_inicio = data.get('data_inicio') or datetime.now().strftime('%Y-%m-%d')
+        ativo = bool(data.get('ativo', True))
+
+        rec_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+        now_iso = datetime.now().isoformat()
+        payload = {
+            'id': rec_id,
+            'tipo': tipo,
+            'descricao': descricao,
+            'valor': valor,
+            'dia_mes': dia_mes,
+            'data_inicio': data_inicio,
+            'ativo': ativo,
+            'observacao': data.get('observacao', ''),
+            'ultima_competencia': None,
+            'created_at': now_iso,
+            'updated_at': now_iso
+        }
+        supabase.table('recorrencias').insert(payload).execute()
+        return jsonify({'success': True, 'recorrencia': payload})
+    except Exception as e:
+        print(f"ERRO ao adicionar recorrencia: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e),
+            'details': 'Verifique se a tabela recorrencias existe no Supabase'
+        }), 500
+
+
+@app.route('/api/recorrencias/<recorrencia_id>', methods=['PUT'])
+def update_recorrencia(recorrencia_id):
+    """Atualiza uma recorrencia."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        data = request.json or {}
+        payload = {
+            'tipo': data.get('tipo'),
+            'descricao': str(data.get('descricao', '')).strip(),
+            'valor': float(data.get('valor', 0) or 0),
+            'dia_mes': max(1, min(31, int(data.get('dia_mes', 1) or 1))),
+            'data_inicio': data.get('data_inicio') or datetime.now().strftime('%Y-%m-%d'),
+            'ativo': bool(data.get('ativo', True)),
+            'observacao': data.get('observacao', ''),
+            'updated_at': datetime.now().isoformat()
+        }
+
+        if payload['tipo'] not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+            return jsonify({'success': False, 'error': 'Tipo invalido'}), 400
+        if not payload['descricao']:
+            return jsonify({'success': False, 'error': 'Descricao obrigatoria'}), 400
+        if payload['valor'] <= 0:
+            return jsonify({'success': False, 'error': 'Valor deve ser maior que zero'}), 400
+
+        supabase.table('recorrencias').update(payload).eq('id', recorrencia_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"ERRO ao atualizar recorrencia: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/recorrencias/<recorrencia_id>', methods=['DELETE'])
+def delete_recorrencia(recorrencia_id):
+    """Remove uma recorrencia."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        supabase.table('recorrencias').delete().eq('id', recorrencia_id).execute()
+        return jsonify({'success': True})
+    except Exception as e:
+        print(f"ERRO ao deletar recorrencia: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/recorrencias/process', methods=['POST'])
+def process_recorrencias():
+    """Materializa transacoes recorrentes vencidas ate hoje."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        recs = load_recorrencias(active_only=True)
+        today = datetime.now()
+        today_month = today.strftime('%Y-%m')
+        created = 0
+        generated = []
+
+        for rec in recs:
+            rec_id = rec.get('id')
+            tipo = rec.get('tipo')
+            if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+                continue
+
+            valor = float(rec.get('valor', 0) or 0)
+            if valor <= 0:
+                continue
+
+            descricao = rec.get('descricao', '').strip()
+            if not descricao:
+                continue
+
+            dia_mes = max(1, min(31, int(rec.get('dia_mes', 1) or 1)))
+            data_inicio = parse_date(rec.get('data_inicio'), today)
+            start_month = month_key_from_date(data_inicio)
+            last_month = rec.get('ultima_competencia')
+            if last_month:
+                start_month = max(start_month, next_month_key(last_month))
+
+            last_processed = last_month
+            for month_key in iter_month_keys(start_month, today_month):
+                year, month = map(int, month_key.split('-'))
+                due_day = clamp_day(year, month, dia_mes)
+                due_date = datetime(year, month, due_day)
+                if due_date > today:
+                    continue
+
+                marker = f"rec_{rec_id}_{month_key}"
+                exists = supabase.table('transactions').select('id') \
+                    .eq('parcel_group_id', marker).limit(1).execute()
+                if exists.data:
+                    last_processed = month_key
+                    continue
+
+                transaction_id = datetime.now().strftime('%Y%m%d%H%M%S%f')
+                tx_payload = {
+                    'id': transaction_id,
+                    'tipo': tipo,
+                    'descricao': descricao,
+                    'valor': valor,
+                    'data': due_date.strftime('%Y-%m-%d'),
+                    'parcelado': False,
+                    'parcela_atual': None,
+                    'total_parcelas': None,
+                    'valor_total': valor,
+                    'parcel_group_id': marker
+                }
+                supabase.table('transactions').insert(tx_payload).execute()
+                created += 1
+                generated.append(tx_payload)
+                last_processed = month_key
+
+            if last_processed and last_processed != rec.get('ultima_competencia'):
+                supabase.table('recorrencias').update({
+                    'ultima_competencia': last_processed,
+                    'updated_at': datetime.now().isoformat()
+                }).eq('id', rec_id).execute()
+
+        return jsonify({'success': True, 'created': created, 'transactions': generated})
+    except Exception as e:
+        print(f"ERRO ao processar recorrencias: {e}")
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/projecao-d90', methods=['GET'])
+def get_projection_d90():
+    """Projecao de caixa D+30/D+60/D+90 com cenarios."""
+    try:
+        saldo_atual = calculate_cash_balance()
+        avg = get_average_monthly_flow(lookback_days=180)
+
+        horizons = [30, 60, 90]
+        scenarios = {
+            'otimista': {'mult_receitas': 1.10, 'mult_gastos': 0.90},
+            'base': {'mult_receitas': 1.00, 'mult_gastos': 1.00},
+            'pessimista': {'mult_receitas': 0.90, 'mult_gastos': 1.15}
+        }
+
+        output = {}
+        for scenario_name, mult in scenarios.items():
+            points = {}
+            for days in horizons:
+                recurring = get_recurring_totals_until(days)
+                factor = days / 30.0
+                projected_receitas = avg['media_receitas'] * factor * mult['mult_receitas']
+                projected_gastos = avg['media_gastos'] * factor * mult['mult_gastos']
+                saldo = saldo_atual + recurring['receitas'] - recurring['gastos'] + projected_receitas - projected_gastos
+
+                points[f'd{days}'] = {
+                    'saldo': saldo,
+                    'receitas_estimadas': projected_receitas + recurring['receitas'],
+                    'gastos_estimados': projected_gastos + recurring['gastos'],
+                    'recorrente_receitas': recurring['receitas'],
+                    'recorrente_gastos': recurring['gastos']
+                }
+            output[scenario_name] = points
+
+        return jsonify({
+            'saldo_atual': saldo_atual,
+            'base_historica': {
+                'media_receitas_mensais': avg['media_receitas'],
+                'media_gastos_mensais': avg['media_gastos'],
+                'meses_avaliados': avg['meses']
+            },
+            'cenarios': output
+        })
+    except Exception as e:
+        print(f"ERRO na projecao D+90: {e}")
+        return jsonify({
+            'saldo_atual': 0,
+            'base_historica': {
+                'media_receitas_mensais': 0,
+                'media_gastos_mensais': 0,
+                'meses_avaliados': 0
+            },
+            'cenarios': {
+                'otimista': {},
+                'base': {},
+                'pessimista': {}
+            }
         }), 500
 
 @app.route('/api/metas', methods=['GET'])

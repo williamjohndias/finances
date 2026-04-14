@@ -550,6 +550,149 @@
                 </div>
             </div>
 
+            <!-- Orcamento por Categoria -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Orcamento por Categoria</h2>
+                </div>
+
+                <form id="orcamentoForm">
+                    <div class="form-row form-row-3">
+                        <div class="form-group">
+                            <label for="orcamentoMes">Mes de Referencia</label>
+                            <input type="month" id="orcamentoMes" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="orcamentoCategoria">Categoria</label>
+                            <select id="orcamentoCategoria" required>
+                                <option value="debito">Debito</option>
+                                <option value="mercado_pago">Mercado Pago</option>
+                                <option value="nubank">Nubank</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="orcamentoLimite">Limite Mensal (R$)</label>
+                            <input type="number" id="orcamentoLimite" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label for="orcamentoAlerta">Alerta (%)</label>
+                            <input type="number" id="orcamentoAlerta" min="1" max="100" value="80" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button type="submit">Salvar Orcamento</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div id="orcamentoAlertas" class="budget-alerts"></div>
+                <div id="orcamentoResumoGrid" class="stats-grid"></div>
+            </div>
+
+            <!-- Recorrencias -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Recorrencias de Transacoes</h2>
+                </div>
+
+                <form id="recorrenciaForm">
+                    <div class="form-row form-row-3">
+                        <div class="form-group">
+                            <label for="recTipo">Tipo</label>
+                            <select id="recTipo" required>
+                                <option value="receita">Receita</option>
+                                <option value="debito">Debito</option>
+                                <option value="mercado_pago">Mercado Pago</option>
+                                <option value="nubank">Nubank</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="recDescricao">Descricao</label>
+                            <input type="text" id="recDescricao" required placeholder="Ex: Salario, Aluguel...">
+                        </div>
+                        <div class="form-group">
+                            <label for="recValor">Valor (R$)</label>
+                            <input type="number" id="recValor" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-row form-row-3">
+                        <div class="form-group">
+                            <label for="recDiaMes">Dia do Mes</label>
+                            <input type="number" id="recDiaMes" min="1" max="31" value="5" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="recDataInicio">Data de Inicio</label>
+                            <input type="date" id="recDataInicio" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end; gap: 8px;">
+                            <button type="submit">Adicionar Recorrencia</button>
+                            <button type="button" class="btn-secondary" onclick="processarRecorrenciasManual()">Processar</button>
+                        </div>
+                    </div>
+                </form>
+
+                <div style="overflow-x: auto;">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Descricao</th>
+                                <th>Valor</th>
+                                <th>Dia</th>
+                                <th>Inicio</th>
+                                <th>Status</th>
+                                <th>Acoes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recorrenciasTableBody">
+                            <tr>
+                                <td colspan="7" class="loading">Carregando recorrencias...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Projecao D+90 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Projecao de Caixa D+90</h2>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Saldo Atual</div>
+                        <div class="stat-value" id="projSaldoAtual">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Base D+30</div>
+                        <div class="stat-value" id="projBaseD30">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Base D+60</div>
+                        <div class="stat-value" id="projBaseD60">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Base D+90</div>
+                        <div class="stat-value" id="projBaseD90">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Otimista D+90</div>
+                        <div class="stat-value positive" id="projOtimistaD90">R$ 0,00</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Pessimista D+90</div>
+                        <div class="stat-value negative" id="projPessimistaD90">R$ 0,00</div>
+                    </div>
+                </div>
+
+                <div class="chart-container" style="height: 280px; margin-top: 12px;">
+                    <canvas id="projectionChart"></canvas>
+                </div>
+                <p id="projBaseInfo" class="diagnostico-aviso" style="margin-top: 10px;"></p>
+            </div>
+
             <!-- Como os saldos são calculados -->
             <div class="section">
                 <div class="section-header">

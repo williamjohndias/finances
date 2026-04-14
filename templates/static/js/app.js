@@ -71,6 +71,9 @@ let gastosChart = null;
 let categoryChart = null;
 let allTransactions = [];
 let allAbatimentos = [];
+let allOrcamentos = [];
+let allRecorrencias = [];
+let projectionChart = null;
 
 // ===================================
 // THEME MANAGEMENT
@@ -199,6 +202,14 @@ function getUniqueMonths() {
     return Array.from(months).sort().reverse();
 }
 
+function getSelectedMonthOrCurrent() {
+    const dashboardMonthEl = document.getElementById('dashboardMonth');
+    const selected = dashboardMonthEl ? dashboardMonthEl.value : '';
+    if (selected) return selected;
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
 function populateMonthDropdowns() {
     const months = getAvailableMonths(allTransactions);
     const currentMonth = new Date().getFullYear() + '-' + String(new Date().getMonth() + 1).padStart(2, '0');
@@ -258,6 +269,8 @@ async function loadTransactions() {
         await loadStatistics();
         await loadFaturas();
         await atualizarSaldos();
+        await loadBudgetSummary();
+        await loadProjectionD90();
     } catch (error) {
         console.error('Erro ao carregar transações:', error);
         showMessage('Erro ao carregar transações', 'error');
@@ -572,6 +585,8 @@ async function updateDashboardOnMonthChange() {
         await atualizarSaldos();
         await loadStatistics();
         await displayTopExpenses();
+        await loadBudgetSummary(dashboardMonth || null);
+        await loadProjectionD90();
     } catch (error) {
         console.error('Erro ao atualizar dashboard:', error);
     }
@@ -799,6 +814,426 @@ async function loadStatistics() {
     } catch (error) {
         console.error('Erro ao carregar estatísticas:', error);
     }
+}
+
+// ===================================
+// ORCAMENTO POR CATEGORIA
+// ===================================
+async function loadBudgetSummary(monthFilter = null) {
+    try {
+        const month = monthFilter || getSelectedMonthOrCurrent();
+        const response = await fetch(`/api/orcamentos/summary?month=${month}`);
+        const data = await response.json();
+        renderBudgetSummary(data);
+
+        const mesInput = document.getElementById('orcamentoMes');
+        if (mesInput && !mesInput.value) {
+            mesInput.value = month;
+        }
+    } catch (error) {
+        console.error('Erro ao carregar resumo de orcamento:', error);
+    }
+}
+
+function renderBudgetSummary(data) {
+    const grid = document.getElementById('orcamentoResumoGrid');
+    const alerts = document.getElementById('orcamentoAlertas');
+    if (!grid || !alerts) return;
+
+    const categories = data.categories || [];
+    allOrcamentos = categories;
+
+    if (!categories.length) {
+        grid.innerHTML = '<div class="stat-item"><div class="stat-label">Orcamento</div><div class="stat-value">Sem dados</div></div>';
+        alerts.innerHTML = '<div class="budget-alert-item ok">Nenhum orcamento cadastrado para este mes.</div>';
+        return;
+    }
+
+    const statusLabel = {
+        ok: 'Dentro do limite',
+        alerta: 'Alerta de limite',
+        estourado: 'Limite estourado',
+        sem_orcamento: 'Sem limite cadastrado'
+    };
+
+    grid.innerHTML = categories.map(item => {
+        const restanteClass = item.restante < 0 ? 'negative' : 'positive';
+        const statusClass = item.status === 'estourado' ? 'negative' : item.status === 'alerta' ? 'warning' : '';
+        return `
+            <div class="stat-item">
+                <div class="stat-label">${item.label}</div>
+                <div class="stat-value ${restanteClass}">${formatCurrency(item.restante)}</div>
+                <div style="font-size:0.78rem;color:var(--text-secondary);margin-top:6px;">
+                    Usado ${formatCurrency(item.usado)} de ${formatCurrency(item.limite || 0)}
+                </div>
+                <div style="font-size:0.74rem;margin-top:6px;" class="${statusClass}">
+                    ${statusLabel[item.status] || item.status} (${(item.uso_percentual || 0).toFixed(1)}%)
+                </div>
+                ${item.id ? `<button class="btn-icon-small" style="margin-top:8px;" onclick="deleteOrcamento('${item.id}')">Excluir</button>` : ''}
+            </div>
+        `;
+    }).join('');
+
+    const alertItems = data.alerts || [];
+    if (!alertItems.length) {
+        alerts.innerHTML = '<div class="budget-alert-item ok">Sem alertas de orcamento neste mes.</div>';
+    } else {
+        alerts.innerHTML = alertItems.map(item => `
+            <div class="budget-alert-item ${item.status}">
+                ${item.label}: uso de ${(item.uso_percentual || 0).toFixed(1)}% (${formatCurrency(item.usado)} / ${formatCurrency(item.limite)})
+            </div>
+        `).join('');
+    }
+}
+
+async function saveOrcamento(event) {
+    event.preventDefault();
+
+    const payload = {
+        mes_referencia: (document.getElementById('orcamentoMes').value || '').trim(),
+        categoria: document.getElementById('orcamentoCategoria').value,
+        limite: parseFloat(document.getElementById('orcamentoLimite').value || '0'),
+        alerta_percentual: parseFloat(document.getElementById('orcamentoAlerta').value || '80')
+    };
+
+    if (!payload.mes_referencia || payload.limite <= 0) {
+        showMessage('✗ Preencha mes e limite do orcamento.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/orcamentos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            showMessage('✓ Orcamento salvo com sucesso!', 'success');
+            await loadBudgetSummary(payload.mes_referencia);
+            document.getElementById('orcamentoLimite').value = '';
+        } else {
+            showMessage('✗ Erro ao salvar orcamento: ' + (result.error || 'erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar orcamento:', error);
+        showMessage('✗ Erro ao salvar orcamento', 'error');
+    }
+}
+
+async function deleteOrcamento(id) {
+    if (!confirm('Deseja remover este orcamento?')) return;
+
+    try {
+        const response = await fetch(`/api/orcamentos/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            showMessage('✓ Orcamento removido.', 'success');
+            await loadBudgetSummary();
+        } else {
+            showMessage('✗ Nao foi possivel remover orcamento.', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao deletar orcamento:', error);
+        showMessage('✗ Erro ao deletar orcamento.', 'error');
+    }
+}
+
+// ===================================
+// RECORRENCIAS
+// ===================================
+async function loadRecorrencias() {
+    try {
+        const response = await fetch('/api/recorrencias');
+        const data = await response.json();
+        allRecorrencias = data || [];
+        renderRecorrencias();
+    } catch (error) {
+        console.error('Erro ao carregar recorrencias:', error);
+    }
+}
+
+function renderRecorrencias() {
+    const tbody = document.getElementById('recorrenciasTableBody');
+    if (!tbody) return;
+
+    if (!allRecorrencias.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="empty-state">Nenhuma recorrencia cadastrada</td></tr>';
+        return;
+    }
+
+    const tipoLabel = {
+        receita: 'Receita',
+        debito: 'Debito',
+        mercado_pago: 'Mercado Pago',
+        nubank: 'Nubank'
+    };
+
+    tbody.innerHTML = allRecorrencias.map(item => `
+        <tr>
+            <td data-label="Tipo"><span class="badge">${tipoLabel[item.tipo] || item.tipo}</span></td>
+            <td data-label="Descricao">${item.descricao}</td>
+            <td data-label="Valor">${formatCurrency(parseFloat(item.valor || 0))}</td>
+            <td data-label="Dia">${item.dia_mes}</td>
+            <td data-label="Inicio">${formatDate(item.data_inicio)}</td>
+            <td data-label="Status"><span class="rec-status ${item.ativo ? 'ativo' : 'inativo'}">${item.ativo ? 'Ativo' : 'Inativo'}</span></td>
+            <td data-label="Acoes">
+                <div class="btn-group">
+                    <button class="edit-btn btn-sm" onclick='toggleRecorrencia(${JSON.stringify(item).replace(/'/g, "\\'")})'>${item.ativo ? 'Pausar' : 'Ativar'}</button>
+                    <button class="delete-btn btn-sm" onclick="deleteRecorrencia('${item.id}')">Excluir</button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+}
+
+async function saveRecorrencia(event) {
+    event.preventDefault();
+
+    const payload = {
+        tipo: document.getElementById('recTipo').value,
+        descricao: document.getElementById('recDescricao').value.trim(),
+        valor: parseFloat(document.getElementById('recValor').value || '0'),
+        dia_mes: parseInt(document.getElementById('recDiaMes').value || '1', 10),
+        data_inicio: document.getElementById('recDataInicio').value,
+        ativo: true
+    };
+
+    if (!payload.descricao || payload.valor <= 0 || !payload.data_inicio) {
+        showMessage('✗ Preencha os dados da recorrencia corretamente.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/recorrencias', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            showMessage('✓ Recorrencia adicionada!', 'success');
+            document.getElementById('recorrenciaForm').reset();
+            document.getElementById('recDiaMes').value = '5';
+            document.getElementById('recDataInicio').valueAsDate = new Date();
+            await loadRecorrencias();
+        } else {
+            showMessage('✗ Erro ao cadastrar recorrencia: ' + (result.error || 'erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao cadastrar recorrencia:', error);
+        showMessage('✗ Erro ao cadastrar recorrencia.', 'error');
+    }
+}
+
+async function toggleRecorrencia(item) {
+    const payload = {
+        ...item,
+        ativo: !item.ativo
+    };
+
+    try {
+        const response = await fetch(`/api/recorrencias/${item.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            await loadRecorrencias();
+            showMessage(`✓ Recorrencia ${payload.ativo ? 'ativada' : 'pausada'}.`, 'success');
+        } else {
+            showMessage('✗ Erro ao alterar status da recorrencia.', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar recorrencia:', error);
+        showMessage('✗ Erro ao atualizar recorrencia.', 'error');
+    }
+}
+
+async function deleteRecorrencia(id) {
+    if (!confirm('Deseja excluir esta recorrencia?')) return;
+
+    try {
+        const response = await fetch(`/api/recorrencias/${id}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            await loadRecorrencias();
+            showMessage('✓ Recorrencia removida.', 'success');
+        } else {
+            showMessage('✗ Nao foi possivel remover a recorrencia.', 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao deletar recorrencia:', error);
+        showMessage('✗ Erro ao deletar recorrencia.', 'error');
+    }
+}
+
+async function processarRecorrenciasManual() {
+    try {
+        const response = await fetch('/api/recorrencias/process', { method: 'POST' });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            const criadas = result.created || 0;
+            showMessage(`✓ Processamento concluido: ${criadas} transacao(oes) gerada(s).`, 'success');
+            await loadTransactions();
+            await loadRecorrencias();
+            await loadProjectionD90();
+            await loadBudgetSummary();
+        } else {
+            showMessage('✗ Erro ao processar recorrencias: ' + (result.error || 'erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro no processamento de recorrencias:', error);
+        showMessage('✗ Erro ao processar recorrencias.', 'error');
+    }
+}
+
+async function processarRecorrenciasSilencioso() {
+    try {
+        await fetch('/api/recorrencias/process', { method: 'POST' });
+    } catch (error) {
+        console.error('Falha no processamento silencioso de recorrencias:', error);
+    }
+}
+
+// ===================================
+// PROJECAO D+90
+// ===================================
+async function loadProjectionD90() {
+    try {
+        const response = await fetch('/api/projecao-d90');
+        const data = await response.json();
+
+        const projSaldoAtual = document.getElementById('projSaldoAtual');
+        if (projSaldoAtual) projSaldoAtual.textContent = formatCurrency(data.saldo_atual || 0);
+
+        const base = (data.cenarios || {}).base || {};
+        const otimista = (data.cenarios || {}).otimista || {};
+        const pessimista = (data.cenarios || {}).pessimista || {};
+
+        const baseD30 = ((base.d30 || {}).saldo) || 0;
+        const baseD60 = ((base.d60 || {}).saldo) || 0;
+        const baseD90 = ((base.d90 || {}).saldo) || 0;
+        const otD90 = ((otimista.d90 || {}).saldo) || 0;
+        const peD90 = ((pessimista.d90 || {}).saldo) || 0;
+
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = formatCurrency(value);
+        };
+        setText('projBaseD30', baseD30);
+        setText('projBaseD60', baseD60);
+        setText('projBaseD90', baseD90);
+        setText('projOtimistaD90', otD90);
+        setText('projPessimistaD90', peD90);
+
+        const info = document.getElementById('projBaseInfo');
+        if (info && data.base_historica) {
+            const baseHistorica = data.base_historica;
+            info.textContent = `Base historica: ${baseHistorica.meses_avaliados || 0} mes(es), media de receitas ${formatCurrency(baseHistorica.media_receitas_mensais || 0)} e media de gastos ${formatCurrency(baseHistorica.media_gastos_mensais || 0)} por mes.`;
+        }
+
+        renderProjectionChart(data.cenarios || {});
+    } catch (error) {
+        console.error('Erro ao carregar projecao D+90:', error);
+    }
+}
+
+function renderProjectionChart(cenarios) {
+    const canvas = document.getElementById('projectionChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const palette = getChartPalette();
+    const labels = ['D+30', 'D+60', 'D+90'];
+
+    const optimisticData = [
+        ((cenarios.otimista || {}).d30 || {}).saldo || 0,
+        ((cenarios.otimista || {}).d60 || {}).saldo || 0,
+        ((cenarios.otimista || {}).d90 || {}).saldo || 0
+    ];
+
+    const baseData = [
+        ((cenarios.base || {}).d30 || {}).saldo || 0,
+        ((cenarios.base || {}).d60 || {}).saldo || 0,
+        ((cenarios.base || {}).d90 || {}).saldo || 0
+    ];
+
+    const pessimisticData = [
+        ((cenarios.pessimista || {}).d30 || {}).saldo || 0,
+        ((cenarios.pessimista || {}).d60 || {}).saldo || 0,
+        ((cenarios.pessimista || {}).d90 || {}).saldo || 0
+    ];
+
+    if (projectionChart) projectionChart.destroy();
+
+    projectionChart = new Chart(canvas, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Otimista',
+                    data: optimisticData,
+                    borderColor: palette.bull,
+                    backgroundColor: palette.bullFill,
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: false
+                },
+                {
+                    label: 'Base',
+                    data: baseData,
+                    borderColor: palette.neutral,
+                    backgroundColor: palette.neutralFill,
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: false
+                },
+                {
+                    label: 'Pessimista',
+                    data: pessimisticData,
+                    borderColor: palette.bear,
+                    backgroundColor: palette.bearFill,
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: false
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: palette.text }
+                },
+                tooltip: {
+                    backgroundColor: palette.tooltipBg,
+                    titleColor: palette.tooltipText,
+                    bodyColor: palette.tooltipText,
+                    borderColor: palette.tooltipBorder,
+                    borderWidth: 1,
+                    callbacks: {
+                        label: ctx => `${ctx.dataset.label}: ${formatCurrency(ctx.parsed.y)}`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    ticks: { color: palette.text },
+                    grid: { color: palette.grid }
+                },
+                y: {
+                    ticks: {
+                        color: palette.text,
+                        callback: value => formatCurrency(value)
+                    },
+                    grid: { color: palette.grid }
+                }
+            }
+        }
+    });
 }
 
 // ===================================
@@ -1341,10 +1776,27 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('valor').addEventListener('input', updateParcelasInfo);
     document.getElementById('editNumParcelas').addEventListener('input', updateEditParcelasInfo);
     document.getElementById('editValor').addEventListener('input', updateEditParcelasInfo);
+
+    const orcamentoForm = document.getElementById('orcamentoForm');
+    if (orcamentoForm) {
+        orcamentoForm.addEventListener('submit', saveOrcamento);
+    }
+
+    const recorrenciaForm = document.getElementById('recorrenciaForm');
+    if (recorrenciaForm) {
+        recorrenciaForm.addEventListener('submit', saveRecorrencia);
+    }
     
     // Set default dates
     document.getElementById('data').valueAsDate = new Date();
     document.getElementById('data_abatimento').valueAsDate = new Date();
+    const recDataInicio = document.getElementById('recDataInicio');
+    if (recDataInicio) recDataInicio.valueAsDate = new Date();
+    const orcamentoMes = document.getElementById('orcamentoMes');
+    if (orcamentoMes && !orcamentoMes.value) {
+        const now = new Date();
+        orcamentoMes.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    }
     
     // Close modals on outside click
     window.onclick = function(event) {
@@ -1376,12 +1828,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initial Load
     (async () => {
+        await processarRecorrenciasSilencioso();
         await loadTransactions();
-        await loadFaturas();
         await loadAbatimentos();
-        await atualizarSaldos();
         await calculateFinancialHealth();
         await displayTopExpenses();
+        await loadRecorrencias();
         
         setTimeout(() => {
             updateEvolutionChart();
@@ -2025,7 +2477,6 @@ document.addEventListener('DOMContentLoaded', function() {
         updateEvolutionChart();
         updatePaymentAnalysis();
         renderCalendar();
-        renderSavingsGoals();
     }, 1000);
     
     // Close modals on outside click
@@ -2046,3 +2497,4 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
