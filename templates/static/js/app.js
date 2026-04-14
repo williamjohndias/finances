@@ -76,65 +76,33 @@ let allAbatimentos = [];
 // THEME MANAGEMENT
 // ===================================
 function initTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
-    updateThemeIcon(savedTheme);
+    localStorage.removeItem('theme');
+    document.documentElement.setAttribute('data-theme', 'light');
     applyDayTradeChartDefaults();
 }
 
 function toggleTheme() {
-    const current = document.documentElement.getAttribute('data-theme');
-    const newTheme = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', newTheme);
-    localStorage.setItem('theme', newTheme);
-    updateThemeIcon(newTheme);
-    applyDayTradeChartDefaults();
-
-    // Recarrega graficos para ajustar cores
-    if (monthlyChart) loadCharts();
+    // Modo escuro removido: mantém sempre o tema claro
+    document.documentElement.setAttribute('data-theme', 'light');
 }
 
-function updateThemeIcon(theme) {
-    const btn = document.getElementById('themeToggle');
-    if (btn) {
-        btn.innerHTML = theme === 'dark'
-            ? '<span class="theme-icon">CL</span><span class="hide-mobile">Modo Claro</span>'
-            : '<span class="theme-icon">ES</span><span class="hide-mobile">Modo Escuro</span>';
-    }
+function updateThemeIcon() {
+    // Modo escuro removido
 }
 
 function getChartPalette() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    if (isDark) {
-        return {
-            text: '#95abd0',
-            grid: 'rgba(74, 102, 145, 0.32)',
-            tooltipBg: '#0e1728',
-            tooltipText: '#d8ebff',
-            tooltipBorder: '#00d9ff',
-            bull: '#00ff9c',
-            bullFill: 'rgba(0, 255, 156, 0.14)',
-            bear: '#ff406a',
-            bearFill: 'rgba(255, 64, 106, 0.12)',
-            neutral: '#00d9ff',
-            neutralFill: 'rgba(0, 217, 255, 0.12)',
-            doughnutColors: ['#00d9ff', '#ffb100', '#b98bff'],
-            pointBorder: '#0b1424'
-        };
-    }
-
     return {
-        text: '#4a5f80',
-        grid: 'rgba(80, 110, 150, 0.2)',
+        text: '#38506f',
+        grid: 'rgba(113, 142, 178, 0.26)',
         tooltipBg: '#13243b',
         tooltipText: '#e8f2ff',
         tooltipBorder: '#0ea5e9',
-        bull: '#00c57a',
-        bullFill: 'rgba(0, 197, 122, 0.12)',
+        bull: '#059669',
+        bullFill: 'rgba(5, 150, 105, 0.12)',
         bear: '#e11d48',
         bearFill: 'rgba(225, 29, 72, 0.1)',
-        neutral: '#0284c7',
-        neutralFill: 'rgba(2, 132, 199, 0.1)',
+        neutral: '#0369a1',
+        neutralFill: 'rgba(3, 105, 161, 0.1)',
         doughnutColors: ['#0284c7', '#d97706', '#7c3aed'],
         pointBorder: '#ffffff'
     };
