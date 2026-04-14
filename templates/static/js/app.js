@@ -77,13 +77,13 @@ let allAbatimentos = [];
 // ===================================
 function initTheme() {
     localStorage.removeItem('theme');
-    document.documentElement.setAttribute('data-theme', 'light');
+    document.documentElement.setAttribute('data-theme', 'dark');
     applyDayTradeChartDefaults();
 }
 
 function toggleTheme() {
-    // Modo escuro removido: mantém sempre o tema claro
-    document.documentElement.setAttribute('data-theme', 'light');
+    // Modo claro removido: mantem sempre o tema escuro
+    document.documentElement.setAttribute('data-theme', 'dark');
 }
 
 function updateThemeIcon() {
@@ -92,19 +92,19 @@ function updateThemeIcon() {
 
 function getChartPalette() {
     return {
-        text: '#38506f',
-        grid: 'rgba(113, 142, 178, 0.26)',
-        tooltipBg: '#13243b',
-        tooltipText: '#e8f2ff',
-        tooltipBorder: '#0ea5e9',
-        bull: '#059669',
-        bullFill: 'rgba(5, 150, 105, 0.12)',
-        bear: '#e11d48',
-        bearFill: 'rgba(225, 29, 72, 0.1)',
-        neutral: '#0369a1',
-        neutralFill: 'rgba(3, 105, 161, 0.1)',
-        doughnutColors: ['#0284c7', '#d97706', '#7c3aed'],
-        pointBorder: '#ffffff'
+        text: '#95abd0',
+        grid: 'rgba(74, 102, 145, 0.32)',
+        tooltipBg: '#0e1728',
+        tooltipText: '#d8ebff',
+        tooltipBorder: '#00d9ff',
+        bull: '#00ff9c',
+        bullFill: 'rgba(0, 255, 156, 0.14)',
+        bear: '#ff406a',
+        bearFill: 'rgba(255, 64, 106, 0.12)',
+        neutral: '#00d9ff',
+        neutralFill: 'rgba(0, 217, 255, 0.12)',
+        doughnutColors: ['#00d9ff', '#ffb100', '#b98bff'],
+        pointBorder: '#0b1424'
     };
 }
 

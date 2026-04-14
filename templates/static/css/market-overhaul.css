@@ -640,170 +640,31 @@ button:hover {
     }
 }
 
-/* Light-only mode (dark mode removed) */
-html[data-theme="light"] body {
-    color: #12233d !important;
-    background:
-        radial-gradient(1000px 500px at -10% -10%, rgba(3, 105, 161, 0.12), transparent 65%),
-        radial-gradient(900px 420px at 110% 0%, rgba(5, 150, 105, 0.1), transparent 66%),
-        linear-gradient(180deg, #f4f8ff 0%, #edf4ff 56%, #e8f0ff 100%) !important;
+/* Sidebar overflow fix (remove horizontal scrollbar) */
+.sidebar {
+    overflow-x: hidden !important;
 }
 
-html[data-theme="light"] body::before {
-    background: rgba(255, 255, 255, 0.7) !important;
+.sidebar,
+.sidebar * {
+    box-sizing: border-box !important;
 }
 
-html[data-theme="light"] body::after {
-    background-image:
-        linear-gradient(to right, rgba(2, 90, 160, 0.04) 1px, transparent 1px),
-        linear-gradient(to bottom, rgba(2, 90, 160, 0.04) 1px, transparent 1px);
+.sidebar-nav {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
 }
 
-html[data-theme="light"] .sidebar {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 251, 255, 0.93)) !important;
-    border-right: 1px solid #cfe0f6 !important;
-    box-shadow: 10px 0 24px rgba(40, 74, 117, 0.08) !important;
+.sidebar .nav-link {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
 }
 
-html[data-theme="light"] .brand-name,
-html[data-theme="light"] .topbar-title {
-    color: #123154 !important;
-}
-
-html[data-theme="light"] .brand-subtitle,
-html[data-theme="light"] .nav-section-label,
-html[data-theme="light"] label,
-html[data-theme="light"] .filter-group label,
-html[data-theme="light"] .card-title,
-html[data-theme="light"] .section-title {
-    color: #5d7ea8 !important;
-}
-
-html[data-theme="light"] .sidebar .nav-link {
-    color: #2e4f78 !important;
-}
-
-html[data-theme="light"] .sidebar .nav-link .nav-icon {
-    background: #eef5ff !important;
-    border: 1px solid #bfd3f0 !important;
-    color: #2a6bb2 !important;
-}
-
-html[data-theme="light"] .sidebar .nav-link.active {
-    background: linear-gradient(100deg, rgba(2, 132, 199, 0.12), rgba(5, 150, 105, 0.09)) !important;
-    border-color: rgba(2, 132, 199, 0.3) !important;
-    color: #103c67 !important;
-}
-
-html[data-theme="light"] .topbar {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(246, 250, 255, 0.9)) !important;
-    border-bottom: 1px solid #d0e1f7 !important;
-}
-
-html[data-theme="light"] .month-filter-wrap select,
-html[data-theme="light"] input,
-html[data-theme="light"] select,
-html[data-theme="light"] textarea {
-    background: #f7fbff !important;
-    border: 1px solid #c7daef !important;
-    color: #1f3f65 !important;
-}
-
-html[data-theme="light"] .card,
-html[data-theme="light"] .section,
-html[data-theme="light"] .form-section,
-html[data-theme="light"] .chart-container,
-html[data-theme="light"] .modal-content {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(248, 252, 255, 0.95)) !important;
-    border: 1px solid #d3e3f7 !important;
-    box-shadow: 0 10px 22px rgba(40, 74, 117, 0.1) !important;
-}
-
-html[data-theme="light"] .card-value,
-html[data-theme="light"] .transactions-table td,
-html[data-theme="light"] .metric-value,
-html[data-theme="light"] .stat-value,
-html[data-theme="light"] .payment-value,
-html[data-theme="light"] .diagnostico-valor {
-    color: #14355a !important;
-}
-
-html[data-theme="light"] .card-footer,
-html[data-theme="light"] .metric-desc,
-html[data-theme="light"] .payment-percentage,
-html[data-theme="light"] #versionInfo {
-    color: #6f8fb7 !important;
-}
-
-html[data-theme="light"] .transactions-table th {
-    color: #5d7ea8 !important;
-    border-bottom: 1px solid #d5e4f8 !important;
-}
-
-html[data-theme="light"] .transactions-table td {
-    border-bottom: 1px solid rgba(165, 190, 220, 0.42) !important;
-}
-
-html[data-theme="light"] .transactions-table tbody tr:hover {
-    background: rgba(2, 132, 199, 0.06) !important;
-}
-
-html[data-theme="light"] button,
-html[data-theme="light"] .topbar-btn {
-    background: linear-gradient(120deg, #1570b5, #0e9bb7) !important;
-    border: 1px solid #0f7db9 !important;
-    color: #f1fbff !important;
-}
-
-html[data-theme="light"] .btn-secondary,
-html[data-theme="light"] .btn-icon,
-html[data-theme="light"] .btn-icon-small {
-    background: #eef5ff !important;
-    border: 1px solid #c7daef !important;
-    color: #2f5480 !important;
-}
-
-html[data-theme="light"] .quick-add-menu {
-    background: #ffffff !important;
-    border: 1px solid #d0e1f6 !important;
-}
-
-html[data-theme="light"] .quick-add-item {
-    background: #f2f8ff !important;
-    color: #2f5480 !important;
-}
-
-html[data-theme="light"] .quick-add-item:hover {
-    background: rgba(2, 132, 199, 0.12) !important;
-}
-
-html[data-theme="light"] .bottom-nav {
-    background: rgba(255, 255, 255, 0.97) !important;
-    border-top: 1px solid #d0e1f6 !important;
-}
-
-html[data-theme="light"] .bottom-nav .nav-item {
-    color: #5f82ad !important;
-}
-
-html[data-theme="light"] .bottom-nav .nav-item .nav-icon {
-    background: #eef5ff !important;
-    border: 1px solid #c5d8ef !important;
-}
-
-html[data-theme="light"] .bottom-nav .nav-item.active {
-    color: #0b6ea9 !important;
-}
-
-html[data-theme="light"] .global-toast {
-    background: #ffffff !important;
-    border: 1px solid #d3e3f7 !important;
-    color: #1f3f65 !important;
-}
-
-@media (max-width: 768px) {
-    html[data-theme="light"] .transactions-table tr {
-        background: #ffffff !important;
-        border: 1px solid #d3e3f7 !important;
-    }
+.sidebar .nav-link .nav-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
