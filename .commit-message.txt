@@ -1,0 +1,6 @@
+fix: Corrige cálculo de limite - soma apenas parcelas do mês atual em diante
+
+Simplifica a lógica:
+- Soma APENAS parcelas que vencem do mês atual em diante
+- Não tenta calcular parcelas futuras não registradas
+- Adiciona logs detalhados para debug
