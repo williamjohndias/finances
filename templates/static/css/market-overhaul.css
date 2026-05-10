@@ -1,0 +1,1100 @@
+/* ===================================
+   FINANCES — Premium Institutional Theme
+   Inspired by Bloomberg / TradingView / Institutional Banking
+   Deep Navy · Petroleum Blue · Premium Dark
+   =================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+/* ===================================
+   DESIGN TOKENS
+   =================================== */
+:root {
+    /* Core backgrounds */
+    --prem-bg:        #050816;
+    --prem-bg-soft:   #07111F;
+    --prem-panel:     #0B1426;
+    --prem-panel-2:   #101827;
+    --prem-panel-3:   #132238;
+
+    /* Borders */
+    --prem-border:        #1B2C44;
+    --prem-border-hover:  #224A7A;
+    --prem-border-soft:   rgba(96, 165, 250, 0.10);
+
+    /* Typography */
+    --prem-text:        #C9D9F0;
+    --prem-text-soft:   #7890B0;
+    --prem-text-muted:  #4A6080;
+    --prem-text-bright: #E8F0FC;
+
+    /* Accent — electric blue, never neon */
+    --prem-accent:       #60A5FA;
+    --prem-accent-hover: #2B6CB0;
+    --prem-accent-deep:  #224A7A;
+    --prem-accent-soft:  rgba(96, 165, 250, 0.08);
+    --prem-accent-glow:  rgba(96, 165, 250, 0.16);
+
+    /* Status */
+    --prem-bull:         #34D399;
+    --prem-bull-soft:    rgba(52, 211, 153, 0.10);
+    --prem-bull-border:  rgba(52, 211, 153, 0.22);
+    --prem-bear:         #F87171;
+    --prem-bear-soft:    rgba(248, 113, 113, 0.10);
+    --prem-bear-border:  rgba(248, 113, 113, 0.22);
+    --prem-gold:         #FBBF24;
+    --prem-gold-soft:    rgba(251, 191, 36, 0.10);
+    --prem-gold-border:  rgba(251, 191, 36, 0.22);
+    --prem-purple:       #A78BFA;
+    --prem-purple-soft:  rgba(167, 139, 250, 0.10);
+    --prem-purple-border:rgba(167, 139, 250, 0.22);
+
+    /* Elevation */
+    --prem-shadow:    0 4px 16px rgba(0, 0, 0, 0.35);
+    --prem-shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.50);
+    --prem-shadow-sm: 0 2px 8px  rgba(0, 0, 0, 0.25);
+
+    /* Geometry */
+    --prem-radius:    8px;
+    --prem-radius-lg: 12px;
+    --prem-radius-sm: 6px;
+}
+
+/* ===================================
+   TYPOGRAPHY
+   =================================== */
+html,
+body,
+button,
+input,
+select,
+textarea {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+}
+
+/* Monospace — numbers, labels, codes */
+.brand-icon,
+.sidebar .nav-link .nav-icon,
+.bottom-nav .nav-icon,
+.ticker-price,
+.ticker-change,
+.card-value,
+.payment-value,
+.stat-value,
+.diagnostico-valor,
+.score-value,
+.topbar-btn,
+.section-title,
+.card-title,
+.nav-section-label,
+#versionInfo {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+}
+
+/* ===================================
+   BODY & GLOBAL BACKGROUND
+   =================================== */
+body {
+    color: var(--prem-text) !important;
+    background:
+        radial-gradient(ellipse 90% 60% at 0% 0%,   rgba(22, 55, 100, 0.16), transparent 55%),
+        radial-gradient(ellipse 60% 50% at 100% 5%,  rgba(11, 35, 70, 0.10), transparent 55%),
+        radial-gradient(ellipse 50% 80% at 50% 100%, rgba(7, 17, 31, 0.30),  transparent 65%),
+        var(--prem-bg) !important;
+}
+
+body::before {
+    background: transparent !important;
+}
+
+/* Subtle grid pattern */
+body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(to right,  rgba(96, 165, 250, 0.025) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(96, 165, 250, 0.020) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, #000 30%, transparent 100%);
+}
+
+.shader-background {
+    opacity: 0.04 !important;
+    mix-blend-mode: screen !important;
+}
+
+/* ===================================
+   SIDEBAR
+   =================================== */
+.sidebar {
+    background: linear-gradient(
+        180deg,
+        #07111F 0%,
+        #060F1C 60%,
+        #050C18 100%
+    ) !important;
+    border-right: 1px solid var(--prem-border) !important;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.25) !important;
+    overflow-x: hidden !important;
+}
+
+.sidebar,
+.sidebar * {
+    box-sizing: border-box !important;
+}
+
+.sidebar-nav {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding-right: 0 !important;
+    margin-right: 0 !important;
+}
+
+.sidebar .nav-link {
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+}
+
+.sidebar .nav-link .nav-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Brand */
+.sidebar-brand {
+    border-bottom: 1px solid var(--prem-border) !important;
+}
+
+.brand-icon {
+    background: linear-gradient(135deg, #1B2C44 0%, #224A7A 100%) !important;
+    color: var(--prem-accent) !important;
+    font-size: 0.68rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.05em !important;
+    border: 1px solid var(--prem-border-hover) !important;
+    box-shadow: none !important;
+}
+
+.brand-name {
+    letter-spacing: 0.10em !important;
+    color: var(--prem-text-bright) !important;
+    font-weight: 700 !important;
+    font-size: 0.88rem !important;
+}
+
+.brand-subtitle {
+    color: var(--prem-text-muted) !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.12em !important;
+    font-size: 0.58rem !important;
+}
+
+.sidebar-close {
+    background: transparent !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text-soft) !important;
+    border-radius: var(--prem-radius-sm) !important;
+}
+
+/* Nav items */
+.nav-section-label {
+    color: var(--prem-text-muted) !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.20em !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+}
+
+.sidebar .nav-link {
+    color: var(--prem-text-soft) !important;
+    border: 1px solid transparent !important;
+    border-radius: var(--prem-radius) !important;
+    transition: background 0.16s ease, border-color 0.16s ease, color 0.16s ease !important;
+}
+
+.sidebar .nav-link .nav-icon {
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text-muted) !important;
+    background: rgba(11, 20, 38, 0.55) !important;
+    border-radius: var(--prem-radius-sm) !important;
+    transition: all 0.16s ease !important;
+}
+
+.sidebar .nav-link:hover {
+    background: rgba(96, 165, 250, 0.05) !important;
+    border-color: var(--prem-border) !important;
+    color: var(--prem-text) !important;
+}
+
+.sidebar .nav-link:hover .nav-icon {
+    border-color: var(--prem-accent-deep) !important;
+    color: var(--prem-accent) !important;
+    background: rgba(34, 74, 122, 0.25) !important;
+}
+
+.sidebar .nav-link.active {
+    background: rgba(34, 74, 122, 0.22) !important;
+    border-color: var(--prem-border-hover) !important;
+    color: var(--prem-text-bright) !important;
+    box-shadow: none !important;
+}
+
+.sidebar .nav-link.active .nav-icon {
+    border-color: var(--prem-accent-deep) !important;
+    background: rgba(34, 74, 122, 0.45) !important;
+    color: var(--prem-accent) !important;
+}
+
+/* Sidebar footer */
+.sidebar-footer {
+    border-top: 1px solid var(--prem-border) !important;
+}
+
+#themeToggle {
+    background: var(--prem-panel-2) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text-soft) !important;
+    border-radius: var(--prem-radius-sm) !important;
+}
+
+#themeToggle:hover {
+    border-color: var(--prem-border-hover) !important;
+    background: var(--prem-panel-3) !important;
+    box-shadow: none !important;
+}
+
+.theme-icon {
+    background: var(--prem-accent-soft) !important;
+    border: 1px solid var(--prem-border) !important;
+}
+
+/* ===================================
+   TOPBAR
+   =================================== */
+.topbar {
+    background: rgba(5, 8, 22, 0.96) !important;
+    border-bottom: 1px solid var(--prem-border) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.topbar-title {
+    color: var(--prem-text-bright) !important;
+    letter-spacing: 0.06em !important;
+    font-size: 1.00rem !important;
+    font-weight: 600 !important;
+}
+
+.month-filter-wrap label {
+    color: var(--prem-text-muted) !important;
+    font-size: 0.62rem !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    font-weight: 500 !important;
+}
+
+.month-filter-wrap select {
+    background: var(--prem-panel) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text) !important;
+    border-radius: var(--prem-radius-sm) !important;
+    font-size: 0.80rem !important;
+}
+
+.topbar-btn {
+    background: var(--prem-panel-2) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text-soft) !important;
+    letter-spacing: 0.03em !important;
+    font-size: 0.76rem !important;
+    font-weight: 500 !important;
+    border-radius: var(--prem-radius-sm) !important;
+    transition: all 0.16s ease !important;
+}
+
+.topbar-btn:hover {
+    border-color: var(--prem-border-hover) !important;
+    background: var(--prem-panel-3) !important;
+    color: var(--prem-text) !important;
+    box-shadow: none !important;
+}
+
+/* ===================================
+   MARKET TICKER STRIP
+   =================================== */
+.market-ticker-strip {
+    margin: 12px 24px 0 !important;
+    border: 1px solid var(--prem-border) !important;
+    background: var(--prem-panel) !important;
+    border-radius: var(--prem-radius) !important;
+    box-shadow: var(--prem-shadow-sm) !important;
+    overflow: hidden !important;
+}
+
+.ticker-track {
+    background: var(--prem-panel-2) !important;
+    gap: 1px !important;
+}
+
+.ticker-item {
+    background: var(--prem-panel) !important;
+    color: var(--prem-text) !important;
+    border-right: 1px solid var(--prem-border) !important;
+}
+
+.ticker-symbol {
+    color: var(--prem-text-muted) !important;
+    letter-spacing: 0.06em !important;
+    font-size: 0.68rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+.ticker-price {
+    color: var(--prem-text-bright) !important;
+    font-size: 0.80rem !important;
+}
+
+.ticker-change {
+    border: 1px solid transparent !important;
+    letter-spacing: 0.03em !important;
+    font-size: 0.70rem !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+    padding: 2px 6px !important;
+}
+
+.ticker-item.positive .ticker-change {
+    color: var(--prem-bull) !important;
+    background: var(--prem-bull-soft) !important;
+    border-color: var(--prem-bull-border) !important;
+}
+
+.ticker-item.negative .ticker-change {
+    color: var(--prem-bear) !important;
+    background: var(--prem-bear-soft) !important;
+    border-color: var(--prem-bear-border) !important;
+}
+
+/* ===================================
+   MAIN CONTENT
+   =================================== */
+.main-content {
+    padding-top: 16px !important;
+}
+
+/* ===================================
+   MARKET HERO CARD
+   =================================== */
+.market-hero {
+    border: 1px solid var(--prem-border) !important;
+    border-radius: var(--prem-radius-lg) !important;
+    background: linear-gradient(
+        140deg,
+        #0D1A30 0%,
+        #0B1426 50%,
+        #07111F 100%
+    ) !important;
+    box-shadow: var(--prem-shadow) !important;
+    position: relative !important;
+    overflow: hidden !important;
+}
+
+.market-hero::before {
+    content: '' !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    height: 1px !important;
+    background: linear-gradient(90deg, var(--prem-accent-deep), var(--prem-border-hover), transparent 70%) !important;
+}
+
+.market-kicker {
+    color: var(--prem-accent) !important;
+    letter-spacing: 0.18em !important;
+    font-size: 0.58rem !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+}
+
+.market-title {
+    color: var(--prem-text-bright) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.01em !important;
+}
+
+.market-subtitle {
+    color: var(--prem-text-soft) !important;
+    font-size: 0.85rem !important;
+}
+
+.market-pill {
+    border: 1px solid var(--prem-border) !important;
+    background: var(--prem-panel-2) !important;
+    color: var(--prem-text-soft) !important;
+    text-transform: uppercase !important;
+    font-size: 0.60rem !important;
+    letter-spacing: 0.10em !important;
+    font-weight: 600 !important;
+    border-radius: 4px !important;
+}
+
+/* ===================================
+   DASHBOARD GRID
+   =================================== */
+.dashboard-grid {
+    gap: 12px !important;
+}
+
+/* ===================================
+   KPI CARDS
+   =================================== */
+.card,
+.section,
+.form-section {
+    background: var(--prem-panel) !important;
+    border: 1px solid var(--prem-border) !important;
+    border-radius: var(--prem-radius) !important;
+    box-shadow: var(--prem-shadow) !important;
+}
+
+.card {
+    min-height: 118px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease !important;
+}
+
+/* Top accent line on each card */
+.card::before {
+    height: 2px !important;
+    background: linear-gradient(90deg, var(--prem-border-hover), transparent 70%) !important;
+    border-radius: 0 !important;
+}
+
+.card.highlight::before {
+    background: linear-gradient(90deg, var(--prem-accent), var(--prem-accent-deep) 60%, transparent) !important;
+}
+
+.card.receitas::before {
+    background: linear-gradient(90deg, var(--prem-bull), rgba(52, 211, 153, 0.25) 60%, transparent) !important;
+}
+
+.card.gastos::before {
+    background: linear-gradient(90deg, var(--prem-bear), rgba(248, 113, 113, 0.25) 60%, transparent) !important;
+}
+
+.card:hover {
+    border-color: var(--prem-border-hover) !important;
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.45) !important;
+    transform: translateY(-2px) !important;
+}
+
+.card-title,
+.section-title {
+    color: var(--prem-text-muted) !important;
+    font-size: 0.60rem !important;
+    letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+}
+
+.card-value {
+    color: var(--prem-text-bright) !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+}
+
+.card-value.positive,
+.positive {
+    color: var(--prem-bull) !important;
+    text-shadow: none !important;
+}
+
+.card-value.negative,
+.negative {
+    color: var(--prem-bear) !important;
+    text-shadow: none !important;
+}
+
+.card-footer,
+.metric-desc,
+.payment-percentage,
+#versionInfo {
+    color: var(--prem-text-muted) !important;
+    font-size: 0.72rem !important;
+}
+
+/* ===================================
+   SECTION HEADER
+   =================================== */
+.section-header {
+    border-bottom: 1px solid var(--prem-border) !important;
+    padding-bottom: 10px !important;
+    margin-bottom: 14px !important;
+}
+
+/* ===================================
+   FORM INPUTS
+   =================================== */
+input,
+select,
+textarea {
+    background: var(--prem-bg-soft) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text) !important;
+    border-radius: var(--prem-radius-sm) !important;
+    font-size: 0.85rem !important;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--prem-text-muted) !important;
+    opacity: 1 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+    border-color: var(--prem-accent-deep) !important;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.08) !important;
+    outline: none !important;
+    background: var(--prem-panel) !important;
+}
+
+label,
+.filter-group label {
+    color: var(--prem-text-soft) !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 0.10em !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+}
+
+/* ===================================
+   BUTTONS
+   =================================== */
+button {
+    background: var(--prem-panel-2) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text-soft) !important;
+    border-radius: var(--prem-radius-sm) !important;
+    font-size: 0.80rem !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.03em !important;
+    transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease !important;
+}
+
+button:hover {
+    border-color: var(--prem-border-hover) !important;
+    background: var(--prem-panel-3) !important;
+    color: var(--prem-text) !important;
+    box-shadow: none !important;
+}
+
+/* Primary CTA */
+.btn-primary,
+button[type="submit"],
+.submit-btn {
+    background: linear-gradient(135deg, #1A2D47 0%, #224A7A 100%) !important;
+    border-color: var(--prem-accent-deep) !important;
+    color: var(--prem-accent) !important;
+    font-weight: 600 !important;
+}
+
+.btn-primary:hover,
+button[type="submit"]:hover,
+.submit-btn:hover {
+    background: linear-gradient(135deg, #224A7A 0%, #2B6CB0 100%) !important;
+    border-color: var(--prem-accent) !important;
+    color: var(--prem-text-bright) !important;
+}
+
+/* Secondary / icon */
+.btn-secondary,
+.btn-icon,
+.btn-icon-small {
+    background: var(--prem-panel) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text-soft) !important;
+    box-shadow: none !important;
+}
+
+.btn-secondary:hover,
+.btn-icon:hover,
+.btn-icon-small:hover {
+    border-color: var(--prem-border-hover) !important;
+    color: var(--prem-text) !important;
+}
+
+/* Danger */
+.btn-danger,
+.delete-btn {
+    background: rgba(100, 20, 20, 0.30) !important;
+    border-color: var(--prem-bear-border) !important;
+    color: var(--prem-bear) !important;
+}
+
+.btn-danger:hover,
+.delete-btn:hover {
+    background: rgba(120, 28, 28, 0.50) !important;
+    border-color: var(--prem-bear) !important;
+}
+
+/* Edit */
+.edit-btn {
+    background: rgba(11, 28, 60, 0.50) !important;
+    border-color: rgba(96, 165, 250, 0.22) !important;
+    color: var(--prem-accent) !important;
+}
+
+.edit-btn:hover {
+    background: rgba(34, 74, 122, 0.55) !important;
+    border-color: var(--prem-accent) !important;
+}
+
+/* ===================================
+   TABLES
+   =================================== */
+.transactions-table th {
+    color: var(--prem-text-muted) !important;
+    border-bottom: 1px solid var(--prem-border) !important;
+    font-size: 0.60rem !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+    background: var(--prem-panel-2) !important;
+    padding: 10px 12px !important;
+}
+
+.transactions-table td {
+    color: var(--prem-text) !important;
+    border-bottom: 1px solid rgba(27, 44, 68, 0.45) !important;
+    font-size: 0.85rem !important;
+    padding: 10px 12px !important;
+}
+
+.transactions-table tbody tr:hover {
+    background: rgba(96, 165, 250, 0.04) !important;
+}
+
+/* ===================================
+   BADGES
+   =================================== */
+.badge {
+    border-radius: 4px !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.09em !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    padding: 3px 7px !important;
+}
+
+.badge.receita {
+    color: var(--prem-bull) !important;
+    background: var(--prem-bull-soft) !important;
+    border: 1px solid var(--prem-bull-border) !important;
+}
+
+.badge.debito {
+    color: var(--prem-accent) !important;
+    background: var(--prem-accent-soft) !important;
+    border: 1px solid rgba(96, 165, 250, 0.22) !important;
+}
+
+.badge.mercado-pago {
+    color: var(--prem-gold) !important;
+    background: var(--prem-gold-soft) !important;
+    border: 1px solid var(--prem-gold-border) !important;
+}
+
+.badge.nubank {
+    color: var(--prem-purple) !important;
+    background: var(--prem-purple-soft) !important;
+    border: 1px solid var(--prem-purple-border) !important;
+}
+
+.badge.parcela {
+    color: #F6AD55 !important;
+    background: rgba(246, 173, 85, 0.09) !important;
+    border: 1px solid rgba(246, 173, 85, 0.22) !important;
+}
+
+/* ===================================
+   CHART CONTAINERS
+   =================================== */
+.chart-container {
+    border: 1px solid var(--prem-border) !important;
+    border-radius: var(--prem-radius) !important;
+    background: var(--prem-bg-soft) !important;
+    padding: 12px !important;
+}
+
+/* ===================================
+   LIST ITEMS (metrics, payments, expenses)
+   =================================== */
+.expense-item,
+.payment-card,
+.metric-item,
+.stat-item,
+.diagnostico-item,
+.favorite-item {
+    background: var(--prem-panel-2) !important;
+    border: 1px solid var(--prem-border) !important;
+    border-radius: var(--prem-radius-sm) !important;
+    transition: border-color 0.15s ease !important;
+}
+
+.expense-item:hover,
+.payment-card:hover,
+.metric-item:hover,
+.stat-item:hover,
+.favorite-item:hover {
+    border-color: var(--prem-border-hover) !important;
+}
+
+.expense-rank,
+.payment-icon,
+.metric-icon,
+.favorite-icon {
+    background: var(--prem-accent-soft) !important;
+    color: var(--prem-accent) !important;
+    border: 1px solid rgba(96, 165, 250, 0.16) !important;
+    border-radius: var(--prem-radius-sm) !important;
+}
+
+.payment-bar {
+    background: var(--prem-border) !important;
+    border-radius: 2px !important;
+}
+
+/* ===================================
+   ALERT / STATUS MESSAGES
+   =================================== */
+.alert {
+    border-radius: var(--prem-radius-sm) !important;
+    border: 1px solid var(--prem-border) !important;
+    background: var(--prem-panel-2) !important;
+    color: var(--prem-text) !important;
+    font-size: 0.84rem !important;
+}
+
+.alert.success {
+    background: var(--prem-bull-soft) !important;
+    border-color: var(--prem-bull-border) !important;
+    color: var(--prem-bull) !important;
+}
+
+.alert.error {
+    background: var(--prem-bear-soft) !important;
+    border-color: var(--prem-bear-border) !important;
+    color: var(--prem-bear) !important;
+}
+
+.alert.info {
+    background: var(--prem-accent-soft) !important;
+    border-color: rgba(96, 165, 250, 0.22) !important;
+    color: var(--prem-accent) !important;
+}
+
+.alert.warning {
+    background: var(--prem-gold-soft) !important;
+    border-color: var(--prem-gold-border) !important;
+    color: var(--prem-gold) !important;
+}
+
+/* ===================================
+   CALENDAR
+   =================================== */
+.calendar-day {
+    background: var(--prem-panel) !important;
+    border-right:  1px solid rgba(27, 44, 68, 0.40) !important;
+    border-bottom: 1px solid rgba(27, 44, 68, 0.40) !important;
+}
+
+.calendar-day.today {
+    background: rgba(34, 74, 122, 0.18) !important;
+    border-color: var(--prem-border-hover) !important;
+}
+
+.calendar-transaction.positive {
+    color: var(--prem-bull) !important;
+    background: var(--prem-bull-soft) !important;
+}
+
+.calendar-transaction.negative {
+    color: var(--prem-bear) !important;
+    background: var(--prem-bear-soft) !important;
+}
+
+/* ===================================
+   MODALS
+   =================================== */
+.modal-content {
+    background: var(--prem-panel) !important;
+    border: 1px solid var(--prem-border) !important;
+    border-radius: var(--prem-radius-lg) !important;
+    box-shadow: var(--prem-shadow-lg) !important;
+}
+
+.modal-header {
+    border-bottom: 1px solid var(--prem-border) !important;
+}
+
+.modal-footer {
+    border-top: 1px solid var(--prem-border) !important;
+}
+
+/* ===================================
+   FAB (Quick Add Button)
+   =================================== */
+.fab {
+    background: linear-gradient(135deg, #1B2C44 0%, #224A7A 100%) !important;
+    border: 1px solid var(--prem-border-hover) !important;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.40) !important;
+    color: var(--prem-accent) !important;
+    transition: all 0.18s ease !important;
+}
+
+.fab:hover {
+    background: linear-gradient(135deg, #224A7A 0%, #2B6CB0 100%) !important;
+    border-color: var(--prem-accent) !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.50) !important;
+    color: var(--prem-text-bright) !important;
+}
+
+.quick-add-menu {
+    background: var(--prem-panel) !important;
+    border: 1px solid var(--prem-border) !important;
+    border-radius: var(--prem-radius) !important;
+    box-shadow: var(--prem-shadow-lg) !important;
+}
+
+.quick-add-item {
+    background: var(--prem-panel-2) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text) !important;
+    border-radius: var(--prem-radius-sm) !important;
+    transition: all 0.15s ease !important;
+}
+
+.quick-add-item:hover {
+    background: var(--prem-panel-3) !important;
+    border-color: var(--prem-border-hover) !important;
+    color: var(--prem-text-bright) !important;
+}
+
+/* ===================================
+   BOTTOM NAVIGATION (mobile)
+   =================================== */
+.bottom-nav {
+    background: rgba(5, 8, 22, 0.98) !important;
+    border-top: 1px solid var(--prem-border) !important;
+    backdrop-filter: blur(14px) !important;
+    -webkit-backdrop-filter: blur(14px) !important;
+}
+
+.bottom-nav .nav-item {
+    color: var(--prem-text-muted) !important;
+    transition: color 0.15s ease !important;
+}
+
+.bottom-nav .nav-item .nav-icon {
+    border: 1px solid var(--prem-border) !important;
+    background: var(--prem-panel) !important;
+    border-radius: var(--prem-radius-sm) !important;
+    transition: all 0.15s ease !important;
+}
+
+.bottom-nav .nav-item.active {
+    color: var(--prem-text) !important;
+}
+
+.bottom-nav .nav-item.active .nav-icon {
+    border-color: var(--prem-border-hover) !important;
+    background: rgba(34, 74, 122, 0.30) !important;
+    color: var(--prem-accent) !important;
+}
+
+/* ===================================
+   GLOBAL TOAST
+   =================================== */
+.global-toast {
+    background: var(--prem-panel) !important;
+    border: 1px solid var(--prem-border) !important;
+    color: var(--prem-text) !important;
+    box-shadow: var(--prem-shadow-lg) !important;
+    border-radius: var(--prem-radius) !important;
+    font-size: 0.84rem !important;
+}
+
+/* ===================================
+   SCORE / HEALTH INDICATOR
+   =================================== */
+.score-value {
+    color: var(--prem-text-bright) !important;
+    font-weight: 700 !important;
+}
+
+.score-ring circle {
+    stroke: var(--prem-border) !important;
+}
+
+/* ===================================
+   PROGRESS BARS
+   =================================== */
+.progress-bar,
+[class*="progress-bar"] {
+    background: var(--prem-border) !important;
+    border-radius: 2px !important;
+    overflow: hidden !important;
+}
+
+.progress-fill,
+[class*="progress-fill"] {
+    background: linear-gradient(90deg, var(--prem-accent-deep), var(--prem-accent)) !important;
+    border-radius: 2px !important;
+}
+
+/* ===================================
+   SCROLLBARS
+   =================================== */
+::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--prem-bg-soft);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--prem-border);
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--prem-border-hover);
+}
+
+/* ===================================
+   SELECTION
+   =================================== */
+::selection {
+    background: rgba(34, 74, 122, 0.45);
+    color: var(--prem-text-bright);
+}
+
+/* ===================================
+   RESPONSIVE — TABLET / LAPTOP
+   =================================== */
+@media (max-width: 1024px) {
+    .market-ticker-strip {
+        margin: 10px 16px 0 !important;
+    }
+
+    .main-content {
+        padding: 14px 16px 20px !important;
+    }
+}
+
+/* ===================================
+   RESPONSIVE — MOBILE
+   =================================== */
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 86px !important;
+    }
+
+    .market-hero {
+        padding: 16px !important;
+    }
+
+    .ticker-track {
+        display: flex !important;
+        overflow-x: auto !important;
+        scrollbar-width: none !important;
+    }
+
+    .ticker-track::-webkit-scrollbar {
+        display: none !important;
+    }
+
+    .ticker-item {
+        min-width: 190px !important;
+        border-right: 1px solid var(--prem-border) !important;
+    }
+
+    .transactions-table tr {
+        background: var(--prem-panel) !important;
+        border: 1px solid var(--prem-border) !important;
+        border-radius: var(--prem-radius-sm) !important;
+        margin-bottom: 8px !important;
+    }
+
+    .card-value {
+        font-size: 1.30rem !important;
+    }
+
+    .dashboard-grid {
+        gap: 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .card-value {
+        font-size: 1.15rem !important;
+    }
+
+    .topbar-title {
+        font-size: 0.88rem !important;
+    }
+
+    .market-ticker-strip {
+        margin: 8px 12px 0 !important;
+    }
+}
+
+/* ===================================
+   DARK THEME VARIABLE OVERRIDE
+   Ensures CSS vars from style.css dark
+   theme align with the premium palette
+   =================================== */
+[data-theme="dark"] {
+    --bg-primary:    var(--prem-bg) !important;
+    --bg-secondary:  var(--prem-bg-soft) !important;
+    --bg-tertiary:   var(--prem-panel) !important;
+    --bg-card:       var(--prem-panel) !important;
+    --bg-elevated:   var(--prem-panel-2) !important;
+
+    --text-primary:   var(--prem-text-bright) !important;
+    --text-secondary: var(--prem-text) !important;
+    --text-tertiary:  var(--prem-text-soft) !important;
+    --text-muted:     var(--prem-text-muted) !important;
+
+    --border-light:   var(--prem-border) !important;
+    --border-medium:  var(--prem-border-hover) !important;
+    --card-border:    var(--prem-border) !important;
+    --card-shadow:    var(--prem-shadow) !important;
+    --card-shadow-hover: 0 8px 28px rgba(0,0,0,0.45) !important;
+
+    --primary:       var(--prem-accent) !important;
+    --primary-hover: var(--prem-accent-hover) !important;
+    --primary-light: var(--prem-accent-soft) !important;
+    --accent:        var(--prem-accent) !important;
+    --accent-light:  var(--prem-accent-soft) !important;
+
+    --success:       var(--prem-bull) !important;
+    --success-light: var(--prem-bull-soft) !important;
+    --danger:        var(--prem-bear) !important;
+    --danger-light:  var(--prem-bear-soft) !important;
+    --warning:       var(--prem-gold) !important;
+    --warning-light: var(--prem-gold-soft) !important;
+}
