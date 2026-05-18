@@ -116,10 +116,10 @@
                 <div class="kpi-mini highlight">
                     <div class="kpi-mini-label">
                         <span>Dinheiro Guardado</span>
-                        <button type="button" class="btn-sm" id="editarGuardadoBtn" onclick="openDinheiroGuardadoModal()">Editar</button>
+                        <button type="button" class="btn-sm" id="editarGuardadoBtn" onclick="navigateTo('transacoes')">Gerenciar</button>
                     </div>
                     <div class="kpi-mini-value positive" id="dinheiroGuardado">R$ 0,00</div>
-                    <div class="kpi-mini-footer" id="dinheiroGuardadoFooter">Reserva separada (não entra no caixa)</div>
+                    <div class="kpi-mini-footer" id="dinheiroGuardadoFooter">Reserva — gerencie em Transações</div>
                 </div>
             </div>
 
@@ -230,6 +230,68 @@
                     <div id="parcelasInfo" class="alert info" style="display: none;"></div>
                     <div id="successMessage" class="alert" style="display: none;"></div>
                 </form>
+            </div>
+
+            <!-- Dinheiro Guardado / Reserva -->
+            <div class="form-section" id="reservaPanel">
+                <div class="section-header">
+                    <h2 class="section-title">Dinheiro Guardado (Reserva)</h2>
+                </div>
+                <div style="display:flex; align-items:baseline; gap:12px; margin-bottom:18px; flex-wrap:wrap;">
+                    <span style="font-size:0.8rem; text-transform:uppercase; letter-spacing:0.06em; color:var(--text-muted);">Total guardado</span>
+                    <span id="reservaTotal" style="font-size:1.7rem; font-weight:700; color:#22c55e;">R$ 0,00</span>
+                </div>
+                <form id="reservaForm">
+                    <div class="form-row form-row-3">
+                        <div class="form-group">
+                            <label for="reservaTipo">Operação</label>
+                            <select id="reservaTipo" name="tipo" required>
+                                <option value="guardar">🐷 Guardar dinheiro</option>
+                                <option value="retirar">↩️ Retirar da reserva</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="reservaValor">Valor (R$)</label>
+                            <input type="number" id="reservaValor" step="0.01" min="0" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="reservaData">Data</label>
+                            <input type="date" id="reservaData" required>
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2">
+                        <div class="form-group full-width">
+                            <label for="reservaDescricao">Descrição (opcional)</label>
+                            <input type="text" id="reservaDescricao" placeholder="Ex: Reserva de emergência, viagem...">
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button type="submit">Registrar Movimento</button>
+                        </div>
+                    </div>
+                    <div class="alert info">Guardar dinheiro reduz o seu Saldo Atual; retirar devolve o valor ao caixa.</div>
+                    <div id="reservaMessage" class="alert" style="display: none;"></div>
+                </form>
+                <div style="overflow-x: auto; margin-top: 16px;">
+                    <table class="transactions-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Operação</th>
+                                <th>Valor</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reservaTableBody">
+                            <tr>
+                                <td colspan="5" class="loading">
+                                    <div class="loading-spinner"></div>
+                                    Carregando reserva...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
             <!-- Histórico de Transações -->
@@ -836,29 +898,6 @@
     </div>
 </div>
 
-<!-- Modal: Dinheiro Guardado -->
-<div id="dinheiroGuardadoModal" class="modal">
-    <div class="modal-content" style="max-width: 420px;">
-        <div class="modal-header">
-            <h2 class="modal-title">Dinheiro Guardado</h2>
-            <span class="close" onclick="closeDinheiroGuardadoModal()">&times;</span>
-        </div>
-        <form id="dinheiroGuardadoForm">
-            <div class="form-group">
-                <label for="dinheiroGuardadoValor">Valor Guardado (R$)</label>
-                <input type="number" id="dinheiroGuardadoValor" step="0.01" min="0" required placeholder="0.00">
-            </div>
-            <div class="form-group">
-                <label for="dinheiroGuardadoDescricao">Descrição (opcional)</label>
-                <input type="text" id="dinheiroGuardadoDescricao" placeholder="Ex: Reserva de emergência...">
-            </div>
-            <div style="display: flex; gap: 12px; justify-content: flex-end;">
-                <button type="button" class="btn-secondary" onclick="closeDinheiroGuardadoModal()">Cancelar</button>
-                <button type="submit">Salvar</button>
-            </div>
-        </form>
-    </div>
-</div>
 
 <!-- Modal: Editar Transação -->
 <div id="editModal" class="modal">

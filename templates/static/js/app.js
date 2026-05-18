@@ -1447,9 +1447,16 @@ async function loadFaturas() {
 }
 
 // ===================================
-// DINHEIRO GUARDADO (RESERVA)
+// RESERVA / DINHEIRO GUARDADO
 // ===================================
 let dinheiroGuardadoData = { valor: 0, descricao: 'Reserva' };
+let reservaMovimentos = [];
+
+function escapeHtml(str) {
+    return String(str == null ? '' : str)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
 
 async function loadDinheiroGuardado() {
     try {
@@ -1460,56 +1467,110 @@ async function loadDinheiroGuardado() {
             descricao: data.descricao || 'Reserva'
         };
         const valorEl = document.getElementById('dinheiroGuardado');
-        const footerEl = document.getElementById('dinheiroGuardadoFooter');
         if (valorEl) valorEl.textContent = formatCurrency(dinheiroGuardadoData.valor);
-        if (footerEl) {
-            footerEl.textContent = dinheiroGuardadoData.descricao
-                ? dinheiroGuardadoData.descricao + ' (não entra no caixa)'
-                : 'Reserva separada (não entra no caixa)';
-        }
     } catch (error) {
         console.error('Erro ao carregar dinheiro guardado:', error);
     }
 }
 
-function openDinheiroGuardadoModal() {
-    document.getElementById('dinheiroGuardadoValor').value = dinheiroGuardadoData.valor || 0;
-    document.getElementById('dinheiroGuardadoDescricao').value = dinheiroGuardadoData.descricao || '';
-    document.getElementById('dinheiroGuardadoModal').style.display = 'block';
+async function loadReserva() {
+    try {
+        const response = await fetch('/api/reserva/movimentos');
+        const data = await response.json();
+        reservaMovimentos = data.movimentos || [];
+        const total = parseFloat(data.total || 0);
+        dinheiroGuardadoData.valor = total;
+        const totalEl = document.getElementById('reservaTotal');
+        if (totalEl) totalEl.textContent = formatCurrency(total);
+        const kpiEl = document.getElementById('dinheiroGuardado');
+        if (kpiEl) kpiEl.textContent = formatCurrency(total);
+        renderReserva();
+    } catch (error) {
+        console.error('Erro ao carregar reserva:', error);
+    }
 }
 
-function closeDinheiroGuardadoModal() {
-    document.getElementById('dinheiroGuardadoModal').style.display = 'none';
+function renderReserva() {
+    const tbody = document.getElementById('reservaTableBody');
+    if (!tbody) return;
+    if (!reservaMovimentos.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">Nenhum movimento ainda. Guarde dinheiro no formulário acima.</td></tr>';
+        return;
+    }
+    tbody.innerHTML = reservaMovimentos.map(m => {
+        const isGuardar = m.tipo === 'guardar';
+        const cor = isGuardar ? '#22c55e' : '#f59e0b';
+        const sinal = isGuardar ? '+' : '−';
+        const label = isGuardar ? 'GUARDAR' : 'RETIRAR';
+        return `<tr>
+            <td>${formatDate(m.data)}</td>
+            <td>${escapeHtml(m.descricao)}</td>
+            <td><span style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:0.7rem;font-weight:700;background:${cor}22;color:${cor};">${label}</span></td>
+            <td style="color:${cor};font-weight:600;">${sinal} ${formatCurrency(m.valor)}</td>
+            <td><button type="button" class="btn-danger btn-sm" onclick="deleteReservaMovimento('${m.id}')">Excluir</button></td>
+        </tr>`;
+    }).join('');
 }
 
-async function saveDinheiroGuardado(event) {
+async function addReservaMovimento(event) {
     event.preventDefault();
     const payload = {
-        valor: parseFloat(document.getElementById('dinheiroGuardadoValor').value || '0'),
-        descricao: document.getElementById('dinheiroGuardadoDescricao').value.trim() || 'Reserva'
+        tipo: document.getElementById('reservaTipo').value,
+        valor: parseFloat(document.getElementById('reservaValor').value || '0'),
+        descricao: document.getElementById('reservaDescricao').value.trim(),
+        data: document.getElementById('reservaData').value
     };
-    if (isNaN(payload.valor) || payload.valor < 0) {
-        showMessage('✗ Informe um valor válido', 'error');
+    if (isNaN(payload.valor) || payload.valor <= 0) {
+        showReservaMessage('✗ Informe um valor maior que zero', 'error');
         return;
     }
     try {
-        const response = await fetch('/api/dinheiro-guardado', {
-            method: 'PUT',
+        const response = await fetch('/api/reserva/movimentos', {
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
         });
         const result = await response.json();
         if (response.ok && result.success) {
-            closeDinheiroGuardadoModal();
-            showMessage('✓ Dinheiro guardado atualizado!', 'success');
-            await loadDinheiroGuardado();
+            showReservaMessage('✓ Movimento registrado!', 'success');
+            document.getElementById('reservaValor').value = '';
+            document.getElementById('reservaDescricao').value = '';
+            await loadReserva();
+            await atualizarSaldos();
         } else {
-            showMessage('✗ Erro: ' + (result.error || 'erro desconhecido'), 'error');
+            showReservaMessage('✗ ' + (result.error || 'Erro desconhecido'), 'error');
         }
     } catch (error) {
-        console.error('Erro ao salvar dinheiro guardado:', error);
-        showMessage('✗ Erro de conexão ao salvar dinheiro guardado.', 'error');
+        console.error('Erro ao registrar movimento da reserva:', error);
+        showReservaMessage('✗ Erro de conexão ao registrar movimento.', 'error');
     }
+}
+
+async function deleteReservaMovimento(id) {
+    if (!confirm('Excluir este movimento da reserva?')) return;
+    try {
+        const response = await fetch('/api/reserva/movimentos/' + id, { method: 'DELETE' });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            showReservaMessage('✓ Movimento excluído.', 'success');
+            await loadReserva();
+            await atualizarSaldos();
+        } else {
+            showReservaMessage('✗ ' + (result.error || 'Erro ao excluir'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao excluir movimento da reserva:', error);
+        showReservaMessage('✗ Erro de conexão ao excluir.', 'error');
+    }
+}
+
+function showReservaMessage(text, type) {
+    const el = document.getElementById('reservaMessage');
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'alert ' + (type === 'error' ? 'error' : 'success');
+    el.style.display = 'block';
+    setTimeout(() => { el.style.display = 'none'; }, 4000);
 }
 
 // ===================================
@@ -1534,7 +1595,7 @@ async function atualizarSaldos() {
             const transDate = new Date(t.data + 'T00:00:00');
             const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
             if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0, reserva: 0 };
             }
             monthlyData[monthKey].receitas += t.valor;
         });
@@ -1543,7 +1604,7 @@ async function atualizarSaldos() {
             const transDate = new Date(t.data + 'T00:00:00');
             const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
             if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0, reserva: 0 };
             }
             monthlyData[monthKey].debito += t.valor;
         });
@@ -1552,7 +1613,7 @@ async function atualizarSaldos() {
             const transDate = new Date(t.data + 'T00:00:00');
             const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
             if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0, reserva: 0 };
             }
             monthlyData[monthKey].faturas += t.valor;
         });
@@ -1561,11 +1622,29 @@ async function atualizarSaldos() {
             const abatDate = new Date(a.data + 'T00:00:00');
             const monthKey = abatDate.getFullYear() + '-' + String(abatDate.getMonth() + 1).padStart(2, '0');
             if (!monthlyData[monthKey]) {
-                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0 };
+                monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0, reserva: 0 };
             }
             monthlyData[monthKey].abatimentos += parseFloat(a.valor);
         });
-        
+
+        // Reserva: guardar tira do caixa (negativo), retirar devolve (positivo)
+        try {
+            const reservaResp = await fetch('/api/reserva/movimentos');
+            const reservaJson = await reservaResp.json();
+            (reservaJson.movimentos || []).forEach(m => {
+                if (!m.data) return;
+                const mDate = new Date(m.data + 'T00:00:00');
+                const monthKey = mDate.getFullYear() + '-' + String(mDate.getMonth() + 1).padStart(2, '0');
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = { receitas: 0, debito: 0, abatimentos: 0, faturas: 0, reserva: 0 };
+                }
+                const v = parseFloat(m.valor) || 0;
+                monthlyData[monthKey].reserva += (m.tipo === 'retirar' ? v : -v);
+            });
+        } catch (e) {
+            console.error('Erro ao carregar reserva nos saldos:', e);
+        }
+
         const sortedMonths = Object.keys(monthlyData).sort();
         const hoje = new Date();
         const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth() + 1).padStart(2, '0');
@@ -1584,7 +1663,7 @@ async function atualizarSaldos() {
             totalFaturas += monthData.faturas;
             totalAbatimentos += monthData.abatimentos;
 
-            const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos;
+            const saldoCaixa = monthData.receitas - monthData.debito - monthData.abatimentos + (monthData.reserva || 0);
 
             if (dashboardMonth && month === dashboardMonth) {
                 saldoAcumuladoAtual += saldoCaixa;
@@ -1595,7 +1674,7 @@ async function atualizarSaldos() {
             sobrouAnterior += saldoCaixa;
         }
 
-        const monthData = dashboardMonth && monthlyData[dashboardMonth] ? monthlyData[dashboardMonth] : { receitas: 0, debito: 0, faturas: 0 };
+        const monthData = dashboardMonth && monthlyData[dashboardMonth] ? monthlyData[dashboardMonth] : { receitas: 0, debito: 0, faturas: 0, abatimentos: 0, reserva: 0 };
         const totalGastosMes = monthData.debito + monthData.faturas;
         let saldoProjetado;
         let sobrouExibido = sobrouAnterior;
@@ -1607,10 +1686,10 @@ async function atualizarSaldos() {
             for (const month of sortedMonths) {
                 if (month >= mesAtual) break;
                 const md = monthlyData[month];
-                sobrouAntesMesAtual += md.receitas - md.debito - md.abatimentos;
+                sobrouAntesMesAtual += md.receitas - md.debito - md.abatimentos + (md.reserva || 0);
             }
-            const mesAtualData = monthlyData[mesAtual] || { receitas: 0, debito: 0, faturas: 0 };
-            let saldoProjRolado = sobrouAntesMesAtual + mesAtualData.receitas - (mesAtualData.debito + mesAtualData.faturas);
+            const mesAtualData = monthlyData[mesAtual] || { receitas: 0, debito: 0, faturas: 0, abatimentos: 0, reserva: 0 };
+            let saldoProjRolado = sobrouAntesMesAtual + mesAtualData.receitas - (mesAtualData.debito + mesAtualData.faturas) + (mesAtualData.reserva || 0);
             
             let monthKey = mesAtual;
             while (true) {
@@ -1620,14 +1699,14 @@ async function atualizarSaldos() {
                 monthKey = nextAno + '-' + String(nextMes).padStart(2, '0');
                 if (monthKey > dashboardMonth) break;
                 sobrouExibido = saldoProjRolado;
-                const md = monthlyData[monthKey] || { receitas: 0, debito: 0, faturas: 0 };
+                const md = monthlyData[monthKey] || { receitas: 0, debito: 0, faturas: 0, abatimentos: 0, reserva: 0 };
                 const gastos = (md.debito || 0) + (md.faturas || 0);
-                saldoProjRolado = saldoProjRolado + (md.receitas || 0) - gastos;
+                saldoProjRolado = saldoProjRolado + (md.receitas || 0) - gastos + (md.reserva || 0);
             }
             saldoProjetado = saldoProjRolado;
         } else {
             // Mês atual ou anterior: usa Sobrou real (Saldo Atual)
-            saldoProjetado = sobrouAnterior + monthData.receitas - totalGastosMes;
+            saldoProjetado = sobrouAnterior + monthData.receitas - totalGastosMes + (monthData.reserva || 0);
         }
         
         const saldoAtualEl = document.getElementById('saldoAtual');
@@ -2046,14 +2125,16 @@ document.addEventListener('DOMContentLoaded', () => {
         recorrenciaForm.addEventListener('submit', saveRecorrencia);
     }
 
-    const dinheiroGuardadoForm = document.getElementById('dinheiroGuardadoForm');
-    if (dinheiroGuardadoForm) {
-        dinheiroGuardadoForm.addEventListener('submit', saveDinheiroGuardado);
+    const reservaForm = document.getElementById('reservaForm');
+    if (reservaForm) {
+        reservaForm.addEventListener('submit', addReservaMovimento);
     }
-    
+
     // Set default dates
     document.getElementById('data').valueAsDate = new Date();
     document.getElementById('data_abatimento').valueAsDate = new Date();
+    const reservaData = document.getElementById('reservaData');
+    if (reservaData) reservaData.valueAsDate = new Date();
     const recDataInicio = document.getElementById('recDataInicio');
     if (recDataInicio) recDataInicio.valueAsDate = new Date();
     const orcamentoMes = document.getElementById('orcamentoMes');
@@ -2066,15 +2147,11 @@ document.addEventListener('DOMContentLoaded', () => {
     window.onclick = function(event) {
         const editModal = document.getElementById('editModal');
         const editAbatimentoModal = document.getElementById('editAbatimentoModal');
-        const dinheiroGuardadoModal = document.getElementById('dinheiroGuardadoModal');
         if (event.target == editModal) {
             closeEditModal();
         }
         if (event.target == editAbatimentoModal) {
             closeEditAbatimentoModal();
-        }
-        if (event.target == dinheiroGuardadoModal) {
-            closeDinheiroGuardadoModal();
         }
     }
     
@@ -2100,6 +2177,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadTransactions();
         await loadAbatimentos();
         await loadDinheiroGuardado();
+        await loadReserva();
         await calculateFinancialHealth();
         await displayTopExpenses();
         await loadRecorrencias();

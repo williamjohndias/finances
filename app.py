@@ -638,6 +638,16 @@ def calculate_cash_balance(today=None):
             continue
         saldo -= float(abat.get('valor', 0) or 0)
 
+    # Reserva: guardar tira do caixa, retirar devolve ao caixa
+    for mov in load_reserva_movimentos():
+        mov_date = parse_date(mov.get('data'))
+        if not mov_date or mov_date.date() > today_date:
+            continue
+        if mov['tipo'] == 'guardar':
+            saldo -= mov['valor']
+        elif mov['tipo'] == 'retirar':
+            saldo += mov['valor']
+
     return saldo
 
 
@@ -1443,68 +1453,125 @@ def delete_meta(meta_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 # ====================================================
-# DINHEIRO GUARDADO (reserva - valor unico editavel)
+# RESERVA / DINHEIRO GUARDADO (movimentos guardar/retirar)
 # ====================================================
-def load_dinheiro_guardado():
-    """Carrega o registro unico de dinheiro guardado."""
-    default = {'id': 'principal', 'valor': 0.0, 'descricao': 'Reserva', 'updated_at': None}
+def load_reserva_movimentos():
+    """Carrega todos os movimentos da reserva (guardar/retirar)."""
     if supabase is None:
-        return default
-
+        return []
     try:
-        response = supabase.table('dinheiro_guardado').select('*').eq('id', 'principal').limit(1).execute()
-        if response.data:
-            row = response.data[0]
-            return {
-                'id': row.get('id', 'principal'),
+        response = supabase.table('reserva_movimentos').select('*').order('data', desc=True).execute()
+        movimentos = []
+        for row in (response.data or []):
+            movimentos.append({
+                'id': row.get('id'),
+                'tipo': row.get('tipo'),
                 'valor': float(row.get('valor', 0) or 0),
-                'descricao': row.get('descricao', 'Reserva'),
-                'updated_at': row.get('updated_at')
-            }
-        return default
+                'descricao': row.get('descricao', '') or '',
+                'data': row.get('data'),
+                'created_at': row.get('created_at'),
+            })
+        return movimentos
     except Exception as e:
-        print(f"ERRO ao carregar dinheiro guardado: {e}")
-        return default
+        print(f"ERRO ao carregar movimentos da reserva: {e}")
+        return []
+
+
+def reserva_total(movimentos=None):
+    """Total guardado = soma de 'guardar' menos soma de 'retirar'."""
+    if movimentos is None:
+        movimentos = load_reserva_movimentos()
+    total = 0.0
+    for m in movimentos:
+        if m['tipo'] == 'guardar':
+            total += m['valor']
+        elif m['tipo'] == 'retirar':
+            total -= m['valor']
+    return total
+
+
+def load_dinheiro_guardado():
+    """Compat: retorna o total da reserva no formato antigo."""
+    return {
+        'id': 'principal',
+        'valor': reserva_total(),
+        'descricao': 'Reserva',
+        'updated_at': None,
+    }
 
 
 @app.route('/api/dinheiro-guardado', methods=['GET'])
 def get_dinheiro_guardado():
-    """Retorna o valor de dinheiro guardado."""
+    """Retorna o valor total guardado na reserva."""
     return jsonify(load_dinheiro_guardado())
 
 
-@app.route('/api/dinheiro-guardado', methods=['PUT'])
-def update_dinheiro_guardado():
-    """Atualiza (ou cria) o valor de dinheiro guardado."""
+@app.route('/api/reserva/movimentos', methods=['GET'])
+def get_reserva_movimentos():
+    """Lista os movimentos da reserva e o total guardado."""
+    movimentos = load_reserva_movimentos()
+    return jsonify({
+        'movimentos': movimentos,
+        'total': reserva_total(movimentos),
+    })
+
+
+@app.route('/api/reserva/movimentos', methods=['POST'])
+def add_reserva_movimento():
+    """Adiciona um movimento de guardar ou retirar dinheiro da reserva."""
     if supabase is None:
         return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
-
     try:
         data = request.json or {}
-        valor = float(data.get('valor', 0) or 0)
-        if valor < 0:
-            return jsonify({'success': False, 'error': 'O valor nao pode ser negativo'}), 400
+        tipo = data.get('tipo')
+        if tipo not in ('guardar', 'retirar'):
+            return jsonify({'success': False, 'error': 'Tipo inválido. Use guardar ou retirar.'}), 400
 
-        descricao = str(data.get('descricao', 'Reserva') or 'Reserva').strip()
-        payload = {
-            'id': 'principal',
+        valor = float(data.get('valor', 0) or 0)
+        if valor <= 0:
+            return jsonify({'success': False, 'error': 'O valor deve ser maior que zero.'}), 400
+
+        movimentos = load_reserva_movimentos()
+        if tipo == 'retirar':
+            total = reserva_total(movimentos)
+            if valor > total + 1e-9:
+                return jsonify({'success': False,
+                                'error': f'Você só tem R$ {total:.2f} guardado para retirar.'}), 400
+
+        descricao = str(data.get('descricao', '') or '').strip()
+        if not descricao:
+            descricao = 'Guardar dinheiro' if tipo == 'guardar' else 'Retirada da reserva'
+
+        data_mov = data.get('data') or datetime.now().strftime('%Y-%m-%d')
+        movimento = {
+            'id': datetime.now().strftime('%Y%m%d%H%M%S%f'),
+            'tipo': tipo,
             'valor': valor,
             'descricao': descricao,
-            'updated_at': datetime.now().isoformat()
+            'data': data_mov,
         }
-
-        existing = supabase.table('dinheiro_guardado').select('id').eq('id', 'principal').limit(1).execute()
-        if existing.data:
-            supabase.table('dinheiro_guardado').update(payload).eq('id', 'principal').execute()
-        else:
-            supabase.table('dinheiro_guardado').insert(payload).execute()
-
-        print(f"OK - Dinheiro guardado atualizado: {valor}")
-        return jsonify({'success': True, 'dinheiro_guardado': payload})
+        supabase.table('reserva_movimentos').insert(movimento).execute()
+        print(f"OK - Movimento de reserva inserido: {tipo} {valor}")
+        return jsonify({'success': True, 'movimento': movimento,
+                        'total': reserva_total(load_reserva_movimentos())})
     except Exception as e:
-        print(f"ERRO ao atualizar dinheiro guardado: {e}")
+        print(f"ERRO ao adicionar movimento da reserva: {e}")
         import traceback
         traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/reserva/movimentos/<movimento_id>', methods=['DELETE'])
+def delete_reserva_movimento(movimento_id):
+    """Remove um movimento da reserva."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+    try:
+        supabase.table('reserva_movimentos').delete().eq('id', movimento_id).execute()
+        print(f"OK - Movimento de reserva removido: {movimento_id}")
+        return jsonify({'success': True, 'total': reserva_total()})
+    except Exception as e:
+        print(f"ERRO ao remover movimento da reserva: {e}")
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
