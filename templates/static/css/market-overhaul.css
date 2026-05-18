@@ -518,6 +518,145 @@ body::after {
 }
 
 /* ===================================
+   ANÁLISES: COMPARATIVO MENSAL
+   =================================== */
+.comparativo-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+}
+
+.comparativo-head,
+.comparativo-row {
+    display: grid !important;
+    grid-template-columns: 1.4fr 1fr 1fr 0.9fr !important;
+    gap: 8px !important;
+    align-items: center !important;
+    padding: 10px 12px !important;
+}
+
+.comparativo-head {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    color: var(--prem-text-muted) !important;
+    font-weight: 600 !important;
+}
+
+.comparativo-row {
+    background: rgba(255, 255, 255, 0.025) !important;
+    border-radius: 8px !important;
+}
+
+.comparativo-label {
+    font-weight: 600 !important;
+    color: var(--prem-text-bright) !important;
+}
+
+.comparativo-val {
+    font-family: 'IBM Plex Mono', monospace !important;
+    color: var(--prem-text-muted) !important;
+}
+
+.comparativo-val.strong {
+    color: var(--prem-text-bright) !important;
+    font-weight: 600 !important;
+}
+
+.comparativo-var {
+    text-align: right !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+}
+
+.comparativo-var.good { color: #34d399 !important; }
+.comparativo-var.bad { color: #f87171 !important; }
+.comparativo-var.flat { color: var(--prem-text-muted) !important; }
+
+/* ===================================
+   ANÁLISES: RANKING DE GASTOS
+   =================================== */
+.ranking-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+
+.ranking-caption {
+    font-size: 0.58rem !important;
+    letter-spacing: 0.12em !important;
+    text-transform: uppercase !important;
+    color: var(--prem-text-muted) !important;
+    font-weight: 600 !important;
+    margin-bottom: 2px !important;
+}
+
+.ranking-item {
+    display: grid !important;
+    grid-template-columns: 26px 1fr !important;
+    gap: 10px !important;
+    align-items: center !important;
+}
+
+.ranking-rank {
+    width: 26px !important;
+    height: 26px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border-radius: 7px !important;
+    background: rgba(96, 165, 250, 0.14) !important;
+    color: #60a5fa !important;
+    font-weight: 700 !important;
+    font-size: 0.78rem !important;
+}
+
+.ranking-body { width: 100% !important; }
+
+.ranking-top {
+    display: flex !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    margin-bottom: 5px !important;
+}
+
+.ranking-desc {
+    color: var(--prem-text-bright) !important;
+    font-weight: 600 !important;
+    font-size: 0.85rem !important;
+}
+
+.ranking-val {
+    font-family: 'IBM Plex Mono', monospace !important;
+    color: var(--prem-text-muted) !important;
+    font-size: 0.82rem !important;
+    white-space: nowrap !important;
+}
+
+.ranking-bar-wrap {
+    height: 7px !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-radius: 4px !important;
+    overflow: hidden !important;
+}
+
+.ranking-bar {
+    height: 100% !important;
+    border-radius: 4px !important;
+    background: linear-gradient(90deg, #60a5fa, #3b82f6) !important;
+}
+
+@media (max-width: 768px) {
+    .comparativo-head,
+    .comparativo-row {
+        grid-template-columns: 1.2fr 1fr 1fr 0.8fr !important;
+        padding: 8px 8px !important;
+        font-size: 0.78rem !important;
+    }
+    .comparativo-var { font-size: 0.7rem !important; }
+}
+
+/* ===================================
    KPI CARDS
    =================================== */
 .card,

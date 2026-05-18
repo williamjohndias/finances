@@ -270,8 +270,7 @@ async function loadTransactions() {
         await loadStatistics();
         await loadFaturas();
         await atualizarSaldos();
-        await loadBudgetSummary();
-        await loadProjectionD90();
+        await loadAnaliseAvancada();
     } catch (error) {
         console.error('Erro ao carregar transações:', error);
         showMessage('Erro ao carregar transações', 'error');
@@ -772,8 +771,7 @@ async function updateDashboardOnMonthChange() {
         await atualizarSaldos();
         await loadStatistics();
         await displayTopExpenses();
-        await loadBudgetSummary(dashboardMonth || null);
-        await loadProjectionD90();
+        await loadAnaliseAvancada();
     } catch (error) {
         console.error('Erro ao atualizar dashboard:', error);
     }
@@ -2173,15 +2171,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Initial Load
     (async () => {
-        await processarRecorrenciasSilencioso();
         await loadTransactions();
         await loadAbatimentos();
         await loadDinheiroGuardado();
         await loadReserva();
         await calculateFinancialHealth();
         await displayTopExpenses();
-        await loadRecorrencias();
-        
+        await loadAnaliseAvancada();
+
         setTimeout(() => {
             updateEvolutionChart();
             updatePaymentAnalysis();
@@ -2189,6 +2186,307 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 500);
     })();
 });
+
+// ===================================
+// ANÁLISES AVANÇADAS
+// ===================================
+let gastosCartaoTempoChart = null;
+let patrimonioChart = null;
+
+function mesKey(dateStr) {
+    const d = new Date((dateStr || '') + 'T00:00:00');
+    if (isNaN(d.getTime())) return null;
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+function mesLabel(monthKey) {
+    const nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+    const partes = monthKey.split('-');
+    return nomes[parseInt(partes[1], 10) - 1] + '/' + partes[0].slice(2);
+}
+
+function tooltipBase(palette) {
+    return {
+        backgroundColor: palette.tooltipBg,
+        titleColor: palette.tooltipText,
+        bodyColor: palette.tooltipText,
+        borderColor: palette.tooltipBorder,
+        borderWidth: 2,
+        padding: 12,
+        cornerRadius: 8
+    };
+}
+
+async function loadAnaliseAvancada() {
+    let reservaMovs = [];
+    let abatimentos = [];
+    try {
+        const [rRes, aRes] = await Promise.all([
+            fetch('/api/reserva/movimentos'),
+            fetch('/api/abatimentos')
+        ]);
+        const rJson = await rRes.json();
+        reservaMovs = rJson.movimentos || [];
+        abatimentos = (await aRes.json()) || [];
+    } catch (e) {
+        console.error('Erro ao carregar dados das análises:', e);
+    }
+    renderComparativoMensal(reservaMovs);
+    renderGastosCartaoTempo();
+    renderOndeMaisGasta();
+    renderPatrimonioChart(abatimentos);
+}
+
+function renderComparativoMensal(reservaMovs) {
+    const container = document.getElementById('comparativoMensal');
+    if (!container) return;
+
+    const meses = [...new Set(allTransactions.map(t => mesKey(t.data)).filter(Boolean))].sort().reverse();
+    if (meses.length === 0) {
+        container.innerHTML = '<p class="empty-state">Sem dados para comparar.</p>';
+        return;
+    }
+    const mesAtual = meses[0];
+    const mesAnterior = meses[1] || null;
+
+    function resumoDoMes(mk) {
+        const r = { receitas: 0, gastos: 0, saldo: 0, guardado: 0 };
+        if (!mk) return r;
+        allTransactions.forEach(t => {
+            if (mesKey(t.data) !== mk) return;
+            if (t.tipo === 'receita') r.receitas += t.valor;
+            else r.gastos += t.valor;
+        });
+        reservaMovs.forEach(m => {
+            if (mesKey(m.data) !== mk) return;
+            r.guardado += (m.tipo === 'guardar' ? m.valor : -m.valor);
+        });
+        r.saldo = r.receitas - r.gastos;
+        return r;
+    }
+
+    const atual = resumoDoMes(mesAtual);
+    const ant = resumoDoMes(mesAnterior);
+    const metrics = [
+        { label: 'Receitas', key: 'receitas', bomSobe: true },
+        { label: 'Gastos', key: 'gastos', bomSobe: false },
+        { label: 'Saldo do Mês', key: 'saldo', bomSobe: true },
+        { label: 'Guardado', key: 'guardado', bomSobe: true }
+    ];
+
+    let html = `<div class="comparativo-head">
+        <span>Métrica</span>
+        <span>${mesAnterior ? mesLabel(mesAnterior) : '—'}</span>
+        <span>${mesLabel(mesAtual)}</span>
+        <span style="text-align:right;">Variação</span>
+    </div>`;
+
+    metrics.forEach(mt => {
+        const va = ant[mt.key];
+        const vb = atual[mt.key];
+        let varText = '—';
+        let varClass = 'flat';
+        if (mesAnterior) {
+            const diff = vb - va;
+            if (Math.abs(diff) > 0.009) {
+                if (Math.abs(va) > 0.009) {
+                    const pct = (diff / Math.abs(va)) * 100;
+                    varText = (diff > 0 ? '▲ ' : '▼ ') + (pct >= 0 ? '+' : '') + pct.toFixed(0) + '%';
+                } else {
+                    varText = diff > 0 ? '▲ novo' : '▼';
+                }
+                varClass = ((diff > 0) === mt.bomSobe) ? 'good' : 'bad';
+            }
+        }
+        html += `<div class="comparativo-row">
+            <span class="comparativo-label">${mt.label}</span>
+            <span class="comparativo-val">${formatCurrency(va)}</span>
+            <span class="comparativo-val strong">${formatCurrency(vb)}</span>
+            <span class="comparativo-var ${varClass}">${varText}</span>
+        </div>`;
+    });
+    container.innerHTML = html;
+}
+
+function renderGastosCartaoTempo() {
+    const canvas = document.getElementById('gastosCartaoTempoChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const hoje = new Date();
+    const meses = [];
+    for (let i = 5; i >= 0; i--) {
+        const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+        meses.push(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+    }
+    const tipos = ['debito', 'mercado_pago', 'nubank', 'itau'];
+    const nomes = { debito: 'Débito', mercado_pago: 'Mercado Pago', nubank: 'Nubank', itau: 'Itaú Platinum' };
+    const cores = { debito: '#34D399', mercado_pago: '#FBBF24', nubank: '#A78BFA', itau: '#FB923C' };
+    const dados = {};
+    tipos.forEach(tp => { dados[tp] = {}; meses.forEach(mk => { dados[tp][mk] = 0; }); });
+
+    allTransactions.forEach(t => {
+        const mk = mesKey(t.data);
+        if (dados[t.tipo] && dados[t.tipo][mk] !== undefined) {
+            dados[t.tipo][mk] += t.valor;
+        }
+    });
+
+    const palette = getChartPalette();
+    if (gastosCartaoTempoChart) gastosCartaoTempoChart.destroy();
+    gastosCartaoTempoChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: meses.map(mesLabel),
+            datasets: tipos.map(tp => ({
+                label: nomes[tp],
+                data: meses.map(mk => dados[tp][mk]),
+                backgroundColor: cores[tp],
+                borderColor: palette.pointBorder,
+                borderWidth: 1,
+                borderRadius: 3
+            }))
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: palette.text, font: { size: 11, family: 'IBM Plex Mono' }, padding: 12, usePointStyle: true }
+                },
+                tooltip: Object.assign(tooltipBase(palette), {
+                    callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y) }
+                })
+            },
+            scales: {
+                x: { stacked: true, ticks: { color: palette.text, font: { size: 10, family: 'IBM Plex Mono' } }, grid: { display: false } },
+                y: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {
+                        color: palette.text,
+                        font: { size: 10, family: 'IBM Plex Mono' },
+                        callback: (v) => v >= 1000 ? 'R$ ' + (v / 1000).toFixed(1) + 'k' : formatCurrency(v)
+                    },
+                    grid: { color: palette.grid }
+                }
+            }
+        }
+    });
+}
+
+function renderOndeMaisGasta() {
+    const container = document.getElementById('ondeMaisGasta');
+    if (!container) return;
+
+    const meses = [...new Set(allTransactions.map(t => mesKey(t.data)).filter(Boolean))].sort().reverse();
+    if (meses.length === 0) {
+        container.innerHTML = '<p class="empty-state">Sem gastos registrados.</p>';
+        return;
+    }
+    const mesAtual = meses[0];
+    const grupos = {};
+    allTransactions.forEach(t => {
+        if (t.tipo === 'receita') return;
+        if (mesKey(t.data) !== mesAtual) return;
+        const chave = (t.descricao || 'Sem descrição').trim() || 'Sem descrição';
+        grupos[chave] = (grupos[chave] || 0) + t.valor;
+    });
+    const ranking = Object.entries(grupos).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    if (ranking.length === 0) {
+        container.innerHTML = '<p class="empty-state">Nenhum gasto neste mês.</p>';
+        return;
+    }
+    const max = ranking[0][1];
+    container.innerHTML = `<div class="ranking-caption">Mês de ${mesLabel(mesAtual)}</div>` + ranking.map((r, i) => {
+        const pct = max > 0 ? (r[1] / max * 100) : 0;
+        return `<div class="ranking-item">
+            <div class="ranking-rank">${i + 1}</div>
+            <div class="ranking-body">
+                <div class="ranking-top">
+                    <span class="ranking-desc">${escapeHtml(r[0])}</span>
+                    <span class="ranking-val">${formatCurrency(r[1])}</span>
+                </div>
+                <div class="ranking-bar-wrap"><div class="ranking-bar" style="width:${pct}%;"></div></div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function renderPatrimonioChart(abatimentos) {
+    const canvas = document.getElementById('patrimonioChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const porMes = {};
+    function ensure(mk) {
+        if (!porMes[mk]) porMes[mk] = { receitas: 0, debito: 0, abat: 0 };
+        return porMes[mk];
+    }
+    allTransactions.forEach(t => {
+        const mk = mesKey(t.data);
+        if (!mk) return;
+        if (t.tipo === 'receita') ensure(mk).receitas += t.valor;
+        else if (t.tipo === 'debito') ensure(mk).debito += t.valor;
+    });
+    (abatimentos || []).forEach(a => {
+        const mk = mesKey(a.data);
+        if (!mk) return;
+        ensure(mk).abat += parseFloat(a.valor || 0);
+    });
+
+    const meses = Object.keys(porMes).sort();
+    if (meses.length === 0) {
+        if (patrimonioChart) { patrimonioChart.destroy(); patrimonioChart = null; }
+        return;
+    }
+    let acum = 0;
+    const serie = meses.map(mk => {
+        const d = porMes[mk];
+        acum += d.receitas - d.debito - d.abat;
+        return acum;
+    });
+
+    const palette = getChartPalette();
+    if (patrimonioChart) patrimonioChart.destroy();
+    patrimonioChart = new Chart(canvas.getContext('2d'), {
+        type: 'line',
+        data: {
+            labels: meses.map(mesLabel),
+            datasets: [{
+                label: 'Patrimônio (caixa + reserva)',
+                data: serie,
+                borderColor: palette.neutral,
+                backgroundColor: palette.neutralFill,
+                borderWidth: 3,
+                tension: 0.35,
+                fill: true,
+                pointBackgroundColor: palette.neutral,
+                pointRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { labels: { color: palette.text, font: { size: 11, family: 'IBM Plex Mono' }, usePointStyle: true } },
+                tooltip: Object.assign(tooltipBase(palette), {
+                    callbacks: { label: (ctx) => formatCurrency(ctx.parsed.y) }
+                })
+            },
+            scales: {
+                x: { ticks: { color: palette.text, font: { size: 10, family: 'IBM Plex Mono' } }, grid: { color: palette.grid } },
+                y: {
+                    ticks: {
+                        color: palette.text,
+                        font: { size: 10, family: 'IBM Plex Mono' },
+                        callback: (v) => (v >= 1000 || v <= -1000) ? 'R$ ' + (v / 1000).toFixed(1) + 'k' : formatCurrency(v)
+                    },
+                    grid: { color: palette.grid }
+                }
+            }
+        }
+    });
+}
 
 // ===================================
 // FINANCIAL HEALTH ANALYSIS
