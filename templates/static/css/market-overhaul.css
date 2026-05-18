@@ -453,6 +453,71 @@ body::after {
 }
 
 /* ===================================
+   KPI STRIP (compacto)
+   =================================== */
+.kpi-strip {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+}
+
+.kpi-mini {
+    background: var(--prem-panel) !important;
+    border: 1px solid var(--prem-border) !important;
+    border-radius: var(--prem-radius) !important;
+    box-shadow: var(--prem-shadow) !important;
+    padding: 12px 14px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: border-color 0.18s ease, transform 0.18s ease !important;
+}
+
+.kpi-mini:hover {
+    border-color: var(--prem-border-hover) !important;
+    transform: translateY(-1px) !important;
+}
+
+.kpi-mini.highlight {
+    border-color: rgba(212, 175, 55, 0.35) !important;
+}
+
+.kpi-mini-label {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 8px !important;
+    color: var(--prem-text-muted) !important;
+    font-size: 0.58rem !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    font-weight: 600 !important;
+}
+
+.kpi-mini-value {
+    margin-top: 6px !important;
+    color: var(--prem-text-bright) !important;
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em !important;
+}
+
+.kpi-mini-footer {
+    margin-top: 4px !important;
+    color: var(--prem-text-muted) !important;
+    font-size: 0.62rem !important;
+}
+
+@media (max-width: 768px) {
+    .kpi-strip {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    .kpi-mini-value {
+        font-size: 1.05rem !important;
+    }
+}
+
+/* ===================================
    KPI CARDS
    =================================== */
 .card,

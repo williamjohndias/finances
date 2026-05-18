@@ -853,9 +853,12 @@ def get_faturas():
         fatura_nubank_mes = filter_by_month(transactions['gastos_nubank'])
         fatura_itau_mes = filter_by_month(transactions['gastos_itau'])
 
+        fatura_debito_mes = filter_by_month(transactions['gastos_debito'])
+
         fatura_mercado_pago = sum(t['valor'] for t in fatura_mp_mes)
         fatura_nubank = sum(t['valor'] for t in fatura_nubank_mes)
         fatura_itau = sum(t['valor'] for t in fatura_itau_mes)
+        total_debito = sum(t['valor'] for t in fatura_debito_mes)
 
         # Calcula abatimentos do mês por cartão
         abatido_mp_mes = filter_abatimentos_by_month(abatimentos, 'mercado_pago')
@@ -887,6 +890,9 @@ def get_faturas():
                 'fatura_total': fatura_itau,
                 'abatido': abatido_itau,
                 'atual': atual_itau
+            },
+            'debito': {
+                'total': total_debito
             }
         })
     except Exception as e:
@@ -897,7 +903,8 @@ def get_faturas():
             'month': month_filter if 'month_filter' in locals() else None,
             'mercado_pago': {'fatura_total': 0, 'abatido': 0, 'atual': 0},
             'nubank': {'fatura_total': 0, 'abatido': 0, 'atual': 0},
-            'itau': {'fatura_total': 0, 'abatido': 0, 'atual': 0}
+            'itau': {'fatura_total': 0, 'abatido': 0, 'atual': 0},
+            'debito': {'total': 0}
         }), 500
 
 

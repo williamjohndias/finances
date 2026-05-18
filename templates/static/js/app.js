@@ -553,36 +553,177 @@ function updateDashboard(data, filterMonth = null) {
     const itau = itauList.reduce((sum, t) => sum + t.valor, 0);
     const gastos = debito + mercadoPago + nubank + itau;
     
-    document.getElementById('totalReceitas').textContent = formatCurrency(receitas);
-    document.getElementById('totalGastos').textContent = formatCurrency(gastos);
-    
-    const filteredTransactions = filterMonth 
+    renderResumoChart(receitas, gastos);
+
+    const filteredTransactions = filterMonth
         ? allTransactions.filter(t => {
             const transDate = new Date(t.data + 'T00:00:00');
             const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
             return transMonth === filterMonth;
         })
         : allTransactions;
-    
-    const totalTransacoes = filteredTransactions.length;
-    document.getElementById('totalTransacoes').textContent = totalTransacoes;
-    
-    if (!filterMonth) {
-        const monthlyData = {};
-        [...receitasList, ...debitoList, ...mercadoPagoList, ...nubankList, ...itauList].forEach(t => {
-            const transDate = new Date(t.data + 'T00:00:00');
-            const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
-            if (!monthlyData[monthKey]) monthlyData[monthKey] = true;
-        });
-        const numMonths = Object.keys(monthlyData).length || 1;
-        document.getElementById('mediaReceitas').textContent = 
-            'Média mensal: ' + formatCurrency(receitas / numMonths);
-        document.getElementById('mediaGastos').textContent = 
-            'Média mensal: ' + formatCurrency(gastos / numMonths);
-    } else {
-        document.getElementById('mediaReceitas').textContent = 'Mês atual';
-        document.getElementById('mediaGastos').textContent = 'Mês atual';
-    }
+
+    const totalTransacoesEl = document.getElementById('totalTransacoes');
+    if (totalTransacoesEl) totalTransacoesEl.textContent = filteredTransactions.length;
+}
+
+// ===================================
+// RESUMO DO MÊS (bar chart)
+// ===================================
+let resumoChart = null;
+
+function renderResumoChart(receitas, gastos) {
+    const canvas = document.getElementById('resumoChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const saldo = receitas - gastos;
+    const palette = getChartPalette();
+
+    if (resumoChart) resumoChart.destroy();
+    resumoChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Receitas', 'Gastos', 'Saldo do Mês'],
+            datasets: [{
+                data: [receitas, gastos, saldo],
+                backgroundColor: [
+                    'rgba(52, 211, 153, 0.85)',
+                    'rgba(248, 113, 113, 0.85)',
+                    saldo >= 0 ? 'rgba(96, 165, 250, 0.85)' : 'rgba(248, 113, 113, 0.85)'
+                ],
+                borderColor: palette.pointBorder,
+                borderWidth: 2,
+                borderRadius: 6,
+                barThickness: 30
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    backgroundColor: palette.tooltipBg,
+                    titleColor: palette.tooltipText,
+                    bodyColor: palette.tooltipText,
+                    borderColor: palette.tooltipBorder,
+                    borderWidth: 2,
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: { label: (ctx) => formatCurrency(ctx.parsed.x) }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: palette.text,
+                        font: { size: 10, family: 'IBM Plex Mono' },
+                        callback: (value) => {
+                            if (Math.abs(value) >= 1000) return 'R$ ' + (value / 1000).toFixed(1) + 'k';
+                            return formatCurrency(value);
+                        }
+                    },
+                    grid: { color: palette.grid, drawBorder: false }
+                },
+                y: {
+                    ticks: { color: palette.text, font: { size: 11, weight: '600', family: 'IBM Plex Mono' } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+}
+
+// ===================================
+// FATURAS DOS CARTÕES (bar chart)
+// ===================================
+let faturasChart = null;
+
+function renderFaturasChart(data) {
+    const canvas = document.getElementById('faturasChart');
+    if (!canvas || typeof Chart === 'undefined') return;
+
+    const palette = getChartPalette();
+    const nubank = data.nubank || { abatido: 0, atual: 0 };
+    const mp = data.mercado_pago || { abatido: 0, atual: 0 };
+    const itau = data.itau || { abatido: 0, atual: 0 };
+    const debitoTotal = (data.debito && data.debito.total) || 0;
+
+    if (faturasChart) faturasChart.destroy();
+    faturasChart = new Chart(canvas.getContext('2d'), {
+        type: 'bar',
+        data: {
+            labels: ['Nubank', 'Mercado Pago', 'Itaú Platinum', 'Débito'],
+            datasets: [
+                {
+                    label: 'Pago',
+                    data: [nubank.abatido, mp.abatido, itau.abatido, debitoTotal],
+                    backgroundColor: 'rgba(52, 211, 153, 0.85)',
+                    borderColor: palette.pointBorder,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barThickness: 24
+                },
+                {
+                    label: 'Pendente',
+                    data: [nubank.atual, mp.atual, itau.atual, 0],
+                    backgroundColor: 'rgba(251, 146, 60, 0.85)',
+                    borderColor: palette.pointBorder,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barThickness: 24
+                }
+            ]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        color: palette.text,
+                        font: { size: 11, weight: '600', family: 'IBM Plex Mono' },
+                        padding: 14,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    backgroundColor: palette.tooltipBg,
+                    titleColor: palette.tooltipText,
+                    bodyColor: palette.tooltipText,
+                    borderColor: palette.tooltipBorder,
+                    borderWidth: 2,
+                    padding: 12,
+                    cornerRadius: 8,
+                    callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.x) }
+                }
+            },
+            scales: {
+                x: {
+                    stacked: true,
+                    beginAtZero: true,
+                    ticks: {
+                        color: palette.text,
+                        font: { size: 10, family: 'IBM Plex Mono' },
+                        callback: (value) => {
+                            if (Math.abs(value) >= 1000) return 'R$ ' + (value / 1000).toFixed(1) + 'k';
+                            return formatCurrency(value);
+                        }
+                    },
+                    grid: { color: palette.grid, drawBorder: false }
+                },
+                y: {
+                    stacked: true,
+                    ticks: { color: palette.text, font: { size: 11, weight: '600', family: 'IBM Plex Mono' } },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
 }
 
 async function updateDashboardOnMonthChange() {
@@ -812,7 +953,6 @@ async function loadStatistics() {
         const stats = await response.json();
         
         document.getElementById('statDebito').textContent = formatCurrency(stats.total_debito);
-        document.getElementById('totalDebitoCard').textContent = formatCurrency(stats.total_debito);
         document.getElementById('statMercadoPago').textContent = formatCurrency(stats.total_mercado_pago);
         document.getElementById('statNubank').textContent = formatCurrency(stats.total_nubank);
         const statItauEl = document.getElementById('statItau');
@@ -1261,18 +1401,8 @@ async function loadFaturas() {
         const monthParam = dashboardMonth ? `?month=${dashboardMonth}` : '';
         const response = await fetch('/api/faturas' + monthParam);
         const data = await response.json();
-        
-        document.getElementById('faturaAtualMP').textContent = formatCurrency(data.mercado_pago.atual);
-        document.getElementById('faturaAbatidaMP').textContent = formatCurrency(data.mercado_pago.abatido);
-        document.getElementById('faturaAtualNubank').textContent = formatCurrency(data.nubank.atual);
-        document.getElementById('faturaAbatidaNubank').textContent = formatCurrency(data.nubank.abatido);
 
-        if (data.itau) {
-            const atualItauEl = document.getElementById('faturaAtualItau');
-            const abatidaItauEl = document.getElementById('faturaAbatidaItau');
-            if (atualItauEl) atualItauEl.textContent = formatCurrency(data.itau.atual);
-            if (abatidaItauEl) abatidaItauEl.textContent = formatCurrency(data.itau.abatido);
-        }
+        renderFaturasChart(data);
 
         await atualizarSaldos();
     } catch (error) {
@@ -1466,12 +1596,12 @@ async function atualizarSaldos() {
         
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
-        saldoAtualEl.className = 'card-value ' + (saldoAcumuladoAtual >= 0 ? 'positive' : 'negative');
+        saldoAtualEl.className = 'kpi-mini-value ' + (saldoAcumuladoAtual >= 0 ? 'positive' : 'negative');
 
         const saldoAnteriorEl = document.getElementById('saldoMesAnterior');
         if (saldoAnteriorEl) {
             saldoAnteriorEl.textContent = formatCurrency(sobrouExibido);
-            saldoAnteriorEl.className = 'card-value ' + (sobrouExibido >= 0 ? 'positive' : 'negative');
+            saldoAnteriorEl.className = 'kpi-mini-value ' + (sobrouExibido >= 0 ? 'positive' : 'negative');
         }
         const saldoAnteriorFooter = document.getElementById('saldoMesAnteriorFooter');
         if (saldoAnteriorFooter) {
@@ -1482,7 +1612,7 @@ async function atualizarSaldos() {
 
         const saldoProjetadoEl = document.getElementById('saldoProjetado');
         saldoProjetadoEl.textContent = formatCurrency(saldoProjetado);
-        saldoProjetadoEl.className = 'card-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
+        saldoProjetadoEl.className = 'kpi-mini-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
         
         // Preencher painel de diagnóstico
         const diagReceitas = document.getElementById('diagReceitas');
