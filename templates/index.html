@@ -143,6 +143,15 @@
                         <span id="totalTransacoes">0</span> transações &nbsp;·&nbsp; <span id="parceladasInfo">0 parceladas</span>
                     </div>
                 </div>
+
+                <div class="card highlight">
+                    <div class="card-header">
+                        <div class="card-title">Dinheiro Guardado</div>
+                        <button type="button" class="btn-sm" id="editarGuardadoBtn" onclick="openDinheiroGuardadoModal()">Editar</button>
+                    </div>
+                    <div class="card-value positive" id="dinheiroGuardado">R$ 0,00</div>
+                    <div class="card-footer" id="dinheiroGuardadoFooter">Reserva separada (não entra no caixa)</div>
+                </div>
             </div>
 
             <!-- Faturas Cards -->
@@ -176,6 +185,22 @@
                         <div class="card-title">Mercado Pago - Pago</div>
                     </div>
                     <div class="card-value" id="faturaAbatidaMP">R$ 0,00</div>
+                    <div class="card-footer">Total já pago</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Itaú Platinum - Fatura</div>
+                    </div>
+                    <div class="card-value negative" id="faturaAtualItau">R$ 0,00</div>
+                    <div class="card-footer">Pendente de pagamento</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">Itaú Platinum - Pago</div>
+                    </div>
+                    <div class="card-value" id="faturaAbatidaItau">R$ 0,00</div>
                     <div class="card-footer">Total já pago</div>
                 </div>
 
@@ -241,6 +266,7 @@
                                 <option value="debito">💸 Gasto - Débito</option>
                                 <option value="mercado_pago">💳 Gasto - Cartão Mercado Pago</option>
                                 <option value="nubank">💜 Gasto - Cartão Nubank</option>
+                                <option value="itau">🟠 Gasto - Cartão Itaú Platinum</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -293,6 +319,7 @@
                             <option value="debito">Débito</option>
                             <option value="mercado_pago">Mercado Pago</option>
                             <option value="nubank">Nubank</option>
+                            <option value="itau">Itaú Platinum</option>
                         </select>
                     </div>
                     <div class="filter-group">
@@ -351,6 +378,7 @@
                                 <option value="">Selecione...</option>
                                 <option value="mercado_pago">Mercado Pago</option>
                                 <option value="nubank">Nubank</option>
+                                <option value="itau">Itaú Platinum</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -459,6 +487,17 @@
                             </div>
                         </div>
                     </div>
+                    <div class="payment-card">
+                        <div class="payment-icon">🟠</div>
+                        <div class="payment-info">
+                            <div class="payment-label">Itaú Platinum</div>
+                            <div class="payment-value" id="paymentItau">R$ 0,00</div>
+                            <div class="payment-percentage" id="paymentItauPct">0%</div>
+                            <div class="payment-bar">
+                                <div class="payment-bar-fill" id="paymentItauBar" style="width: 0%; background: linear-gradient(90deg, #fb923c, #ea580c);"></div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -547,6 +586,11 @@
                         <div class="stat-value" id="statNubank">R$ 0,00</div>
                         <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;" id="pctNubank">0%</div>
                     </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Gastos Itaú Platinum</div>
+                        <div class="stat-value" id="statItau">R$ 0,00</div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;" id="pctItau">0%</div>
+                    </div>
                 </div>
             </div>
 
@@ -568,6 +612,7 @@
                                 <option value="debito">Debito</option>
                                 <option value="mercado_pago">Mercado Pago</option>
                                 <option value="nubank">Nubank</option>
+                                <option value="itau">Itaú Platinum</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -605,6 +650,7 @@
                                 <option value="debito">Debito</option>
                                 <option value="mercado_pago">Mercado Pago</option>
                                 <option value="nubank">Nubank</option>
+                                <option value="itau">Itaú Platinum</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -797,6 +843,7 @@
                     <option value="debito">Débito</option>
                     <option value="mercado_pago">Mercado Pago</option>
                     <option value="nubank">Nubank</option>
+                    <option value="itau">Itaú Platinum</option>
                 </select>
             </div>
             <div class="form-group">
@@ -829,6 +876,7 @@
                         <option value="">Selecione...</option>
                         <option value="mercado_pago">Mercado Pago</option>
                         <option value="nubank">Nubank</option>
+                        <option value="itau">Itaú Platinum</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -849,6 +897,30 @@
             <div style="display: flex; gap: 12px; justify-content: flex-end;">
                 <button type="button" class="btn-secondary" onclick="closeEditAbatimentoModal()">Cancelar</button>
                 <button type="submit">Salvar Alterações</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal: Dinheiro Guardado -->
+<div id="dinheiroGuardadoModal" class="modal">
+    <div class="modal-content" style="max-width: 420px;">
+        <div class="modal-header">
+            <h2 class="modal-title">Dinheiro Guardado</h2>
+            <span class="close" onclick="closeDinheiroGuardadoModal()">&times;</span>
+        </div>
+        <form id="dinheiroGuardadoForm">
+            <div class="form-group">
+                <label for="dinheiroGuardadoValor">Valor Guardado (R$)</label>
+                <input type="number" id="dinheiroGuardadoValor" step="0.01" min="0" required placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label for="dinheiroGuardadoDescricao">Descrição (opcional)</label>
+                <input type="text" id="dinheiroGuardadoDescricao" placeholder="Ex: Reserva de emergência...">
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: flex-end;">
+                <button type="button" class="btn-secondary" onclick="closeDinheiroGuardadoModal()">Cancelar</button>
+                <button type="submit">Salvar</button>
             </div>
         </form>
     </div>
@@ -875,6 +947,7 @@
                         <option value="debito">Gasto - Débito</option>
                         <option value="mercado_pago">Gasto - Cartão Mercado Pago</option>
                         <option value="nubank">Gasto - Cartão Nubank</option>
+                        <option value="itau">Gasto - Cartão Itaú Platinum</option>
                     </select>
                 </div>
                 <div class="form-group">

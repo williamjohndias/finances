@@ -106,7 +106,7 @@ function getChartPalette() {
         bearFill:     'rgba(248, 113, 113, 0.09)',
         neutral:      '#60A5FA',
         neutralFill:  'rgba(96, 165, 250, 0.09)',
-        doughnutColors: ['#60A5FA', '#FBBF24', '#A78BFA'],
+        doughnutColors: ['#60A5FA', '#FBBF24', '#A78BFA', '#FB923C'],
         pointBorder:  '#050816'
     };
 }
@@ -253,7 +253,8 @@ async function loadTransactions() {
             ...(data.receitas || []).map(t => ({...t, tipo: 'receita', data_parcela: t.data})),
             ...(data.gastos_debito || []).map(t => ({...t, tipo: 'debito', data_parcela: t.data})),
             ...(data.gastos_mercado_pago || []).map(t => ({...t, tipo: 'mercado_pago', data_parcela: t.data})),
-            ...(data.gastos_nubank || []).map(t => ({...t, tipo: 'nubank', data_parcela: t.data}))
+            ...(data.gastos_nubank || []).map(t => ({...t, tipo: 'nubank', data_parcela: t.data})),
+            ...(data.gastos_itau || []).map(t => ({...t, tipo: 'itau', data_parcela: t.data}))
         ].sort((a, b) => new Date(b.data) - new Date(a.data));
         
         console.log('Total de transações carregadas:', allTransactions.length);
@@ -312,14 +313,16 @@ function renderTransactions() {
         'receita': 'Receita',
         'debito': 'Débito',
         'mercado_pago': 'Mercado Pago',
-        'nubank': 'Nubank'
+        'nubank': 'Nubank',
+        'itau': 'Itaú Platinum'
     };
-    
+
     const tipoBadges = {
         'receita': 'receita',
         'debito': 'debito',
         'mercado_pago': 'mercado-pago',
-        'nubank': 'nubank'
+        'nubank': 'nubank',
+        'itau': 'itau'
     };
     
     tbody.innerHTML = filtered.map(transaction => {
@@ -351,7 +354,7 @@ function renderTransactions() {
 }
 
 async function addTransaction(formData) {
-    if (!formData.tipo || !['receita', 'debito', 'mercado_pago', 'nubank'].includes(formData.tipo)) {
+    if (!formData.tipo || !['receita', 'debito', 'mercado_pago', 'nubank', 'itau'].includes(formData.tipo)) {
         showMessage('✗ Selecione o tipo de transação', 'error');
         return;
     }
@@ -513,7 +516,8 @@ function updateDashboard(data, filterMonth = null) {
     let debitoList = data.gastos_debito || [];
     let mercadoPagoList = data.gastos_mercado_pago || [];
     let nubankList = data.gastos_nubank || [];
-    
+    let itauList = data.gastos_itau || [];
+
     if (filterMonth) {
         receitasList = receitasList.filter(t => {
             const transDate = new Date(t.data + 'T00:00:00');
@@ -535,13 +539,19 @@ function updateDashboard(data, filterMonth = null) {
             const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
             return transMonth === filterMonth;
         });
+        itauList = itauList.filter(t => {
+            const transDate = new Date(t.data + 'T00:00:00');
+            const transMonth = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
+            return transMonth === filterMonth;
+        });
     }
-    
+
     const receitas = receitasList.reduce((sum, t) => sum + t.valor, 0);
     const debito = debitoList.reduce((sum, t) => sum + t.valor, 0);
     const mercadoPago = mercadoPagoList.reduce((sum, t) => sum + t.valor, 0);
     const nubank = nubankList.reduce((sum, t) => sum + t.valor, 0);
-    const gastos = debito + mercadoPago + nubank;
+    const itau = itauList.reduce((sum, t) => sum + t.valor, 0);
+    const gastos = debito + mercadoPago + nubank + itau;
     
     document.getElementById('totalReceitas').textContent = formatCurrency(receitas);
     document.getElementById('totalGastos').textContent = formatCurrency(gastos);
@@ -559,7 +569,7 @@ function updateDashboard(data, filterMonth = null) {
     
     if (!filterMonth) {
         const monthlyData = {};
-        [...receitasList, ...debitoList, ...mercadoPagoList, ...nubankList].forEach(t => {
+        [...receitasList, ...debitoList, ...mercadoPagoList, ...nubankList, ...itauList].forEach(t => {
             const transDate = new Date(t.data + 'T00:00:00');
             const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
             if (!monthlyData[monthKey]) monthlyData[monthKey] = true;
@@ -606,7 +616,8 @@ async function loadCharts() {
         const totalDebito = (transactionsData.gastos_debito || []).reduce((sum, t) => sum + t.valor, 0);
         const totalMercadoPago = (transactionsData.gastos_mercado_pago || []).reduce((sum, t) => sum + t.valor, 0);
         const totalNubank = (transactionsData.gastos_nubank || []).reduce((sum, t) => sum + t.valor, 0);
-        const totalGastos = totalDebito + totalMercadoPago + totalNubank;
+        const totalItau = (transactionsData.gastos_itau || []).reduce((sum, t) => sum + t.valor, 0);
+        const totalGastos = totalDebito + totalMercadoPago + totalNubank + totalItau;
         
         const palette = getChartPalette();
         const textColor = palette.text;
@@ -736,9 +747,9 @@ async function loadCharts() {
             gastosChart = new Chart(ctx2, {
                 type: 'doughnut',
                 data: {
-                    labels: ['Débito', 'Mercado Pago', 'Nubank'],
+                    labels: ['Débito', 'Mercado Pago', 'Nubank', 'Itaú Platinum'],
                     datasets: [{
-                        data: [totalDebito, totalMercadoPago, totalNubank],
+                        data: [totalDebito, totalMercadoPago, totalNubank, totalItau],
                         backgroundColor: palette.doughnutColors,
                         borderColor: palette.pointBorder,
                         borderWidth: 3,
@@ -804,10 +815,14 @@ async function loadStatistics() {
         document.getElementById('totalDebitoCard').textContent = formatCurrency(stats.total_debito);
         document.getElementById('statMercadoPago').textContent = formatCurrency(stats.total_mercado_pago);
         document.getElementById('statNubank').textContent = formatCurrency(stats.total_nubank);
-        
+        const statItauEl = document.getElementById('statItau');
+        if (statItauEl) statItauEl.textContent = formatCurrency(stats.total_itau || 0);
+
         document.getElementById('pctDebito').textContent = stats.pct_debito.toFixed(1) + '% do total';
         document.getElementById('pctMercadoPago').textContent = stats.pct_mercado_pago.toFixed(1) + '% do total';
         document.getElementById('pctNubank').textContent = stats.pct_nubank.toFixed(1) + '% do total';
+        const pctItauEl = document.getElementById('pctItau');
+        if (pctItauEl) pctItauEl.textContent = (stats.pct_itau || 0).toFixed(1) + '% do total';
         
         document.getElementById('parceladasInfo').textContent =
             stats.compras_parceladas + ' parceladas';
@@ -966,7 +981,8 @@ function renderRecorrencias() {
         receita: 'Receita',
         debito: 'Debito',
         mercado_pago: 'Mercado Pago',
-        nubank: 'Nubank'
+        nubank: 'Nubank',
+        itau: 'Itaú Platinum'
     };
 
     tbody.innerHTML = allRecorrencias.map(item => `
@@ -1250,10 +1266,83 @@ async function loadFaturas() {
         document.getElementById('faturaAbatidaMP').textContent = formatCurrency(data.mercado_pago.abatido);
         document.getElementById('faturaAtualNubank').textContent = formatCurrency(data.nubank.atual);
         document.getElementById('faturaAbatidaNubank').textContent = formatCurrency(data.nubank.abatido);
-        
+
+        if (data.itau) {
+            const atualItauEl = document.getElementById('faturaAtualItau');
+            const abatidaItauEl = document.getElementById('faturaAbatidaItau');
+            if (atualItauEl) atualItauEl.textContent = formatCurrency(data.itau.atual);
+            if (abatidaItauEl) abatidaItauEl.textContent = formatCurrency(data.itau.abatido);
+        }
+
         await atualizarSaldos();
     } catch (error) {
         console.error('Erro ao carregar faturas:', error);
+    }
+}
+
+// ===================================
+// DINHEIRO GUARDADO (RESERVA)
+// ===================================
+let dinheiroGuardadoData = { valor: 0, descricao: 'Reserva' };
+
+async function loadDinheiroGuardado() {
+    try {
+        const response = await fetch('/api/dinheiro-guardado');
+        const data = await response.json();
+        dinheiroGuardadoData = {
+            valor: parseFloat(data.valor || 0),
+            descricao: data.descricao || 'Reserva'
+        };
+        const valorEl = document.getElementById('dinheiroGuardado');
+        const footerEl = document.getElementById('dinheiroGuardadoFooter');
+        if (valorEl) valorEl.textContent = formatCurrency(dinheiroGuardadoData.valor);
+        if (footerEl) {
+            footerEl.textContent = dinheiroGuardadoData.descricao
+                ? dinheiroGuardadoData.descricao + ' (não entra no caixa)'
+                : 'Reserva separada (não entra no caixa)';
+        }
+    } catch (error) {
+        console.error('Erro ao carregar dinheiro guardado:', error);
+    }
+}
+
+function openDinheiroGuardadoModal() {
+    document.getElementById('dinheiroGuardadoValor').value = dinheiroGuardadoData.valor || 0;
+    document.getElementById('dinheiroGuardadoDescricao').value = dinheiroGuardadoData.descricao || '';
+    document.getElementById('dinheiroGuardadoModal').style.display = 'block';
+}
+
+function closeDinheiroGuardadoModal() {
+    document.getElementById('dinheiroGuardadoModal').style.display = 'none';
+}
+
+async function saveDinheiroGuardado(event) {
+    event.preventDefault();
+    const payload = {
+        valor: parseFloat(document.getElementById('dinheiroGuardadoValor').value || '0'),
+        descricao: document.getElementById('dinheiroGuardadoDescricao').value.trim() || 'Reserva'
+    };
+    if (isNaN(payload.valor) || payload.valor < 0) {
+        showMessage('✗ Informe um valor válido', 'error');
+        return;
+    }
+    try {
+        const response = await fetch('/api/dinheiro-guardado', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (response.ok && result.success) {
+            closeDinheiroGuardadoModal();
+            showMessage('✓ Dinheiro guardado atualizado!', 'success');
+            await loadDinheiroGuardado();
+        } else {
+            showMessage('✗ Erro: ' + (result.error || 'erro desconhecido'), 'error');
+        }
+    } catch (error) {
+        console.error('Erro ao salvar dinheiro guardado:', error);
+        showMessage('✗ Erro de conexão ao salvar dinheiro guardado.', 'error');
     }
 }
 
@@ -1293,7 +1382,7 @@ async function atualizarSaldos() {
             monthlyData[monthKey].debito += t.valor;
         });
         
-        [...(data.gastos_mercado_pago || []), ...(data.gastos_nubank || [])].forEach(t => {
+        [...(data.gastos_mercado_pago || []), ...(data.gastos_nubank || []), ...(data.gastos_itau || [])].forEach(t => {
             const transDate = new Date(t.data + 'T00:00:00');
             const monthKey = transDate.getFullYear() + '-' + String(transDate.getMonth() + 1).padStart(2, '0');
             if (!monthlyData[monthKey]) {
@@ -1441,9 +1530,12 @@ function renderAbatimentos(abatimentos) {
     const sorted = [...abatimentos].sort((a, b) => new Date(b.data) - new Date(a.data));
     
     tbody.innerHTML = sorted.map(abatimento => {
-        const cartaoLabel = abatimento.tipo_cartao === 'mercado_pago' 
-            ? 'Mercado Pago' 
-            : 'Nubank';
+        const cartaoLabels = {
+            'mercado_pago': 'Mercado Pago',
+            'nubank': 'Nubank',
+            'itau': 'Itaú Platinum'
+        };
+        const cartaoLabel = cartaoLabels[abatimento.tipo_cartao] || abatimento.tipo_cartao;
         
         return `
             <tr>
@@ -1566,7 +1658,8 @@ function exportToCSV() {
             'receita': 'Receita',
             'debito': 'Débito',
             'mercado_pago': 'Mercado Pago',
-            'nubank': 'Nubank'
+            'nubank': 'Nubank',
+            'itau': 'Itaú Platinum'
         };
         
         const parcela = t.parcelado ? `${t.parcela_atual}/${t.total_parcelas}` : '-';
@@ -1786,6 +1879,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (recorrenciaForm) {
         recorrenciaForm.addEventListener('submit', saveRecorrencia);
     }
+
+    const dinheiroGuardadoForm = document.getElementById('dinheiroGuardadoForm');
+    if (dinheiroGuardadoForm) {
+        dinheiroGuardadoForm.addEventListener('submit', saveDinheiroGuardado);
+    }
     
     // Set default dates
     document.getElementById('data').valueAsDate = new Date();
@@ -1802,11 +1900,15 @@ document.addEventListener('DOMContentLoaded', () => {
     window.onclick = function(event) {
         const editModal = document.getElementById('editModal');
         const editAbatimentoModal = document.getElementById('editAbatimentoModal');
+        const dinheiroGuardadoModal = document.getElementById('dinheiroGuardadoModal');
         if (event.target == editModal) {
             closeEditModal();
         }
         if (event.target == editAbatimentoModal) {
             closeEditAbatimentoModal();
+        }
+        if (event.target == dinheiroGuardadoModal) {
+            closeDinheiroGuardadoModal();
         }
     }
     
@@ -1831,6 +1933,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await processarRecorrenciasSilencioso();
         await loadTransactions();
         await loadAbatimentos();
+        await loadDinheiroGuardado();
         await calculateFinancialHealth();
         await displayTopExpenses();
         await loadRecorrencias();
@@ -1976,7 +2079,8 @@ function updateHealthScoreUI(score, savingsRate, stability, monthlyGastos) {
     const tipoLabels = {
         'debito': 'Débito',
         'mercado_pago': 'Mercado Pago',
-        'nubank': 'Nubank'
+        'nubank': 'Nubank',
+        'itau': 'Itaú Platinum'
     };
     
     const topType = Object.keys(typeTotals).length > 0 
@@ -2025,13 +2129,15 @@ function renderTopExpenses(expenses) {
     const tipoIcons = {
         'debito': '💸',
         'mercado_pago': '💳',
-        'nubank': '💜'
+        'nubank': '💜',
+        'itau': '🟠'
     };
     
     const tipoLabels = {
         'debito': 'Débito',
         'mercado_pago': 'Mercado Pago',
-        'nubank': 'Nubank'
+        'nubank': 'Nubank',
+        'itau': 'Itaú Platinum'
     };
     
     container.innerHTML = expenses.map((expense, index) => `
@@ -2174,23 +2280,35 @@ async function updatePaymentAnalysis() {
         const totals = {
             debito: 0,
             mercado_pago: 0,
-            nubank: 0
+            nubank: 0,
+            itau: 0
         };
-        
+
         expenses.forEach(e => {
             const valor = parseFloat(e.valor_parcela || e.valor);
-            totals[e.tipo] = (totals[e.tipo] || 0) + valor;
+            if (totals[e.tipo] !== undefined) {
+                totals[e.tipo] += valor;
+            }
         });
-        
+
         const total = Object.values(totals).reduce((a, b) => a + b, 0);
-        
+
+        const paymentKeys = {
+            debito: 'Debito',
+            mercado_pago: 'MercadoPago',
+            nubank: 'Nubank',
+            itau: 'Itau'
+        };
+
         Object.keys(totals).forEach(tipo => {
             const percentage = total > 0 ? (totals[tipo] / total) * 100 : 0;
-            const tipoKey = tipo === 'debito' ? 'Debito' : tipo === 'mercado_pago' ? 'MercadoPago' : 'Nubank';
-            
-            document.getElementById(`payment${tipoKey}`).textContent = formatCurrency(totals[tipo]);
-            document.getElementById(`payment${tipoKey}Pct`).textContent = `${percentage.toFixed(1)}% do total`;
-            document.getElementById(`payment${tipoKey}Bar`).style.width = `${percentage}%`;
+            const tipoKey = paymentKeys[tipo];
+            const valEl = document.getElementById(`payment${tipoKey}`);
+            const pctEl = document.getElementById(`payment${tipoKey}Pct`);
+            const barEl = document.getElementById(`payment${tipoKey}Bar`);
+            if (valEl) valEl.textContent = formatCurrency(totals[tipo]);
+            if (pctEl) pctEl.textContent = `${percentage.toFixed(1)}% do total`;
+            if (barEl) barEl.style.width = `${percentage}%`;
         });
         
     } catch (error) {
@@ -2415,7 +2533,8 @@ function renderFavorites() {
         'receita': '💰',
         'debito': '💸',
         'mercado_pago': '💳',
-        'nubank': '💜'
+        'nubank': '💜',
+        'itau': '🟠'
     };
     
     container.innerHTML = favorites.map((fav, index) => `

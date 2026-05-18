@@ -51,7 +51,8 @@ else:
 BUDGET_CATEGORIES = {
     'debito': 'Debito',
     'mercado_pago': 'Mercado Pago',
-    'nubank': 'Nubank'
+    'nubank': 'Nubank',
+    'itau': 'Itau Platinum'
 }
 
 
@@ -94,7 +95,8 @@ def normalize_transactions(transactions):
         'receitas': 'receita',
         'gastos_debito': 'debito',
         'gastos_mercado_pago': 'mercado_pago',
-        'gastos_nubank': 'nubank'
+        'gastos_nubank': 'nubank',
+        'gastos_itau': 'itau'
     }
     for key, items in transactions.items():
         normalized_type = type_map.get(key)
@@ -124,7 +126,8 @@ def load_transactions():
             'receitas': [],
             'gastos_debito': [],
             'gastos_mercado_pago': [],
-            'gastos_nubank': []
+            'gastos_nubank': [],
+            'gastos_itau': []
         }
     
     try:
@@ -134,7 +137,8 @@ def load_transactions():
             'receitas': [],
             'gastos_debito': [],
             'gastos_mercado_pago': [],
-            'gastos_nubank': []
+            'gastos_nubank': [],
+            'gastos_itau': []
         }
         
         for row in response.data:
@@ -159,7 +163,9 @@ def load_transactions():
                 transactions['gastos_mercado_pago'].append(transaction)
             elif tipo == 'nubank':
                 transactions['gastos_nubank'].append(transaction)
-        
+            elif tipo == 'itau':
+                transactions['gastos_itau'].append(transaction)
+
         return transactions
     except Exception as e:
         print(f"ERRO ao carregar transacoes: {e}")
@@ -169,7 +175,8 @@ def load_transactions():
             'receitas': [],
             'gastos_debito': [],
             'gastos_mercado_pago': [],
-            'gastos_nubank': []
+            'gastos_nubank': [],
+            'gastos_itau': []
         }
 
 @app.route('/')
@@ -196,8 +203,8 @@ def add_transaction():
             return jsonify({'success': False, 'error': 'Dados não fornecidos'}), 400
         
         tipo = data.get('tipo')
-        if not tipo or tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
-            return jsonify({'success': False, 'error': 'Tipo de transação inválido. Selecione: Receita, Débito, Mercado Pago ou Nubank.'}), 400
+        if not tipo or tipo not in ('receita', 'debito', 'mercado_pago', 'nubank', 'itau'):
+            return jsonify({'success': False, 'error': 'Tipo de transação inválido. Selecione: Receita, Débito, Mercado Pago, Nubank ou Itaú Platinum.'}), 400
         
         if not data.get('descricao') or not str(data.get('descricao', '')).strip():
             return jsonify({'success': False, 'error': 'Descrição é obrigatória.'}), 400
@@ -387,7 +394,8 @@ def get_monthly_summary():
                         'gastos': 0,
                         'debito': 0,
                         'mercado_pago': 0,
-                        'nubank': 0
+                        'nubank': 0,
+                        'itau': 0
                     }
                 
                 if tipo == 'receitas':
@@ -400,6 +408,8 @@ def get_monthly_summary():
                         monthly_data[mes_ano]['mercado_pago'] += transaction['valor']
                     elif tipo == 'gastos_nubank':
                         monthly_data[mes_ano]['nubank'] += transaction['valor']
+                    elif tipo == 'gastos_itau':
+                        monthly_data[mes_ano]['itau'] += transaction['valor']
         
         sorted_months = sorted(monthly_data.keys())
         meses_nomes = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
@@ -412,7 +422,8 @@ def get_monthly_summary():
             'saldos': [],
             'debito': [],
             'mercado_pago': [],
-            'nubank': []
+            'nubank': [],
+            'itau': []
         }
         
         for m in sorted_months:
@@ -425,6 +436,7 @@ def get_monthly_summary():
             result['debito'].append(monthly_data[m]['debito'])
             result['mercado_pago'].append(monthly_data[m]['mercado_pago'])
             result['nubank'].append(monthly_data[m]['nubank'])
+            result['itau'].append(monthly_data[m]['itau'])
         
         return jsonify(result)
     except Exception as e:
@@ -438,7 +450,8 @@ def get_monthly_summary():
             'saldos': [],
             'debito': [],
             'mercado_pago': [],
-            'nubank': []
+            'nubank': [],
+            'itau': []
         })
 
 @app.route('/api/statistics', methods=['GET'])
@@ -467,13 +480,15 @@ def get_statistics():
         debito_filtrado = filter_by_month(transactions['gastos_debito'])
         mercado_pago_filtrado = filter_by_month(transactions['gastos_mercado_pago'])
         nubank_filtrado = filter_by_month(transactions['gastos_nubank'])
-        
+        itau_filtrado = filter_by_month(transactions['gastos_itau'])
+
         # Calcula totais (filtrados ou não)
         total_receitas = sum(t['valor'] for t in receitas_filtradas)
         total_debito = sum(t['valor'] for t in debito_filtrado)
         total_mercado_pago = sum(t['valor'] for t in mercado_pago_filtrado)
         total_nubank = sum(t['valor'] for t in nubank_filtrado)
-        total_gastos = total_debito + total_mercado_pago + total_nubank
+        total_itau = sum(t['valor'] for t in itau_filtrado)
+        total_gastos = total_debito + total_mercado_pago + total_nubank + total_itau
         saldo = total_receitas - total_gastos
         
         # Média mensal (só calcula se não estiver filtrado por mês)
@@ -505,6 +520,7 @@ def get_statistics():
         all_transactions.extend(debito_filtrado)
         all_transactions.extend(mercado_pago_filtrado)
         all_transactions.extend(nubank_filtrado)
+        all_transactions.extend(itau_filtrado)
         
         if all_transactions:
             maior_transacao = max(all_transactions, key=lambda x: x['valor'])
@@ -518,8 +534,9 @@ def get_statistics():
             pct_debito = (total_debito / total_gastos) * 100
             pct_mercado_pago = (total_mercado_pago / total_gastos) * 100
             pct_nubank = (total_nubank / total_gastos) * 100
+            pct_itau = (total_itau / total_gastos) * 100
         else:
-            pct_debito = pct_mercado_pago = pct_nubank = 0
+            pct_debito = pct_mercado_pago = pct_nubank = pct_itau = 0
         
         # Transações parceladas
         parceladas = sum(1 for t in all_transactions if t.get('parcelado', False))
@@ -534,9 +551,11 @@ def get_statistics():
             'total_debito': total_debito,
             'total_mercado_pago': total_mercado_pago,
             'total_nubank': total_nubank,
+            'total_itau': total_itau,
             'pct_debito': pct_debito,
             'pct_mercado_pago': pct_mercado_pago,
             'pct_nubank': pct_nubank,
+            'pct_itau': pct_itau,
             'maior_transacao': maior_transacao,
             'menor_transacao': menor_transacao,
             'total_transacoes': len(all_transactions),
@@ -679,7 +698,7 @@ def get_recurring_totals_until(days):
 
     for rec in recs:
         tipo = rec.get('tipo')
-        if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+        if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank', 'itau'):
             continue
 
         valor = float(rec.get('valor', 0) or 0)
@@ -832,21 +851,26 @@ def get_faturas():
         # Calcula faturas do mês por cartão
         fatura_mp_mes = filter_by_month(transactions['gastos_mercado_pago'])
         fatura_nubank_mes = filter_by_month(transactions['gastos_nubank'])
-        
+        fatura_itau_mes = filter_by_month(transactions['gastos_itau'])
+
         fatura_mercado_pago = sum(t['valor'] for t in fatura_mp_mes)
         fatura_nubank = sum(t['valor'] for t in fatura_nubank_mes)
-        
+        fatura_itau = sum(t['valor'] for t in fatura_itau_mes)
+
         # Calcula abatimentos do mês por cartão
         abatido_mp_mes = filter_abatimentos_by_month(abatimentos, 'mercado_pago')
         abatido_nubank_mes = filter_abatimentos_by_month(abatimentos, 'nubank')
-        
+        abatido_itau_mes = filter_abatimentos_by_month(abatimentos, 'itau')
+
         abatido_mercado_pago = sum(a['valor'] for a in abatido_mp_mes)
         abatido_nubank = sum(a['valor'] for a in abatido_nubank_mes)
-        
+        abatido_itau = sum(a['valor'] for a in abatido_itau_mes)
+
         # Calcula faturas atuais (fatura do mês - abatido do mês)
         atual_mercado_pago = max(0, fatura_mercado_pago - abatido_mercado_pago)
         atual_nubank = max(0, fatura_nubank - abatido_nubank)
-        
+        atual_itau = max(0, fatura_itau - abatido_itau)
+
         return jsonify({
             'month': month_filter,
             'mercado_pago': {
@@ -858,6 +882,11 @@ def get_faturas():
                 'fatura_total': fatura_nubank,
                 'abatido': abatido_nubank,
                 'atual': atual_nubank
+            },
+            'itau': {
+                'fatura_total': fatura_itau,
+                'abatido': abatido_itau,
+                'atual': atual_itau
             }
         })
     except Exception as e:
@@ -867,7 +896,8 @@ def get_faturas():
         return jsonify({
             'month': month_filter if 'month_filter' in locals() else None,
             'mercado_pago': {'fatura_total': 0, 'abatido': 0, 'atual': 0},
-            'nubank': {'fatura_total': 0, 'abatido': 0, 'atual': 0}
+            'nubank': {'fatura_total': 0, 'abatido': 0, 'atual': 0},
+            'itau': {'fatura_total': 0, 'abatido': 0, 'atual': 0}
         }), 500
 
 
@@ -1074,7 +1104,7 @@ def add_recorrencia():
     try:
         data = request.json or {}
         tipo = data.get('tipo')
-        if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+        if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank', 'itau'):
             return jsonify({'success': False, 'error': 'Tipo invalido'}), 400
 
         descricao = str(data.get('descricao', '')).strip()
@@ -1135,7 +1165,7 @@ def update_recorrencia(recorrencia_id):
             'updated_at': datetime.now().isoformat()
         }
 
-        if payload['tipo'] not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+        if payload['tipo'] not in ('receita', 'debito', 'mercado_pago', 'nubank', 'itau'):
             return jsonify({'success': False, 'error': 'Tipo invalido'}), 400
         if not payload['descricao']:
             return jsonify({'success': False, 'error': 'Descricao obrigatoria'}), 400
@@ -1179,7 +1209,7 @@ def process_recorrencias():
         for rec in recs:
             rec_id = rec.get('id')
             tipo = rec.get('tipo')
-            if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank'):
+            if tipo not in ('receita', 'debito', 'mercado_pago', 'nubank', 'itau'):
                 continue
 
             valor = float(rec.get('valor', 0) or 0)
@@ -1404,6 +1434,72 @@ def delete_meta(meta_id):
         import traceback
         traceback.print_exc()
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# ====================================================
+# DINHEIRO GUARDADO (reserva - valor unico editavel)
+# ====================================================
+def load_dinheiro_guardado():
+    """Carrega o registro unico de dinheiro guardado."""
+    default = {'id': 'principal', 'valor': 0.0, 'descricao': 'Reserva', 'updated_at': None}
+    if supabase is None:
+        return default
+
+    try:
+        response = supabase.table('dinheiro_guardado').select('*').eq('id', 'principal').limit(1).execute()
+        if response.data:
+            row = response.data[0]
+            return {
+                'id': row.get('id', 'principal'),
+                'valor': float(row.get('valor', 0) or 0),
+                'descricao': row.get('descricao', 'Reserva'),
+                'updated_at': row.get('updated_at')
+            }
+        return default
+    except Exception as e:
+        print(f"ERRO ao carregar dinheiro guardado: {e}")
+        return default
+
+
+@app.route('/api/dinheiro-guardado', methods=['GET'])
+def get_dinheiro_guardado():
+    """Retorna o valor de dinheiro guardado."""
+    return jsonify(load_dinheiro_guardado())
+
+
+@app.route('/api/dinheiro-guardado', methods=['PUT'])
+def update_dinheiro_guardado():
+    """Atualiza (ou cria) o valor de dinheiro guardado."""
+    if supabase is None:
+        return jsonify({'success': False, 'error': 'Supabase nao inicializado'}), 500
+
+    try:
+        data = request.json or {}
+        valor = float(data.get('valor', 0) or 0)
+        if valor < 0:
+            return jsonify({'success': False, 'error': 'O valor nao pode ser negativo'}), 400
+
+        descricao = str(data.get('descricao', 'Reserva') or 'Reserva').strip()
+        payload = {
+            'id': 'principal',
+            'valor': valor,
+            'descricao': descricao,
+            'updated_at': datetime.now().isoformat()
+        }
+
+        existing = supabase.table('dinheiro_guardado').select('id').eq('id', 'principal').limit(1).execute()
+        if existing.data:
+            supabase.table('dinheiro_guardado').update(payload).eq('id', 'principal').execute()
+        else:
+            supabase.table('dinheiro_guardado').insert(payload).execute()
+
+        print(f"OK - Dinheiro guardado atualizado: {valor}")
+        return jsonify({'success': True, 'dinheiro_guardado': payload})
+    except Exception as e:
+        print(f"ERRO ao atualizar dinheiro guardado: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 if __name__ == '__main__':
     print("\n" + "="*50)

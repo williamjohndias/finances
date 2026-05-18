@@ -1158,6 +1158,12 @@ button:disabled {
     border-color: rgba(139, 92, 246, 0.4);
 }
 
+.badge.itau {
+    background: linear-gradient(135deg, rgba(251, 146, 60, 0.18), rgba(234, 88, 12, 0.18));
+    color: #9a3412;
+    border-color: rgba(251, 146, 60, 0.4);
+}
+
 .badge.parcela {
     background: linear-gradient(135deg, rgba(236, 72, 153, 0.15), rgba(219, 39, 119, 0.15));
     color: #9d174d;
