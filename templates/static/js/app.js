@@ -570,6 +570,40 @@ function updateDashboard(data, filterMonth = null) {
 // ===================================
 // RESUMO DO MÊS (bar chart)
 // ===================================
+// Plugin: desenha o valor dentro (ou ao lado) de cada barra horizontal
+const barValueLabels = {
+    id: 'barValueLabels',
+    afterDatasetsDraw(chart) {
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = '600 10px "IBM Plex Mono", monospace';
+        ctx.textBaseline = 'middle';
+        chart.data.datasets.forEach((dataset, datasetIndex) => {
+            const meta = chart.getDatasetMeta(datasetIndex);
+            if (meta.hidden) return;
+            meta.data.forEach((bar, index) => {
+                const value = dataset.data[index];
+                if (!value || value === 0) return;
+                const label = formatCurrency(value);
+                const textWidth = ctx.measureText(label).width;
+                const segWidth = Math.abs(bar.x - bar.base);
+                if (segWidth > textWidth + 14) {
+                    // Cabe dentro da barra: texto escuro alinhado ao fim do segmento
+                    ctx.fillStyle = '#0B1426';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(label, bar.x - 7, bar.y);
+                } else {
+                    // Barra estreita: texto claro logo após a barra
+                    ctx.fillStyle = '#C9D9F0';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(label, bar.x + 7, bar.y);
+                }
+            });
+        });
+        ctx.restore();
+    }
+};
+
 let resumoChart = null;
 
 function renderResumoChart(receitas, gastos) {
@@ -582,6 +616,7 @@ function renderResumoChart(receitas, gastos) {
     if (resumoChart) resumoChart.destroy();
     resumoChart = new Chart(canvas.getContext('2d'), {
         type: 'bar',
+        plugins: [barValueLabels],
         data: {
             labels: ['Receitas', 'Gastos', 'Saldo do Mês'],
             datasets: [{
@@ -654,6 +689,7 @@ function renderFaturasChart(data) {
     if (faturasChart) faturasChart.destroy();
     faturasChart = new Chart(canvas.getContext('2d'), {
         type: 'bar',
+        plugins: [barValueLabels],
         data: {
             labels: ['Nubank', 'Mercado Pago', 'Itaú Platinum', 'Débito'],
             datasets: [
