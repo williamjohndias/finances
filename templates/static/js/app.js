@@ -2219,22 +2219,17 @@ function tooltipBase(palette) {
 
 async function loadAnaliseAvancada() {
     let reservaMovs = [];
-    let abatimentos = [];
     try {
-        const [rRes, aRes] = await Promise.all([
-            fetch('/api/reserva/movimentos'),
-            fetch('/api/abatimentos')
-        ]);
+        const rRes = await fetch('/api/reserva/movimentos');
         const rJson = await rRes.json();
         reservaMovs = rJson.movimentos || [];
-        abatimentos = (await aRes.json()) || [];
     } catch (e) {
         console.error('Erro ao carregar dados das análises:', e);
     }
     renderComparativoMensal(reservaMovs);
     renderGastosCartaoTempo();
     renderOndeMaisGasta();
-    renderPatrimonioChart(abatimentos);
+    renderPatrimonioChart(reservaMovs);
 }
 
 function renderComparativoMensal(reservaMovs) {
@@ -2413,25 +2408,26 @@ function renderOndeMaisGasta() {
     }).join('');
 }
 
-function renderPatrimonioChart(abatimentos) {
+function renderPatrimonioChart(reservaMovs) {
     const canvas = document.getElementById('patrimonioChart');
     if (!canvas || typeof Chart === 'undefined') return;
 
+    // Patrimônio projetado: receitas - todos os gastos (faturas contam no mês da compra)
     const porMes = {};
     function ensure(mk) {
-        if (!porMes[mk]) porMes[mk] = { receitas: 0, debito: 0, abat: 0 };
+        if (!porMes[mk]) porMes[mk] = { receitas: 0, gastos: 0, guardado: 0 };
         return porMes[mk];
     }
     allTransactions.forEach(t => {
         const mk = mesKey(t.data);
         if (!mk) return;
         if (t.tipo === 'receita') ensure(mk).receitas += t.valor;
-        else if (t.tipo === 'debito') ensure(mk).debito += t.valor;
+        else ensure(mk).gastos += t.valor;
     });
-    (abatimentos || []).forEach(a => {
-        const mk = mesKey(a.data);
+    (reservaMovs || []).forEach(m => {
+        const mk = mesKey(m.data);
         if (!mk) return;
-        ensure(mk).abat += parseFloat(a.valor || 0);
+        ensure(mk).guardado += (m.tipo === 'guardar' ? m.valor : -m.valor);
     });
 
     const meses = Object.keys(porMes).sort();
@@ -2439,11 +2435,16 @@ function renderPatrimonioChart(abatimentos) {
         if (patrimonioChart) { patrimonioChart.destroy(); patrimonioChart = null; }
         return;
     }
-    let acum = 0;
-    const serie = meses.map(mk => {
+    let acumPat = 0;
+    let acumGuard = 0;
+    const seriePatrimonio = [];
+    const serieGuardado = [];
+    meses.forEach(mk => {
         const d = porMes[mk];
-        acum += d.receitas - d.debito - d.abat;
-        return acum;
+        acumPat += d.receitas - d.gastos;
+        acumGuard += d.guardado;
+        seriePatrimonio.push(acumPat);
+        serieGuardado.push(acumGuard);
     });
 
     const palette = getChartPalette();
@@ -2452,17 +2453,30 @@ function renderPatrimonioChart(abatimentos) {
         type: 'line',
         data: {
             labels: meses.map(mesLabel),
-            datasets: [{
-                label: 'Patrimônio (caixa + reserva)',
-                data: serie,
-                borderColor: palette.neutral,
-                backgroundColor: palette.neutralFill,
-                borderWidth: 3,
-                tension: 0.35,
-                fill: true,
-                pointBackgroundColor: palette.neutral,
-                pointRadius: 4
-            }]
+            datasets: [
+                {
+                    label: 'Patrimônio Projetado',
+                    data: seriePatrimonio,
+                    borderColor: palette.neutral,
+                    backgroundColor: palette.neutralFill,
+                    borderWidth: 3,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: palette.neutral,
+                    pointRadius: 4
+                },
+                {
+                    label: 'Dinheiro Guardado',
+                    data: serieGuardado,
+                    borderColor: '#34D399',
+                    backgroundColor: 'rgba(52, 211, 153, 0.10)',
+                    borderWidth: 2,
+                    tension: 0.35,
+                    fill: true,
+                    pointBackgroundColor: '#34D399',
+                    pointRadius: 3
+                }
+            ]
         },
         options: {
             responsive: true,
@@ -2470,7 +2484,7 @@ function renderPatrimonioChart(abatimentos) {
             plugins: {
                 legend: { labels: { color: palette.text, font: { size: 11, family: 'IBM Plex Mono' }, usePointStyle: true } },
                 tooltip: Object.assign(tooltipBase(palette), {
-                    callbacks: { label: (ctx) => formatCurrency(ctx.parsed.y) }
+                    callbacks: { label: (ctx) => ctx.dataset.label + ': ' + formatCurrency(ctx.parsed.y) }
                 })
             },
             scales: {
