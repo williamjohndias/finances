@@ -2575,14 +2575,14 @@ async function calculateFinancialHealth() {
         healthScore = Math.max(0, Math.min(100, healthScore));
         
         // Atualizar UI
-        updateHealthScoreUI(healthScore, savingsRate, stability, monthlyGastos);
-        
+        updateHealthScoreUI(healthScore, savingsRate, stability, monthlyGastos, avgReceitas);
+
     } catch (error) {
         console.error('Erro ao calcular saúde financeira:', error);
     }
 }
 
-function updateHealthScoreUI(score, savingsRate, stability, monthlyGastos) {
+function updateHealthScoreUI(score, savingsRate, stability, monthlyGastos, avgReceitas) {
     const scoreValue = document.getElementById('healthScore');
     const scoreLabel = document.getElementById('healthLabel');
     const scoreCircle = document.getElementById('scoreCircle');
@@ -2639,10 +2639,121 @@ function updateHealthScoreUI(score, savingsRate, stability, monthlyGastos) {
         'itau': 'Itaú Platinum'
     };
     
-    const topType = Object.keys(typeTotals).length > 0 
+    const topType = Object.keys(typeTotals).length > 0
         ? Object.keys(typeTotals).reduce((a, b) => typeTotals[a] > typeTotals[b] ? a : b)
         : 'debito';
     if (topCategoryEl) topCategoryEl.textContent = tipoLabels[topType] || 'Débito';
+
+    renderDicasFinanceiras({
+        score: score,
+        savingsRate: savingsRate,
+        stability: stability,
+        monthlyGastos: monthlyGastos,
+        avgReceitas: avgReceitas || 0,
+        topCategoriaLabel: tipoLabels[topType] || 'Débito'
+    });
+}
+
+function renderDicasFinanceiras(m) {
+    const container = document.getElementById('dicasFinanceiras');
+    if (!container) return;
+
+    const dicas = [];
+
+    // --- Taxa de poupança / receitas ---
+    if (m.avgReceitas <= 0) {
+        dicas.push({
+            icon: '📥', tipo: 'alerta',
+            titulo: 'Registre suas receitas',
+            texto: 'Não há receitas lançadas nos últimos meses. Sem isso a Taxa de Poupança fica travada em 0% e você deixa de ganhar até 40 pontos. Cadastre seus ganhos na aba Transações.'
+        });
+    } else if (m.savingsRate < 0) {
+        dicas.push({
+            icon: '🚨', tipo: 'alerta',
+            titulo: 'Você está gastando mais do que ganha',
+            texto: `Sua taxa de poupança está em ${m.savingsRate.toFixed(0)}%. Corte os gastos não essenciais até sobrar dinheiro no fim do mês — sair do negativo já recupera de 20 a 40 pontos.`
+        });
+    } else if (m.savingsRate < 10) {
+        dicas.push({
+            icon: '💰', tipo: 'melhoria',
+            titulo: 'Aumente sua taxa de poupança',
+            texto: `Você guarda ${m.savingsRate.toFixed(0)}% do que ganha. Chegar a 10% vale +20 pontos e 20% vale +30. Separe uma fatia fixa assim que receber, antes de gastar.`
+        });
+    } else if (m.savingsRate < 20) {
+        dicas.push({
+            icon: '💪', tipo: 'melhoria',
+            titulo: 'Quase lá na poupança',
+            texto: `Boa! ${m.savingsRate.toFixed(0)}% poupados. Subir para 20% rende +10 pontos e para 30% rende +20. Tente reduzir um pouco os gastos variáveis.`
+        });
+    } else {
+        dicas.push({
+            icon: '🏆', tipo: 'ok',
+            titulo: 'Ótima taxa de poupança',
+            texto: `Você poupa ${m.savingsRate.toFixed(0)}% do que ganha — excelente. Mantenha esse ritmo e considere investir o excedente.`
+        });
+    }
+
+    // --- Estabilidade ---
+    if (m.stability >= 0.4) {
+        dicas.push({
+            icon: '📊', tipo: 'alerta',
+            titulo: 'Seus gastos variam demais',
+            texto: 'Há muita oscilação de um mês para o outro. Defina um teto mensal de gastos e evite compras grandes por impulso — gastos constantes valem até +20 pontos.'
+        });
+    } else if (m.stability >= 0.2) {
+        dicas.push({
+            icon: '📊', tipo: 'melhoria',
+            titulo: 'Deixe os gastos mais constantes',
+            texto: 'Seus gastos ainda oscilam um pouco. Manter um valor parecido todo mês melhora sua nota de estabilidade.'
+        });
+    }
+
+    // --- Tendência ---
+    const piorando = m.monthlyGastos.length >= 2 &&
+        !(m.monthlyGastos[0] < m.monthlyGastos[m.monthlyGastos.length - 1]);
+    if (piorando) {
+        dicas.push({
+            icon: '📈', tipo: 'alerta',
+            titulo: 'Seus gastos estão subindo',
+            texto: 'A tendência dos últimos 3 meses é de alta, o que tira 10 pontos. Veja o ranking "Onde Você Mais Gasta" e corte onde for possível para inverter a curva.'
+        });
+    }
+
+    // --- Reserva ---
+    if (typeof dinheiroGuardadoData !== 'undefined' && (dinheiroGuardadoData.valor || 0) <= 0) {
+        dicas.push({
+            icon: '🐷', tipo: 'melhoria',
+            titulo: 'Comece sua reserva de emergência',
+            texto: 'Você ainda não tem dinheiro guardado. Guarde um valor todo mês na aba Transações — o ideal é juntar de 3 a 6 meses dos seus gastos.'
+        });
+    }
+
+    // --- Maior gasto ---
+    dicas.push({
+        icon: '🎯', tipo: 'info',
+        titulo: `Atenção ao ${m.topCategoriaLabel}`,
+        texto: `É por onde sai mais dinheiro hoje. Confira no ranking se dá para reduzir, negociar ou trocar por uma opção mais barata.`
+    });
+
+    // --- Parcelamentos ---
+    const compradoParcelado = allTransactions.some(t => t.parcelado);
+    if (compradoParcelado) {
+        dicas.push({
+            icon: '🧾', tipo: 'info',
+            titulo: 'Cuidado com o efeito das parcelas',
+            texto: 'Você tem compras parceladas. Elas comprometem os próximos meses mesmo sem aparecer agora — evite acumular novas parcelas até quitar as atuais.'
+        });
+    }
+
+    container.innerHTML = dicas.map(d => `
+        <div class="dica-item dica-${d.tipo}">
+            <div class="dica-icon">${d.icon}</div>
+            <div class="dica-body">
+                <div class="dica-titulo">${d.titulo}</div>
+                <div class="dica-texto">${d.texto}</div>
+            </div>
+        </div>
+    `).join('');
 }
 
 // ===================================

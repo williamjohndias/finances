@@ -657,6 +657,77 @@ body::after {
 }
 
 /* ===================================
+   ANÁLISES: SCORE — EXPLICAÇÃO E DICAS
+   =================================== */
+.score-explain {
+    color: var(--prem-text-muted) !important;
+    font-size: 0.84rem !important;
+    line-height: 1.6 !important;
+    margin-bottom: 16px !important;
+}
+
+.score-explain strong { color: var(--prem-text-bright) !important; }
+
+.score-explain ul {
+    margin: 8px 0 0 0 !important;
+    padding-left: 18px !important;
+}
+
+.score-explain li { margin-bottom: 6px !important; }
+
+.score-pts {
+    display: inline-block !important;
+    background: rgba(96, 165, 250, 0.14) !important;
+    color: #60a5fa !important;
+    font-size: 0.66rem !important;
+    font-weight: 700 !important;
+    padding: 1px 7px !important;
+    border-radius: 5px !important;
+    margin: 0 2px !important;
+}
+
+.dicas-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 10px !important;
+}
+
+.dica-item {
+    display: grid !important;
+    grid-template-columns: 40px 1fr !important;
+    gap: 12px !important;
+    align-items: start !important;
+    padding: 12px 14px !important;
+    border-radius: 10px !important;
+    background: rgba(255, 255, 255, 0.025) !important;
+    border-left: 3px solid var(--prem-border-hover) !important;
+}
+
+.dica-item.dica-alerta { border-left-color: #f87171 !important; }
+.dica-item.dica-melhoria { border-left-color: #fbbf24 !important; }
+.dica-item.dica-ok { border-left-color: #34d399 !important; }
+.dica-item.dica-info { border-left-color: #60a5fa !important; }
+
+.dica-icon {
+    font-size: 1.5rem !important;
+    line-height: 1 !important;
+    text-align: center !important;
+}
+
+.dica-titulo {
+    color: var(--prem-text-bright) !important;
+    font-weight: 700 !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 3px !important;
+}
+
+.dica-texto {
+    color: var(--prem-text-muted) !important;
+    font-size: 0.82rem !important;
+    line-height: 1.55 !important;
+}
+
+/* ===================================
    KPI CARDS
    =================================== */
 .card,

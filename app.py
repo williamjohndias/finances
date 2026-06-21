@@ -131,8 +131,26 @@ def load_transactions():
         }
     
     try:
-        response = supabase.table('transactions').select('*').order('data', desc=False).execute()
-        
+        # PostgREST/Supabase retorna no máximo 1000 linhas por requisição.
+        # Sem paginação, as transações mais recentes (parcelas futuras, ex.: 2027)
+        # ficavam de fora. Buscamos em páginas até trazer tudo.
+        all_rows = []
+        page_size = 1000
+        offset = 0
+        while True:
+            response = (
+                supabase.table('transactions')
+                .select('*')
+                .order('data', desc=False)
+                .range(offset, offset + page_size - 1)
+                .execute()
+            )
+            batch = response.data or []
+            all_rows.extend(batch)
+            if len(batch) < page_size:
+                break
+            offset += page_size
+
         transactions = {
             'receitas': [],
             'gastos_debito': [],
@@ -140,8 +158,8 @@ def load_transactions():
             'gastos_nubank': [],
             'gastos_itau': []
         }
-        
-        for row in response.data:
+
+        for row in all_rows:
             transaction = {
                 'id': row['id'],
                 'descricao': row['descricao'],
