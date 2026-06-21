@@ -1,0 +1,149 @@
+/* =====================================================
+   PWA POLISH — safe-area iOS + sensação de app nativo
+   Carregado por último: refina sem reescrever o tema.
+   ===================================================== */
+
+/* Fundo sólido atrás das áreas seguras (status bar translúcida do iOS) */
+html {
+    background: var(--bg-primary);
+}
+
+/* Evita o "bounce" branco ao puxar a tela e respeita as áreas seguras laterais */
+html, body {
+    overscroll-behavior-y: none;
+}
+
+body {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
+
+/* Toque com cara de app: sem highlight cinza, sem callout em elementos de UI */
+a, button, .nav-link, .nav-item, .topbar-btn, .btn-secondary,
+.card, [onclick] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+}
+
+/* Mantém seleção/zoom natural em conteúdo textual e campos */
+input, textarea, select, p, span, td, th, h1, h2, h3, .selectable {
+    -webkit-touch-callout: default;
+}
+
+/* Scroll com inércia em iOS */
+* {
+    -webkit-overflow-scrolling: touch;
+}
+
+/* ---------- SAFE AREAS ---------- */
+
+/* Topbar respeita o notch / barra de status */
+.topbar {
+    padding-top: env(safe-area-inset-top);
+    height: auto;
+    min-height: calc(64px + env(safe-area-inset-top));
+}
+
+/* Sidebar (off-canvas no mobile) respeita topo e base */
+.sidebar {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Barra inferior fica acima do "home indicator" */
+@media (max-width: 767px) {
+    .bottom-nav {
+        padding-bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+
+    body {
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    }
+}
+
+/* ---------- REFINAMENTOS VISUAIS ---------- */
+
+/* Foco acessível e elegante (teclado), sem poluir o toque */
+:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-md);
+}
+
+/* Item ativo da barra inferior ganha um indicador suave */
+.bottom-nav .nav-item.active {
+    color: var(--primary);
+    position: relative;
+}
+
+.bottom-nav .nav-item.active::after {
+    content: '';
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 3px;
+    border-radius: 999px;
+    background: var(--primary);
+    box-shadow: 0 0 12px var(--primary);
+}
+
+/* Feedback de toque nos itens de navegação e cartões */
+.nav-item:active,
+.nav-link:active,
+.topbar-btn:active {
+    transform: scale(0.96);
+}
+
+.card,
+.main-content .card {
+    transition: transform var(--transition-fast), box-shadow var(--transition-base), border-color var(--transition-base);
+}
+
+.card:active {
+    transform: scale(0.992);
+}
+
+/* Botões primários com leve realce e resposta ao toque */
+button[type="submit"],
+.btn-primary {
+    transition: transform var(--transition-fast), filter var(--transition-base), box-shadow var(--transition-base);
+}
+
+button[type="submit"]:active,
+.btn-primary:active {
+    transform: translateY(1px) scale(0.99);
+    filter: brightness(1.05);
+}
+
+/* Scrollbar discreta no desktop, invisível no toque */
+@media (pointer: fine) {
+    ::-webkit-scrollbar { width: 10px; height: 10px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb {
+        background: var(--card-border);
+        border-radius: 999px;
+        border: 2px solid transparent;
+        background-clip: padding-box;
+    }
+    ::-webkit-scrollbar-thumb:hover { background: var(--border-medium); }
+}
+
+/* Quando rodando como app instalado: esconde dicas e dá um respiro a mais */
+@media (display-mode: standalone) {
+    .install-hint { display: none !important; }
+}
+
+/* Animação de entrada suave das páginas/cards */
+@media (prefers-reduced-motion: no-preference) {
+    .page.active .card,
+    .page.active .stat-card {
+        animation: pwaFadeUp 0.35s ease both;
+    }
+}
+
+@keyframes pwaFadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}

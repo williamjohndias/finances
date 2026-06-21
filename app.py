@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request, jsonify, send_from_directory
 from datetime import datetime, timedelta
 from calendar import monthrange
 from dateutil.relativedelta import relativedelta
@@ -200,6 +200,21 @@ def load_transactions():
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+@app.route('/sw.js')
+def service_worker():
+    """Service worker servido na raiz para ter escopo do app inteiro."""
+    response = send_from_directory(static_dir, 'sw.js', mimetype='application/javascript')
+    response.headers['Cache-Control'] = 'no-cache'
+    response.headers['Service-Worker-Allowed'] = '/'
+    return response
+
+
+@app.route('/manifest.json')
+def manifest():
+    """Manifest do PWA na raiz."""
+    return send_from_directory(static_dir, 'manifest.json', mimetype='application/manifest+json')
 
 @app.route('/api/transactions', methods=['GET'])
 def get_transactions():
