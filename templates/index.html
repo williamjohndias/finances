@@ -19,9 +19,9 @@
 
     <title>FINANCES - Trading Desk Financeiro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260730">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260730">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260730">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260730b">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260730b">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260730b">
 </head>
 <body>
 
@@ -194,9 +194,9 @@
                 <div class="section-header">
                     <h2 class="section-title">Dias sem Nova Dívida</h2>
                 </div>
-                <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;">
-                    <span id="diasSemNovaDivida" style="font-size:2.2rem; font-weight:700; color:var(--prem-text-bright, var(--text-primary));">—</span>
-                    <span id="ultimaCompraParcelada" style="font-size:0.82rem; color:var(--text-muted);">Nenhuma compra parcelada registrada</span>
+                <div class="streak-wrap">
+                    <span id="diasSemNovaDivida" class="streak-days">—</span>
+                    <span id="ultimaCompraParcelada" class="streak-info">Nenhuma compra parcelada registrada</span>
                 </div>
             </div>
 
