@@ -1,10 +1,10 @@
 /* Service Worker — FINANCES PWA */
-const CACHE_VERSION = 'finances-v1';
+const CACHE_VERSION = 'finances-v2';
 const APP_SHELL = [
   '/',
   '/static/css/style.css',
   '/static/css/market-overhaul.css',
-  '/static/js/app.js',
+  '/static/js/app.js?v=20260730',
   '/static/manifest.json',
   '/static/icons/icon-192.png',
   '/static/icons/icon-512.png',
