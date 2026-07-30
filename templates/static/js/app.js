@@ -1893,43 +1893,6 @@ function updateEditParcelasInfo() {
 // ===================================
 // EXPORT FUNCTIONS
 // ===================================
-function exportToCSV() {
-    const csv = ['Data,Tipo,Descrição,Categoria,Valor,Parcela'];
-    
-    allTransactions.forEach(t => {
-        const tipoLabels = {
-            'receita': 'Receita',
-            'debito': 'Débito',
-            'mercado_pago': 'Mercado Pago',
-            'nubank': 'Nubank',
-            'itau': 'Itaú Platinum'
-        };
-        
-        const parcela = t.parcelado ? `${t.parcela_atual}/${t.total_parcelas}` : '-';
-        csv.push(`${t.data},${tipoLabels[t.tipo]},${t.descricao},${t.valor},${parcela}`);
-    });
-    
-    const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
-    link.setAttribute('download', `finances-${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    showMessage('✓ Dados exportados com sucesso!', 'success');
-}
-
-function exportToPDF() {
-    window.print();
-}
-
-function toggleExportMenu() {
-    const menu = document.getElementById('exportMenu');
-    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-}
-
 // ===================================
 // FORM HANDLERS
 // ===================================
