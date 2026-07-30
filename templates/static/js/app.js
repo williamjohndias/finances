@@ -1626,10 +1626,12 @@ async function atualizarSaldos() {
         });
 
         // Reserva: guardar tira do caixa (negativo), retirar devolve (positivo)
+        let reservaMovsAtual = [];
         try {
             const reservaResp = await fetch('/api/reserva/movimentos');
             const reservaJson = await reservaResp.json();
-            (reservaJson.movimentos || []).forEach(m => {
+            reservaMovsAtual = reservaJson.movimentos || [];
+            reservaMovsAtual.forEach(m => {
                 if (!m.data) return;
                 const mDate = new Date(m.data + 'T00:00:00');
                 const monthKey = mDate.getFullYear() + '-' + String(mDate.getMonth() + 1).padStart(2, '0');
@@ -1726,7 +1728,61 @@ async function atualizarSaldos() {
         const saldoProjetadoEl = document.getElementById('saldoProjetado');
         saldoProjetadoEl.textContent = formatCurrency(saldoProjetado);
         saldoProjetadoEl.className = 'kpi-mini-value ' + (saldoProjetado >= 0 ? 'positive' : 'negative');
-        
+
+        // ===== Novos KPIs (Patrimônio Líquido, Taxa de Poupança, Parcelas) =====
+        const mesParaKpi = dashboardMonth || mesAtual;
+        const monthDataKpi = monthlyData[mesParaKpi] || { receitas: 0, debito: 0, faturas: 0, abatimentos: 0, reserva: 0 };
+
+        // Dívida de cartão em aberto: faturas já lançadas até o mês atual menos o que já foi abatido
+        let faturasAteHoje = 0, abatimentosAteHoje = 0;
+        for (const month of sortedMonths) {
+            if (month > mesAtual) continue;
+            faturasAteHoje += monthlyData[month].faturas;
+            abatimentosAteHoje += monthlyData[month].abatimentos;
+        }
+        const dividaCartaoAberta = Math.max(0, faturasAteHoje - abatimentosAteHoje);
+
+        const totalReserva = reservaMovsAtual.reduce((sum, m) => sum + (m.tipo === 'retirar' ? -parseFloat(m.valor || 0) : parseFloat(m.valor || 0)), 0);
+        const patrimonioLiquido = saldoAcumuladoAtual + totalReserva - dividaCartaoAberta;
+
+        const patrimonioLiquidoEl = document.getElementById('patrimonioLiquido');
+        if (patrimonioLiquidoEl) {
+            patrimonioLiquidoEl.textContent = formatCurrency(patrimonioLiquido);
+            patrimonioLiquidoEl.className = 'kpi-mini-value ' + (patrimonioLiquido >= 0 ? 'positive' : 'negative');
+        }
+
+        // Taxa de poupança do mês: (receitas - gastos) / receitas
+        const gastosMesKpi = monthDataKpi.debito + monthDataKpi.faturas;
+        const taxaPoupanca = monthDataKpi.receitas > 0 ? ((monthDataKpi.receitas - gastosMesKpi) / monthDataKpi.receitas) * 100 : 0;
+        const taxaPoupancaEl = document.getElementById('taxaPoupanca');
+        if (taxaPoupancaEl) {
+            taxaPoupancaEl.textContent = taxaPoupanca.toFixed(1) + '%';
+            taxaPoupancaEl.className = 'kpi-mini-value ' + (taxaPoupanca >= 0 ? 'positive' : 'negative');
+        }
+
+        // Total em parcelas ainda não pagas (qualquer cartão/débito, data de hoje em diante)
+        const hojeMeiaNoite = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+        let totalParcelasRestantes = 0;
+        let parcelasDoMes = 0;
+        allTransactions.forEach(t => {
+            if (!t.parcelado || t.tipo === 'receita') return;
+            const tDate = new Date(t.data + 'T00:00:00');
+            if (tDate >= hojeMeiaNoite) totalParcelasRestantes += t.valor;
+
+            const tMonthKey = tDate.getFullYear() + '-' + String(tDate.getMonth() + 1).padStart(2, '0');
+            if (tMonthKey === mesParaKpi) parcelasDoMes += t.valor;
+        });
+
+        const totalParcelasEl = document.getElementById('totalParcelasRestantes');
+        if (totalParcelasEl) totalParcelasEl.textContent = formatCurrency(totalParcelasRestantes);
+
+        const pctRendaComprometida = monthDataKpi.receitas > 0 ? (parcelasDoMes / monthDataKpi.receitas) * 100 : 0;
+        const pctRendaEl = document.getElementById('pctRendaComprometida');
+        if (pctRendaEl) {
+            pctRendaEl.textContent = pctRendaComprometida.toFixed(1) + '%';
+            pctRendaEl.className = 'kpi-mini-value ' + (pctRendaComprometida >= 50 ? 'negative' : '');
+        }
+
         // Preencher painel de diagnóstico
         const diagReceitas = document.getElementById('diagReceitas');
         const diagDebito = document.getElementById('diagDebito');
@@ -2154,7 +2210,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ANÁLISES AVANÇADAS
 // ===================================
 let gastosCartaoTempoChart = null;
-let patrimonioChart = null;
+const patrimonioCharts = {};
 
 function mesKey(dateStr) {
     const d = new Date((dateStr || '') + 'T00:00:00');
@@ -2192,7 +2248,8 @@ async function loadAnaliseAvancada() {
     renderComparativoMensal(reservaMovs);
     renderGastosCartaoTempo();
     renderOndeMaisGasta();
-    renderPatrimonioChart(reservaMovs);
+    renderPatrimonioChart(reservaMovs, 'patrimonioChart');
+    renderPatrimonioChart(reservaMovs, 'patrimonioChartDashboard');
 }
 
 function renderComparativoMensal(reservaMovs) {
@@ -2371,8 +2428,8 @@ function renderOndeMaisGasta() {
     }).join('');
 }
 
-function renderPatrimonioChart(reservaMovs) {
-    const canvas = document.getElementById('patrimonioChart');
+function renderPatrimonioChart(reservaMovs, canvasId) {
+    const canvas = document.getElementById(canvasId);
     if (!canvas || typeof Chart === 'undefined') return;
 
     // Patrimônio projetado: receitas - todos os gastos (faturas contam no mês da compra)
@@ -2395,7 +2452,7 @@ function renderPatrimonioChart(reservaMovs) {
 
     const meses = Object.keys(porMes).sort();
     if (meses.length === 0) {
-        if (patrimonioChart) { patrimonioChart.destroy(); patrimonioChart = null; }
+        if (patrimonioCharts[canvasId]) { patrimonioCharts[canvasId].destroy(); patrimonioCharts[canvasId] = null; }
         return;
     }
     let acumPat = 0;
@@ -2411,8 +2468,8 @@ function renderPatrimonioChart(reservaMovs) {
     });
 
     const palette = getChartPalette();
-    if (patrimonioChart) patrimonioChart.destroy();
-    patrimonioChart = new Chart(canvas.getContext('2d'), {
+    if (patrimonioCharts[canvasId]) patrimonioCharts[canvasId].destroy();
+    patrimonioCharts[canvasId] = new Chart(canvas.getContext('2d'), {
         type: 'line',
         data: {
             labels: meses.map(mesLabel),

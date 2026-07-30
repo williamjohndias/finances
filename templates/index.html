@@ -132,6 +132,26 @@
                     <div class="kpi-mini-value positive" id="dinheiroGuardado">R$ 0,00</div>
                     <div class="kpi-mini-footer" id="dinheiroGuardadoFooter">Reserva — gerencie em Transações</div>
                 </div>
+                <div class="kpi-mini highlight">
+                    <div class="kpi-mini-label">Patrimônio Líquido</div>
+                    <div class="kpi-mini-value" id="patrimonioLiquido">R$ 0,00</div>
+                    <div class="kpi-mini-footer">Saldo + Reserva − Fatura em aberto</div>
+                </div>
+                <div class="kpi-mini">
+                    <div class="kpi-mini-label">Taxa de Poupança</div>
+                    <div class="kpi-mini-value" id="taxaPoupanca">0%</div>
+                    <div class="kpi-mini-footer">Do que sobrou da renda no mês</div>
+                </div>
+                <div class="kpi-mini">
+                    <div class="kpi-mini-label">Total em Parcelas</div>
+                    <div class="kpi-mini-value" id="totalParcelasRestantes">R$ 0,00</div>
+                    <div class="kpi-mini-footer">Parcelas futuras ainda não pagas</div>
+                </div>
+                <div class="kpi-mini">
+                    <div class="kpi-mini-label">Renda Comprometida</div>
+                    <div class="kpi-mini-value" id="pctRendaComprometida">0%</div>
+                    <div class="kpi-mini-footer">Com parcelas no mês</div>
+                </div>
             </div>
 
             <!-- Resumo e Faturas em Barras -->
@@ -176,6 +196,16 @@
                     <div class="chart-container">
                         <canvas id="gastosChart"></canvas>
                     </div>
+                </div>
+            </div>
+
+            <!-- Evolução do Patrimônio -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Evolução do Patrimônio</h2>
+                </div>
+                <div class="chart-container">
+                    <canvas id="patrimonioChartDashboard"></canvas>
                 </div>
             </div>
 
