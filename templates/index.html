@@ -19,9 +19,9 @@
 
     <title>FINANCES - Trading Desk Financeiro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260621">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260621">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260621">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260730">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260730">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260730">
 </head>
 <body>
 
@@ -135,7 +135,7 @@
                 <div class="kpi-mini highlight">
                     <div class="kpi-mini-label">Patrimônio Líquido</div>
                     <div class="kpi-mini-value" id="patrimonioLiquido">R$ 0,00</div>
-                    <div class="kpi-mini-footer">Saldo + Reserva − Fatura em aberto</div>
+                    <div class="kpi-mini-footer">Saldo Projetado + Reserva</div>
                 </div>
                 <div class="kpi-mini">
                     <div class="kpi-mini-label">Taxa de Poupança</div>
@@ -151,6 +151,52 @@
                     <div class="kpi-mini-label">Renda Comprometida</div>
                     <div class="kpi-mini-value" id="pctRendaComprometida">0%</div>
                     <div class="kpi-mini-footer">Com parcelas no mês</div>
+                </div>
+            </div>
+
+            <!-- Liberação de Caixa / Parcelas Restantes -->
+            <div class="charts-grid trading-charts">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Liberação de Caixa</h2>
+                    </div>
+                    <div id="liberacaoCaixaList" class="ranking-list">
+                        <p class="empty-state">Carregando...</p>
+                    </div>
+                    <div class="card-mini-stat" style="text-align: center; margin-top: 10px;">
+                        Total liberado previsto: <strong id="liberacaoCaixaTotal">R$ 0,00</strong>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Parcelas Restantes</h2>
+                    </div>
+                    <div class="diagnostico-grid">
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Parcelas ativas</span>
+                            <span class="diagnostico-valor" id="qtdParcelasAtivas">0</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Comprometido por mês</span>
+                            <span class="diagnostico-valor" id="valorComprometidoMes">R$ 0,00</span>
+                        </div>
+                        <div class="diagnostico-item">
+                            <span class="diagnostico-label">Previsão de quitação</span>
+                            <span class="diagnostico-valor" id="dataQuitacaoParcelas">—</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dias sem Nova Dívida -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Dias sem Nova Dívida</h2>
+                </div>
+                <div style="display:flex; align-items:baseline; gap:14px; flex-wrap:wrap;">
+                    <span id="diasSemNovaDivida" style="font-size:2.2rem; font-weight:700; color:var(--prem-text-bright, var(--text-primary));">—</span>
+                    <span id="ultimaCompraParcelada" style="font-size:0.82rem; color:var(--text-muted);">Nenhuma compra parcelada registrada</span>
                 </div>
             </div>
 
@@ -927,7 +973,7 @@
     </a>
 </nav>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20260730"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20260730b"></script>
 <script>
     // Registro do Service Worker (PWA) — habilita instalação e uso offline no iOS
     if ('serviceWorker' in navigator) {

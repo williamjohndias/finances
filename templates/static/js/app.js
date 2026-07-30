@@ -1733,17 +1733,8 @@ async function atualizarSaldos() {
         const mesParaKpi = dashboardMonth || mesAtual;
         const monthDataKpi = monthlyData[mesParaKpi] || { receitas: 0, debito: 0, faturas: 0, abatimentos: 0, reserva: 0 };
 
-        // Dívida de cartão em aberto: faturas já lançadas até o mês atual menos o que já foi abatido
-        let faturasAteHoje = 0, abatimentosAteHoje = 0;
-        for (const month of sortedMonths) {
-            if (month > mesAtual) continue;
-            faturasAteHoje += monthlyData[month].faturas;
-            abatimentosAteHoje += monthlyData[month].abatimentos;
-        }
-        const dividaCartaoAberta = Math.max(0, faturasAteHoje - abatimentosAteHoje);
-
         const totalReserva = reservaMovsAtual.reduce((sum, m) => sum + (m.tipo === 'retirar' ? -parseFloat(m.valor || 0) : parseFloat(m.valor || 0)), 0);
-        const patrimonioLiquido = saldoAcumuladoAtual + totalReserva - dividaCartaoAberta;
+        const patrimonioLiquido = saldoProjetado + totalReserva;
 
         const patrimonioLiquidoEl = document.getElementById('patrimonioLiquido');
         if (patrimonioLiquidoEl) {
@@ -1781,6 +1772,89 @@ async function atualizarSaldos() {
         if (pctRendaEl) {
             pctRendaEl.textContent = pctRendaComprometida.toFixed(1) + '%';
             pctRendaEl.className = 'kpi-mini-value ' + (pctRendaComprometida >= 50 ? 'negative' : '');
+        }
+
+        // ===== Liberação de Caixa / Parcelas Restantes / Dias sem Nova Dívida =====
+        const gruposAtivos = {};
+        let qtdParcelasAtivas = 0;
+        allTransactions.forEach(t => {
+            if (!t.parcelado || t.tipo === 'receita' || !t.parcel_group_id) return;
+            const tDate = new Date(t.data + 'T00:00:00');
+            if (tDate < hojeMeiaNoite) return;
+            qtdParcelasAtivas++;
+            const g = gruposAtivos[t.parcel_group_id];
+            if (!g || tDate > g.dataUltima) {
+                gruposAtivos[t.parcel_group_id] = { valor: t.valor, dataUltima: tDate };
+            }
+        });
+
+        const qtdParcelasEl = document.getElementById('qtdParcelasAtivas');
+        if (qtdParcelasEl) qtdParcelasEl.textContent = qtdParcelasAtivas;
+
+        const valorComprometidoMesEl = document.getElementById('valorComprometidoMes');
+        if (valorComprometidoMesEl) valorComprometidoMesEl.textContent = formatCurrency(parcelasDoMes);
+
+        const gruposList = Object.values(gruposAtivos);
+        const dataQuitacaoEl = document.getElementById('dataQuitacaoParcelas');
+        if (dataQuitacaoEl) {
+            if (gruposList.length > 0) {
+                const dataFinal = gruposList.reduce((max, g) => (g.dataUltima > max ? g.dataUltima : max), gruposList[0].dataUltima);
+                dataQuitacaoEl.textContent = mesLabel(dataFinal.getFullYear() + '-' + String(dataFinal.getMonth() + 1).padStart(2, '0'));
+            } else {
+                dataQuitacaoEl.textContent = 'Sem parcelas ativas';
+            }
+        }
+
+        // Agrupa o valor mensal de cada compra parcelada pelo mês da última parcela
+        const liberacaoPorMes = {};
+        gruposList.forEach(g => {
+            const mk = g.dataUltima.getFullYear() + '-' + String(g.dataUltima.getMonth() + 1).padStart(2, '0');
+            liberacaoPorMes[mk] = (liberacaoPorMes[mk] || 0) + g.valor;
+        });
+        const mesesLiberacao = Object.keys(liberacaoPorMes).sort();
+        const liberacaoListEl = document.getElementById('liberacaoCaixaList');
+        if (liberacaoListEl) {
+            if (mesesLiberacao.length === 0) {
+                liberacaoListEl.innerHTML = '<p class="empty-state">Nenhuma parcela ativa.</p>';
+            } else {
+                liberacaoListEl.innerHTML = mesesLiberacao.slice(0, 6).map(mk => `
+                    <div class="liberacao-item">
+                        <span class="liberacao-mes">${mesLabel(mk)}</span>
+                        <span class="liberacao-desc">Fim de parcelas</span>
+                        <span class="liberacao-valor positive">+${formatCurrency(liberacaoPorMes[mk])}</span>
+                    </div>
+                `).join('');
+            }
+        }
+        const totalLiberado = mesesLiberacao.reduce((sum, mk) => sum + liberacaoPorMes[mk], 0);
+        const liberacaoTotalEl = document.getElementById('liberacaoCaixaTotal');
+        if (liberacaoTotalEl) liberacaoTotalEl.textContent = formatCurrency(totalLiberado);
+
+        // Dias sem nova dívida: última compra parcelada (1ª parcela) já realizada
+        let ultimaCompraData = null;
+        let ultimaCompraDataStr = '';
+        let ultimaCompraDescricao = '';
+        allTransactions.forEach(t => {
+            if (!t.parcelado || t.tipo === 'receita' || t.parcela_atual !== 1) return;
+            const tDate = new Date(t.data + 'T00:00:00');
+            if (tDate > hoje) return;
+            if (!ultimaCompraData || tDate > ultimaCompraData) {
+                ultimaCompraData = tDate;
+                ultimaCompraDataStr = t.data;
+                ultimaCompraDescricao = t.descricao || '';
+            }
+        });
+        const diasSemNovaDividaEl = document.getElementById('diasSemNovaDivida');
+        const ultimaCompraEl = document.getElementById('ultimaCompraParcelada');
+        if (diasSemNovaDividaEl) {
+            if (ultimaCompraData) {
+                const dias = Math.floor((hojeMeiaNoite - ultimaCompraData) / 86400000);
+                diasSemNovaDividaEl.textContent = dias + (dias === 1 ? ' dia' : ' dias');
+                if (ultimaCompraEl) ultimaCompraEl.textContent = `Última: ${ultimaCompraDescricao} (${formatDate(ultimaCompraDataStr)})`;
+            } else {
+                diasSemNovaDividaEl.textContent = '—';
+                if (ultimaCompraEl) ultimaCompraEl.textContent = 'Nenhuma compra parcelada registrada';
+            }
         }
 
         // Preencher painel de diagnóstico

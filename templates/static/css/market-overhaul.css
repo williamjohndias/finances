@@ -646,6 +646,43 @@ body::after {
     background: linear-gradient(90deg, #60a5fa, #3b82f6) !important;
 }
 
+/* Liberação de Caixa: linha mês + descrição + valor */
+.liberacao-item {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    padding: 8px 0 !important;
+    border-bottom: 1px solid var(--prem-border) !important;
+}
+
+.liberacao-item:last-child {
+    border-bottom: none !important;
+}
+
+.liberacao-mes {
+    flex: 0 0 auto !important;
+    min-width: 52px !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+    font-weight: 700 !important;
+    font-size: 0.8rem !important;
+    color: #60a5fa !important;
+}
+
+.liberacao-desc {
+    flex: 1 1 auto !important;
+    color: var(--prem-text-muted) !important;
+    font-size: 0.82rem !important;
+}
+
+.liberacao-valor {
+    flex: 0 0 auto !important;
+    font-family: 'IBM Plex Mono', monospace !important;
+    font-weight: 700 !important;
+    font-size: 0.85rem !important;
+    white-space: nowrap !important;
+}
+
 @media (max-width: 768px) {
     .comparativo-head,
     .comparativo-row {
