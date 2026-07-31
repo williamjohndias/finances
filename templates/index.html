@@ -19,9 +19,9 @@
 
     <title>FINANCES - Trading Desk Financeiro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260731">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260731">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260731">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260731b">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260731b">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260731b">
 </head>
 <body>
 
@@ -93,6 +93,11 @@
         <a class="nav-link" data-page="saude" onclick="navigateTo('saude')">
             <span class="nav-icon">SF</span>
             <span class="nav-label">Saude</span>
+        </a>
+
+        <a class="nav-link" data-page="metas" onclick="navigateTo('metas')">
+            <span class="nav-icon">MT</span>
+            <span class="nav-label">Metas</span>
         </a>
     </nav>
 
@@ -168,6 +173,16 @@
                     <div class="kpi-mini-label">Renda Comprometida</div>
                     <div class="kpi-mini-value" id="pctRendaComprometida">0%</div>
                     <div class="kpi-mini-footer">Com parcelas no mês</div>
+                </div>
+            </div>
+
+            <!-- Insights Inteligentes -->
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Insights</h2>
+                </div>
+                <div id="insightsList" class="insights-list">
+                    <p class="empty-state">Analisando seus dados...</p>
                 </div>
             </div>
 
@@ -915,6 +930,67 @@
 
         </section>
 
+        <!-- ==================== PAGE: METAS ==================== -->
+        <section id="page-metas" class="page market-page">
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Nova Meta</h2>
+                </div>
+                <form id="metaForm" onsubmit="saveMeta(event)">
+                    <div class="form-row form-row-3">
+                        <div class="form-group">
+                            <label for="metaNome">Nome da Meta</label>
+                            <input type="text" id="metaNome" required placeholder="Ex: Reserva de emergência">
+                        </div>
+                        <div class="form-group">
+                            <label for="metaCategoria">Tipo</label>
+                            <select id="metaCategoria" required>
+                                <option value="reserva">🏦 Reserva de emergência (automática)</option>
+                                <option value="patrimonio">💰 Patrimônio líquido (automática)</option>
+                                <option value="parcelas_max">💳 Máximo em parcelas/mês (limite)</option>
+                                <option value="economia">📅 Economia no ano (automática)</option>
+                                <option value="investimento">📈 Valor investido (manual)</option>
+                                <option value="outro">🎯 Outra (manual)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="metaValorAlvo">Valor Alvo (R$)</label>
+                            <input type="number" id="metaValorAlvo" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="form-row form-row-2">
+                        <div class="form-group">
+                            <label for="metaValorAtual">Valor Atual (R$) — só para metas manuais</label>
+                            <input type="number" id="metaValorAtual" step="0.01" min="0" value="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="metaDataFim">Prazo (opcional)</label>
+                            <input type="date" id="metaDataFim">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <button type="submit">Criar Meta</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Minhas Metas</h2>
+                </div>
+                <div id="metasList" class="ranking-list">
+                    <p class="empty-state">Carregando metas...</p>
+                </div>
+                <div class="card-mini-stat" style="margin-top: 12px;">
+                    Metas automáticas acompanham seus dados em tempo real. Metas manuais têm o botão "Atualizar valor".
+                </div>
+            </div>
+
+        </section>
+
     </main>
 </div>
 
@@ -1101,7 +1177,7 @@
     </a>
 </nav>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20260731"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20260731b"></script>
 <script>
     // Registro do Service Worker (PWA) — habilita instalação e uso offline no iOS
     if ('serviceWorker' in navigator) {
