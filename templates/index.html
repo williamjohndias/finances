@@ -19,9 +19,9 @@
 
     <title>FINANCES - Trading Desk Financeiro</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260730b">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260730b">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260730b">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20260731">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/market-overhaul.css') }}?v=20260731">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/pwa-polish.css') }}?v=20260731">
 </head>
 <body>
 
@@ -76,6 +76,23 @@
         <a class="nav-link" data-page="calendario" onclick="navigateTo('calendario')">
             <span class="nav-icon">CL</span>
             <span class="nav-label">Calendario</span>
+        </a>
+
+        <div class="nav-section-label">Planejamento</div>
+
+        <a class="nav-link" data-page="quitacao" onclick="navigateTo('quitacao')">
+            <span class="nav-icon">QT</span>
+            <span class="nav-label">Quitacao</span>
+        </a>
+
+        <a class="nav-link" data-page="simulador" onclick="navigateTo('simulador')">
+            <span class="nav-icon">SM</span>
+            <span class="nav-label">Simulador</span>
+        </a>
+
+        <a class="nav-link" data-page="saude" onclick="navigateTo('saude')">
+            <span class="nav-icon">SF</span>
+            <span class="nav-label">Saude</span>
         </a>
     </nav>
 
@@ -315,6 +332,7 @@
                         </div>
                     </div>
                     <div id="parcelasInfo" class="alert info" style="display: none;"></div>
+                    <div id="compraImpacto" class="alert info" style="display: none;"></div>
                     <div id="successMessage" class="alert" style="display: none;"></div>
                 </form>
             </div>
@@ -787,6 +805,116 @@
 
         </section>
 
+        <!-- ==================== PAGE: MODO QUITAÇÃO ==================== -->
+        <section id="page-quitacao" class="page market-page">
+
+            <div class="kpi-strip">
+                <div class="kpi-mini highlight">
+                    <div class="kpi-mini-label">Parcelas Restantes</div>
+                    <div class="kpi-mini-value" id="qtParcelasRestantes">0</div>
+                    <div class="kpi-mini-footer">parcelas ainda por vencer</div>
+                </div>
+                <div class="kpi-mini">
+                    <div class="kpi-mini-label">Comprometido por Mês</div>
+                    <div class="kpi-mini-value" id="qtComprometidoMes">R$ 0,00</div>
+                    <div class="kpi-mini-footer">parcelas do mês atual</div>
+                </div>
+                <div class="kpi-mini">
+                    <div class="kpi-mini-label">Dívida Total em Parcelas</div>
+                    <div class="kpi-mini-value" id="qtDividaTotal">R$ 0,00</div>
+                    <div class="kpi-mini-footer">soma de tudo que falta pagar</div>
+                </div>
+                <div class="kpi-mini highlight">
+                    <div class="kpi-mini-label">Previsão de Quitação</div>
+                    <div class="kpi-mini-value" id="qtPrevisaoQuitacao">—</div>
+                    <div class="kpi-mini-footer">se nada novo for parcelado</div>
+                </div>
+            </div>
+
+            <div class="charts-grid trading-charts">
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Próximas Parcelas que Terminam</h2>
+                    </div>
+                    <div id="qtProximasTerminam" class="ranking-list">
+                        <p class="empty-state">Carregando...</p>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <h2 class="section-title">Caixa Liberado por Mês</h2>
+                    </div>
+                    <div id="qtCaixaLiberado" class="ranking-list">
+                        <p class="empty-state">Carregando...</p>
+                    </div>
+                    <div class="card-mini-stat" style="text-align: center; margin-top: 10px;">
+                        Total a liberar: <strong id="qtCaixaLiberadoTotal">R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PAGE: SIMULADOR ==================== -->
+        <section id="page-simulador" class="page market-page">
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">E se eu comprar?</h2>
+                </div>
+                <form id="simuladorForm" onsubmit="simularCompra(event)">
+                    <div class="form-row form-row-3">
+                        <div class="form-group">
+                            <label for="simDescricao">Descrição (opcional)</label>
+                            <input type="text" id="simDescricao" placeholder="Ex: Notebook">
+                        </div>
+                        <div class="form-group">
+                            <label for="simValor">Valor Total (R$)</label>
+                            <input type="number" id="simValor" step="0.01" min="0" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="simParcelas">Número de Parcelas</label>
+                            <input type="number" id="simParcelas" min="1" value="1" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <button type="submit">Simular Impacto</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="section" id="simuladorResultado" style="display: none;">
+                <div class="section-header">
+                    <h2 class="section-title">Resultado da Simulação</h2>
+                </div>
+                <div id="simuladorResumo" class="alert info" style="display: block;"></div>
+                <div id="simuladorComparativo" class="ranking-list" style="margin-top: 12px;"></div>
+            </div>
+
+        </section>
+
+        <!-- ==================== PAGE: SAÚDE FINANCEIRA ==================== -->
+        <section id="page-saude" class="page market-page">
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">Score Financeiro</h2>
+                </div>
+                <div class="saude-hero">
+                    <span class="saude-score"><span id="saudeScoreValor">—</span><span class="saude-score-max">/100</span></span>
+                    <span id="saudeScoreClasse" class="saude-badge">—</span>
+                </div>
+                <div id="saudeFatores" class="ranking-list" style="margin-top: 16px;">
+                    <p class="empty-state">Carregando...</p>
+                </div>
+                <div class="card-mini-stat" style="margin-top: 12px;" id="saudeNota"></div>
+            </div>
+
+        </section>
+
     </main>
 </div>
 
@@ -973,7 +1101,7 @@
     </a>
 </nav>
 
-<script src="{{ url_for('static', filename='js/app.js') }}?v=20260730b"></script>
+<script src="{{ url_for('static', filename='js/app.js') }}?v=20260731"></script>
 <script>
     // Registro do Service Worker (PWA) — habilita instalação e uso offline no iOS
     if ('serviceWorker' in navigator) {

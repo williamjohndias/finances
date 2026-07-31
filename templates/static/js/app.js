@@ -33,12 +33,18 @@ function navigateTo(page) {
         abatimentos: 'Abatimentos',
         graficos: 'Gráficos',
         analises: 'Análises',
-        calendario: 'Calendário'
+        calendario: 'Calendário',
+        quitacao: 'Modo Quitação',
+        simulador: 'Simulador',
+        saude: 'Saúde Financeira'
     };
     const titleEl = document.getElementById('pageTitle');
     if (titleEl) titleEl.textContent = titles[page] || page;
 
     currentPage = page;
+
+    if (page === 'quitacao' && typeof renderQuitacao === 'function') renderQuitacao();
+    if (page === 'saude' && typeof renderSaude === 'function') renderSaude();
 
     // Resize charts after page transition
     setTimeout(() => {
@@ -74,6 +80,8 @@ let allAbatimentos = [];
 let allOrcamentos = [];
 let allRecorrencias = [];
 let projectionChart = null;
+let ultimoSaldoAtual = 0;
+let ultimoSaldoProjetado = 0;
 
 // ===================================
 // THEME MANAGEMENT
@@ -1709,6 +1717,9 @@ async function atualizarSaldos() {
             saldoProjetado = sobrouAnterior + monthData.receitas - totalGastosMes + (monthData.reserva || 0);
         }
         
+        ultimoSaldoAtual = saldoAcumuladoAtual;
+        ultimoSaldoProjetado = saldoProjetado;
+
         const saldoAtualEl = document.getElementById('saldoAtual');
         saldoAtualEl.textContent = formatCurrency(saldoAcumuladoAtual);
         saldoAtualEl.className = 'kpi-mini-value ' + (saldoAcumuladoAtual >= 0 ? 'positive' : 'negative');
@@ -1874,6 +1885,11 @@ async function atualizarSaldos() {
             if (isMesFuturo) txt += ` Para meses futuros, o Saldo Projetado rola mês a mês (projeção).`;
             diagAviso.textContent = txt;
         }
+
+        // Atualiza páginas que dependem destes números
+        renderQuitacao();
+        renderSaude();
+        updateCompraImpacto();
     } catch (error) {
         console.error('Erro ao calcular saldos:', error);
     }
@@ -3380,3 +3396,363 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
+
+// ===================================
+// PLANEJAMENTO — Quitação, Simulador,
+// Saúde Financeira e Controle de Compras
+// ===================================
+
+function mesKeyFromDate(d) {
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+
+// Fotografia da dívida parcelada; extra = compra hipotética { valorTotal, numParcelas, descricao }
+function getDebtSnapshot(extra = null) {
+    const hoje = new Date();
+    const hojeMN = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    const mesAtualKey = mesKeyFromDate(hoje);
+
+    let qtd = 0;
+    let totalFuturo = 0;
+    let comprometMes = 0;
+    const grupos = {};
+
+    allTransactions.forEach(t => {
+        if (!t.parcelado || t.tipo === 'receita' || !t.parcel_group_id) return;
+        const tDate = new Date(t.data + 'T00:00:00');
+        if (mesKey(t.data) === mesAtualKey) comprometMes += t.valor;
+        if (tDate < hojeMN) return;
+        qtd++;
+        totalFuturo += t.valor;
+        const g = grupos[t.parcel_group_id];
+        if (!g) {
+            grupos[t.parcel_group_id] = { descricao: t.descricao || 'Sem descrição', valor: t.valor, dataUltima: tDate, restantes: 1 };
+        } else {
+            g.restantes++;
+            if (tDate > g.dataUltima) g.dataUltima = tDate;
+        }
+    });
+
+    if (extra && extra.numParcelas >= 1 && extra.valorTotal > 0) {
+        const vp = extra.valorTotal / extra.numParcelas;
+        qtd += extra.numParcelas;
+        totalFuturo += extra.valorTotal;
+        comprometMes += vp;
+        // Dia 1: só o mês importa e evita estouro em meses mais curtos (ex.: dia 31 em junho)
+        const dataUltima = new Date(hoje.getFullYear(), hoje.getMonth() + extra.numParcelas - 1, 1);
+        grupos['__simulacao__'] = { descricao: extra.descricao || 'Nova compra', valor: vp, dataUltima: dataUltima, restantes: extra.numParcelas };
+    }
+
+    const lista = Object.values(grupos);
+    let dataQuitacao = null;
+    lista.forEach(g => { if (!dataQuitacao || g.dataUltima > dataQuitacao) dataQuitacao = g.dataUltima; });
+
+    return { qtd, totalFuturo, comprometMes, grupos: lista, dataQuitacao };
+}
+
+// Média das receitas dos últimos 3 meses-calendário com receita (fallback: todos os meses)
+function getRendaMensalMedia() {
+    const porMes = {};
+    allTransactions.forEach(t => {
+        if (t.tipo !== 'receita') return;
+        const mk = mesKey(t.data);
+        if (mk) porMes[mk] = (porMes[mk] || 0) + t.valor;
+    });
+    const hoje = new Date();
+    const janela = [];
+    for (let i = 0; i < 3; i++) {
+        const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+        janela.push(mesKeyFromDate(d));
+    }
+    let vals = janela.map(k => porMes[k] || 0).filter(v => v > 0);
+    if (!vals.length) vals = Object.values(porMes).filter(v => v > 0);
+    return vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : 0;
+}
+
+// Média de gastos mensais (todos os tipos, mês da compra) dos últimos 3 meses-calendário
+function getGastoMensalMedia() {
+    const porMes = {};
+    allTransactions.forEach(t => {
+        if (t.tipo === 'receita') return;
+        const mk = mesKey(t.data);
+        if (mk) porMes[mk] = (porMes[mk] || 0) + t.valor;
+    });
+    const hoje = new Date();
+    let total = 0;
+    for (let i = 0; i < 3; i++) {
+        const d = new Date(hoje.getFullYear(), hoje.getMonth() - i, 1);
+        total += porMes[mesKeyFromDate(d)] || 0;
+    }
+    return total / 3;
+}
+
+// ---------- MODO QUITAÇÃO ----------
+function renderQuitacao() {
+    const kpiEl = document.getElementById('qtParcelasRestantes');
+    if (!kpiEl) return;
+
+    const snap = getDebtSnapshot();
+
+    kpiEl.textContent = snap.qtd;
+    const compEl = document.getElementById('qtComprometidoMes');
+    if (compEl) compEl.textContent = formatCurrency(snap.comprometMes);
+    const divEl = document.getElementById('qtDividaTotal');
+    if (divEl) divEl.textContent = formatCurrency(snap.totalFuturo);
+    const prevEl = document.getElementById('qtPrevisaoQuitacao');
+    if (prevEl) prevEl.textContent = snap.dataQuitacao ? mesLabel(mesKeyFromDate(snap.dataQuitacao)) : 'Sem dívidas';
+
+    const proximasEl = document.getElementById('qtProximasTerminam');
+    if (proximasEl) {
+        const ordenados = [...snap.grupos].sort((a, b) => a.dataUltima - b.dataUltima).slice(0, 8);
+        proximasEl.innerHTML = ordenados.length
+            ? ordenados.map(g => `
+                <div class="liberacao-item">
+                    <span class="liberacao-mes">${mesLabel(mesKeyFromDate(g.dataUltima))}</span>
+                    <span class="liberacao-desc">${escapeHtml(g.descricao)} — ${g.restantes}x de ${formatCurrency(g.valor)}</span>
+                    <span class="liberacao-valor positive">+${formatCurrency(g.valor)}/mês</span>
+                </div>`).join('')
+            : '<p class="empty-state">Nenhuma parcela ativa. Você está livre de dívidas parceladas! 🎉</p>';
+    }
+
+    const liberadoEl = document.getElementById('qtCaixaLiberado');
+    if (liberadoEl) {
+        const porMes = {};
+        snap.grupos.forEach(g => {
+            const mk = mesKeyFromDate(g.dataUltima);
+            porMes[mk] = (porMes[mk] || 0) + g.valor;
+        });
+        const meses = Object.keys(porMes).sort();
+        liberadoEl.innerHTML = meses.length
+            ? meses.map(mk => `
+                <div class="liberacao-item">
+                    <span class="liberacao-mes">${mesLabel(mk)}</span>
+                    <span class="liberacao-desc">volta ao seu orçamento mensal</span>
+                    <span class="liberacao-valor positive">+${formatCurrency(porMes[mk])}</span>
+                </div>`).join('')
+            : '<p class="empty-state">Nada a liberar — sem parcelas ativas.</p>';
+        const totalEl = document.getElementById('qtCaixaLiberadoTotal');
+        if (totalEl) totalEl.textContent = formatCurrency(Object.values(porMes).reduce((a, b) => a + b, 0));
+    }
+}
+
+// ---------- CONTROLE DE COMPRAS ----------
+function updateCompraImpacto() {
+    const el = document.getElementById('compraImpacto');
+    if (!el) return;
+    const tipoEl = document.getElementById('tipo');
+    const valorEl = document.getElementById('valor');
+    const parcelasEl = document.getElementById('num_parcelas');
+    if (!tipoEl || !valorEl || !parcelasEl) return;
+
+    const tipo = tipoEl.value;
+    const valor = parseFloat(valorEl.value) || 0;
+    const np = parseInt(parcelasEl.value) || 1;
+
+    if (!tipo || tipo === 'receita' || valor <= 0) {
+        el.style.display = 'none';
+        return;
+    }
+    el.style.display = 'block';
+
+    if (np <= 1) {
+        const coberta = ultimoSaldoAtual >= valor;
+        el.className = 'alert ' + (coberta ? 'success' : 'warning');
+        el.textContent = coberta
+            ? `✅ Compra coberta pelo caixa (Saldo Atual: ${formatCurrency(ultimoSaldoAtual)}).`
+            : `⚠️ Atenção: esta compra não possui caixa disponível (Saldo Atual: ${formatCurrency(ultimoSaldoAtual)}).`;
+        return;
+    }
+
+    const antes = getDebtSnapshot();
+    const depois = getDebtSnapshot({ valorTotal: valor, numParcelas: np });
+    const renda = getRendaMensalMedia();
+    const vp = valor / np;
+    let msg = `Você já tem <strong>${antes.qtd}</strong> parcela(s) ativa(s). ` +
+        `Esta compra adicionará <strong>${formatCurrency(vp)}/mês por ${np} meses</strong>`;
+    if (renda > 0) {
+        const pctAntes = (antes.comprometMes / renda) * 100;
+        const pctDepois = (depois.comprometMes / renda) * 100;
+        msg += ` e aumentará seu comprometimento de <strong>${pctAntes.toFixed(0)}%</strong> para <strong>${pctDepois.toFixed(0)}%</strong> da renda média`;
+    }
+    msg += `. Nova previsão para quitar tudo: <strong>${depois.dataQuitacao ? mesLabel(mesKeyFromDate(depois.dataQuitacao)) : '—'}</strong>.`;
+    el.className = 'alert info';
+    el.innerHTML = msg;
+}
+
+// ---------- SIMULADOR ----------
+function simularCompra(event) {
+    event.preventDefault();
+    const valor = parseFloat(document.getElementById('simValor').value) || 0;
+    const np = parseInt(document.getElementById('simParcelas').value) || 1;
+    const descricao = document.getElementById('simDescricao').value.trim();
+    if (valor <= 0) return;
+
+    const antes = getDebtSnapshot();
+    const depois = getDebtSnapshot({ valorTotal: valor, numParcelas: np, descricao });
+    const renda = getRendaMensalMedia();
+    const vp = valor / np;
+
+    const resumoEl = document.getElementById('simuladorResumo');
+    if (resumoEl) {
+        resumoEl.innerHTML = np > 1
+            ? `<strong>${escapeHtml(descricao || 'Esta compra')}</strong>: ${np}x de <strong>${formatCurrency(vp)}</strong> (total ${formatCurrency(valor)}).`
+            : `<strong>${escapeHtml(descricao || 'Esta compra')}</strong>: à vista, <strong>${formatCurrency(valor)}</strong>.`;
+    }
+
+    const fmtPct = (v) => renda > 0 ? ((v / renda) * 100).toFixed(1) + '%' : '—';
+    const fmtMes = (d) => d ? mesLabel(mesKeyFromDate(d)) : 'Sem dívidas';
+    const linhas = [
+        { label: 'Parcelas ativas', antes: antes.qtd, depois: depois.qtd },
+        { label: 'Comprometido por mês', antes: formatCurrency(antes.comprometMes), depois: formatCurrency(depois.comprometMes) },
+        { label: 'Comprometimento da renda', antes: fmtPct(antes.comprometMes), depois: fmtPct(depois.comprometMes) },
+        { label: 'Data para quitar tudo', antes: fmtMes(antes.dataQuitacao), depois: fmtMes(depois.dataQuitacao) },
+        { label: 'Saldo Projetado após pagar tudo', antes: formatCurrency(ultimoSaldoProjetado), depois: formatCurrency(ultimoSaldoProjetado - valor) }
+    ];
+
+    const compEl = document.getElementById('simuladorComparativo');
+    if (compEl) {
+        compEl.innerHTML = linhas.map(l => `
+            <div class="liberacao-item">
+                <span class="liberacao-desc">${l.label}</span>
+                <span class="liberacao-valor">${l.antes} <span class="sim-seta">→</span> <strong>${l.depois}</strong></span>
+            </div>`).join('');
+    }
+
+    const resultadoEl = document.getElementById('simuladorResultado');
+    if (resultadoEl) resultadoEl.style.display = 'block';
+}
+
+// ---------- SAÚDE FINANCEIRA ----------
+function renderSaude() {
+    const scoreEl = document.getElementById('saudeScoreValor');
+    if (!scoreEl) return;
+
+    const renda = getRendaMensalMedia();
+    const gastoMedio = getGastoMensalMedia();
+    const snap = getDebtSnapshot();
+    const reserva = (reservaMovimentos || []).reduce((sum, m) => {
+        const v = parseFloat(m.valor) || 0;
+        return sum + (m.tipo === 'retirar' ? -v : v);
+    }, 0);
+
+    const classeEl = document.getElementById('saudeScoreClasse');
+    const fatoresEl = document.getElementById('saudeFatores');
+    const notaEl = document.getElementById('saudeNota');
+
+    if (renda <= 0) {
+        scoreEl.textContent = '—';
+        if (classeEl) { classeEl.textContent = 'Sem dados'; classeEl.className = 'saude-badge'; }
+        if (fatoresEl) fatoresEl.innerHTML = '<p class="empty-state">Cadastre receitas para calcular seu score.</p>';
+        return;
+    }
+
+    const clamp01 = (v) => Math.max(0, Math.min(1, v));
+    // Escala linear: 1 quando <= bom, 0 quando >= ruim
+    const escala = (v, bom, ruim) => clamp01((ruim - v) / (ruim - bom));
+
+    const fatores = [];
+
+    // 1. Reserva de emergência: meses de gasto cobertos (6 meses = nota cheia)
+    const mesesCobertos = gastoMedio > 0 ? reserva / gastoMedio : (reserva > 0 ? 6 : 0);
+    fatores.push({
+        nome: 'Reserva de emergência',
+        max: 25,
+        pts: 25 * clamp01(mesesCobertos / 6),
+        detalhe: `${mesesCobertos.toFixed(1)} mês(es) de gasto cobertos (meta: 6)`
+    });
+
+    // 2. Comprometimento da renda com parcelas (<=10% ótimo, >=50% crítico)
+    const pctCompromet = (snap.comprometMes / renda) * 100;
+    fatores.push({
+        nome: 'Comprometimento da renda',
+        max: 20,
+        pts: 20 * escala(pctCompromet, 10, 50),
+        detalhe: `${pctCompromet.toFixed(1)}% da renda em parcelas (ideal: até 10%)`
+    });
+
+    // 3. Dívidas: total parcelado futuro vs renda mensal (<=1x ótimo, >=6x crítico)
+    const razaoDivida = snap.totalFuturo / renda;
+    fatores.push({
+        nome: 'Dívidas parceladas',
+        max: 20,
+        pts: 20 * escala(razaoDivida, 1, 6),
+        detalhe: `${razaoDivida.toFixed(1)}x a renda mensal (ideal: até 1x)`
+    });
+
+    // 4. Fluxo de caixa: taxa de poupança média (>=25% ótimo, <=0 crítico)
+    const porMesR = {}, porMesG = {};
+    allTransactions.forEach(t => {
+        const mk = mesKey(t.data);
+        if (!mk) return;
+        if (t.tipo === 'receita') porMesR[mk] = (porMesR[mk] || 0) + t.valor;
+        else porMesG[mk] = (porMesG[mk] || 0) + t.valor;
+    });
+    const hoje = new Date();
+    const taxas = [];
+    for (let i = 0; i < 3; i++) {
+        const mk = mesKeyFromDate(new Date(hoje.getFullYear(), hoje.getMonth() - i, 1));
+        if ((porMesR[mk] || 0) > 0) taxas.push(((porMesR[mk] - (porMesG[mk] || 0)) / porMesR[mk]) * 100);
+    }
+    const poupancaMedia = taxas.length ? taxas.reduce((a, b) => a + b, 0) / taxas.length : 0;
+    fatores.push({
+        nome: 'Fluxo de caixa',
+        max: 25,
+        pts: 25 * clamp01(poupancaMedia / 25),
+        detalhe: `poupança média de ${poupancaMedia.toFixed(1)}% nos últimos meses (meta: 25%)`
+    });
+
+    // 5. Gastos recorrentes fixos vs renda (<=30% ótimo, >=70% crítico)
+    const recorrentesGasto = (allRecorrencias || [])
+        .filter(r => r.ativo && r.tipo !== 'receita')
+        .reduce((sum, r) => sum + (parseFloat(r.valor) || 0), 0);
+    const pctRecorrente = (recorrentesGasto / renda) * 100;
+    fatores.push({
+        nome: 'Gastos recorrentes',
+        max: 10,
+        pts: recorrentesGasto > 0 ? 10 * escala(pctRecorrente, 30, 70) : 10,
+        detalhe: recorrentesGasto > 0
+            ? `${pctRecorrente.toFixed(1)}% da renda em gastos fixos (ideal: até 30%)`
+            : 'nenhuma recorrência de gasto cadastrada'
+    });
+
+    const score = Math.round(fatores.reduce((sum, f) => sum + f.pts, 0));
+    scoreEl.textContent = score;
+
+    let classe, corClasse;
+    if (score >= 80)      { classe = '🟢 Excelente'; corClasse = 'excelente'; }
+    else if (score >= 60) { classe = '🔵 Boa';       corClasse = 'boa'; }
+    else if (score >= 40) { classe = '🟡 Atenção';   corClasse = 'atencao'; }
+    else                  { classe = '🔴 Crítica';   corClasse = 'critica'; }
+    if (classeEl) { classeEl.textContent = classe; classeEl.className = 'saude-badge ' + corClasse; }
+
+    if (fatoresEl) {
+        fatoresEl.innerHTML = fatores.map(f => {
+            const pct = (f.pts / f.max) * 100;
+            return `
+            <div class="ranking-item">
+                <div class="ranking-rank">${Math.round(f.pts)}</div>
+                <div class="ranking-body">
+                    <div class="ranking-top">
+                        <span class="ranking-desc">${f.nome} <span class="saude-detalhe">· ${f.detalhe}</span></span>
+                        <span class="ranking-val">${Math.round(f.pts)}/${f.max}</span>
+                    </div>
+                    <div class="ranking-bar-wrap"><div class="ranking-bar" style="width:${pct.toFixed(0)}%"></div></div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+    if (notaEl) {
+        notaEl.textContent = 'Baseado em renda média dos últimos 3 meses, reserva, parcelas ativas e recorrências cadastradas.';
+    }
+}
+
+// Listeners do Controle de Compras
+document.addEventListener('DOMContentLoaded', () => {
+    ['tipo', 'valor', 'num_parcelas'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updateCompraImpacto);
+            el.addEventListener('change', updateCompraImpacto);
+        }
+    });
+});

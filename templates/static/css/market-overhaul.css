@@ -1542,3 +1542,72 @@ button[type="submit"]:hover,
         font-size: 0.6rem !important;
     }
 }
+
+/* ===================================
+   PLANEJAMENTO — Saúde e Simulador
+   =================================== */
+.saude-hero {
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    flex-wrap: wrap !important;
+}
+
+.saude-score {
+    font-family: 'IBM Plex Mono', 'Courier New', monospace !important;
+    font-size: 3rem !important;
+    font-weight: 700 !important;
+    color: var(--prem-text-bright) !important;
+    line-height: 1 !important;
+}
+
+.saude-score-max {
+    font-size: 1.2rem !important;
+    color: var(--prem-text-muted) !important;
+    font-weight: 600 !important;
+}
+
+.saude-badge {
+    padding: 5px 14px !important;
+    border-radius: 999px !important;
+    font-size: 0.85rem !important;
+    font-weight: 700 !important;
+    border: 1px solid var(--prem-border) !important;
+    background: var(--prem-panel-2) !important;
+    color: var(--prem-text-soft) !important;
+}
+
+.saude-badge.excelente {
+    background: var(--prem-bull-soft) !important;
+    border-color: var(--prem-bull-border) !important;
+    color: var(--prem-bull) !important;
+}
+
+.saude-badge.boa {
+    background: var(--prem-accent-soft) !important;
+    border-color: var(--prem-border-hover) !important;
+    color: var(--prem-accent) !important;
+}
+
+.saude-badge.atencao {
+    background: var(--prem-gold-soft) !important;
+    border-color: var(--prem-gold-border) !important;
+    color: var(--prem-gold) !important;
+}
+
+.saude-badge.critica {
+    background: var(--prem-bear-soft) !important;
+    border-color: var(--prem-bear-border) !important;
+    color: var(--prem-bear) !important;
+}
+
+.saude-detalhe {
+    color: var(--prem-text-muted) !important;
+    font-weight: 400 !important;
+    font-size: 0.75rem !important;
+}
+
+.sim-seta {
+    color: var(--prem-text-muted) !important;
+    margin: 0 4px !important;
+}
