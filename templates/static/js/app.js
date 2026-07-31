@@ -36,7 +36,8 @@ function navigateTo(page) {
         calendario: 'Calendário',
         quitacao: 'Modo Quitação',
         simulador: 'Simulador',
-        saude: 'Saúde Financeira'
+        saude: 'Saúde Financeira',
+        metas: 'Metas'
     };
     const titleEl = document.getElementById('pageTitle');
     if (titleEl) titleEl.textContent = titles[page] || page;
@@ -45,6 +46,7 @@ function navigateTo(page) {
 
     if (page === 'quitacao' && typeof renderQuitacao === 'function') renderQuitacao();
     if (page === 'saude' && typeof renderSaude === 'function') renderSaude();
+    if (page === 'metas' && typeof renderMetas === 'function') renderMetas();
 
     // Resize charts after page transition
     setTimeout(() => {
@@ -1639,6 +1641,7 @@ async function atualizarSaldos() {
             const reservaResp = await fetch('/api/reserva/movimentos');
             const reservaJson = await reservaResp.json();
             reservaMovsAtual = reservaJson.movimentos || [];
+            reservaMovimentos = reservaMovsAtual;
             reservaMovsAtual.forEach(m => {
                 if (!m.data) return;
                 const mDate = new Date(m.data + 'T00:00:00');
@@ -1890,6 +1893,8 @@ async function atualizarSaldos() {
         renderQuitacao();
         renderSaude();
         updateCompraImpacto();
+        renderMetas();
+        generateInsights();
     } catch (error) {
         console.error('Erro ao calcular saldos:', error);
     }
@@ -3755,4 +3760,323 @@ document.addEventListener('DOMContentLoaded', () => {
             el.addEventListener('change', updateCompraImpacto);
         }
     });
+});
+
+// ===================================
+// METAS FINANCEIRAS
+// ===================================
+let allMetas = [];
+
+const META_CATEGORIAS = {
+    reserva:      { label: '🏦 Reserva',      auto: true },
+    patrimonio:   { label: '💰 Patrimônio',   auto: true },
+    parcelas_max: { label: '💳 Limite parcelas', auto: true, invertida: true },
+    economia:     { label: '📅 Economia no ano', auto: true },
+    investimento: { label: '📈 Investimento', auto: false },
+    outro:        { label: '🎯 Meta',         auto: false }
+};
+
+async function loadMetas() {
+    try {
+        const response = await fetch('/api/metas');
+        const data = await response.json();
+        allMetas = Array.isArray(data) ? data : [];
+        renderMetas();
+    } catch (error) {
+        console.error('Erro ao carregar metas:', error);
+    }
+}
+
+// Valor atual de uma meta automática, calculado dos dados reais
+function getMetaValorAtual(meta) {
+    const cat = meta.categoria || 'outro';
+    if (cat === 'reserva') {
+        return (reservaMovimentos || []).reduce((sum, m) => {
+            const v = parseFloat(m.valor) || 0;
+            return sum + (m.tipo === 'retirar' ? -v : v);
+        }, 0);
+    }
+    if (cat === 'patrimonio') {
+        const reserva = getMetaValorAtual({ categoria: 'reserva' });
+        return ultimoSaldoProjetado + reserva;
+    }
+    if (cat === 'parcelas_max') {
+        return getDebtSnapshot().comprometMes;
+    }
+    if (cat === 'economia') {
+        const ano = new Date().getFullYear();
+        let saldo = 0;
+        allTransactions.forEach(t => {
+            const d = new Date(t.data + 'T00:00:00');
+            if (d.getFullYear() !== ano || d > new Date()) return;
+            saldo += (t.tipo === 'receita' ? t.valor : -t.valor);
+        });
+        return saldo;
+    }
+    return parseFloat(meta.valor_atual) || 0;
+}
+
+function renderMetas() {
+    const container = document.getElementById('metasList');
+    if (!container) return;
+
+    const ativas = allMetas.filter(m => m.status !== 'cancelada');
+    if (!ativas.length) {
+        container.innerHTML = '<p class="empty-state">Nenhuma meta ainda. Crie a primeira no formulário acima.</p>';
+        return;
+    }
+
+    container.innerHTML = ativas.map(meta => {
+        const cat = META_CATEGORIAS[meta.categoria] || META_CATEGORIAS.outro;
+        const alvo = parseFloat(meta.valor_alvo) || 0;
+        const atual = getMetaValorAtual(meta);
+        const pct = alvo > 0 ? (atual / alvo) * 100 : 0;
+        const pctBar = Math.max(0, Math.min(100, pct));
+        const concluida = meta.status === 'concluida' || (!cat.invertida && pct >= 100);
+
+        // Meta invertida (limite): estourar é ruim
+        let corBar = '';
+        let statusTxt = '';
+        if (cat.invertida) {
+            corBar = pct > 100 ? 'background: var(--prem-bear) !important;'
+                   : pct > 80 ? 'background: var(--prem-gold) !important;' : '';
+            statusTxt = pct > 100 ? '🔴 limite estourado' : pct > 80 ? '🟡 perto do limite' : '🟢 dentro do limite';
+        } else {
+            statusTxt = concluida ? '✅ concluída' : pct.toFixed(0) + '%';
+        }
+
+        let prazoTxt = '';
+        if (meta.data_fim) {
+            const dias = Math.ceil((new Date(meta.data_fim + 'T00:00:00') - new Date()) / 86400000);
+            prazoTxt = dias >= 0 ? ` · ${dias} dia(s) restantes` : ' · prazo vencido';
+        }
+
+        const botoes = [
+            !cat.auto ? `<button type="button" class="btn-sm" onclick="atualizarValorMeta('${meta.id}')">Atualizar valor</button>` : '',
+            !concluida && !cat.invertida ? `<button type="button" class="btn-sm" onclick="concluirMeta('${meta.id}')">Concluir</button>` : '',
+            `<button type="button" class="btn-danger btn-sm" onclick="deleteMeta('${meta.id}')">Excluir</button>`
+        ].filter(Boolean).join(' ');
+
+        return `
+        <div class="ranking-item">
+            <div class="ranking-rank">${cat.invertida ? (pct > 100 ? '!' : 'OK') : Math.min(999, Math.round(pct)) + '%'}</div>
+            <div class="ranking-body">
+                <div class="ranking-top">
+                    <span class="ranking-desc">${escapeHtml(meta.nome)} <span class="saude-detalhe">· ${cat.label}${cat.auto ? ' · automática' : ''}${prazoTxt}</span></span>
+                    <span class="ranking-val">${formatCurrency(atual)} / ${formatCurrency(alvo)} <span class="saude-detalhe">${statusTxt}</span></span>
+                </div>
+                <div class="ranking-bar-wrap"><div class="ranking-bar" style="width:${pctBar.toFixed(0)}%; ${corBar}"></div></div>
+                <div style="margin-top: 6px; display: flex; gap: 6px;">${botoes}</div>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+async function saveMeta(event) {
+    event.preventDefault();
+    const payload = {
+        nome: document.getElementById('metaNome').value.trim(),
+        categoria: document.getElementById('metaCategoria').value,
+        valor_alvo: parseFloat(document.getElementById('metaValorAlvo').value) || 0,
+        valor_atual: parseFloat(document.getElementById('metaValorAtual').value) || 0,
+        data_fim: document.getElementById('metaDataFim').value || null
+    };
+    if (!payload.nome || payload.valor_alvo <= 0) {
+        showMessage('✗ Preencha nome e valor alvo da meta.', 'error');
+        return;
+    }
+    try {
+        const response = await fetch('/api/metas', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        if (result.success) {
+            showMessage('✓ Meta criada!', 'success');
+            document.getElementById('metaForm').reset();
+            await loadMetas();
+        } else {
+            showMessage('✗ Erro ao criar meta: ' + (result.error || ''), 'error');
+        }
+    } catch (error) {
+        showMessage('✗ Erro ao criar meta.', 'error');
+    }
+}
+
+async function atualizarValorMeta(metaId) {
+    const meta = allMetas.find(m => m.id === metaId);
+    if (!meta) return;
+    const novo = prompt(`Valor atual da meta "${meta.nome}":`, meta.valor_atual || 0);
+    if (novo === null) return;
+    const valor = parseFloat(String(novo).replace(',', '.'));
+    if (isNaN(valor) || valor < 0) {
+        showMessage('✗ Valor inválido.', 'error');
+        return;
+    }
+    await updateMetaCampos(metaId, { valor_atual: valor });
+}
+
+async function concluirMeta(metaId) {
+    await updateMetaCampos(metaId, { status: 'concluida' });
+}
+
+async function updateMetaCampos(metaId, campos) {
+    const meta = allMetas.find(m => m.id === metaId);
+    if (!meta) return;
+    try {
+        const response = await fetch(`/api/metas/${metaId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                nome: meta.nome,
+                valor_alvo: meta.valor_alvo,
+                valor_atual: campos.valor_atual !== undefined ? campos.valor_atual : meta.valor_atual,
+                data_fim: meta.data_fim,
+                categoria: meta.categoria,
+                status: campos.status || meta.status || 'ativa'
+            })
+        });
+        const result = await response.json();
+        if (result.success) {
+            showMessage('✓ Meta atualizada!', 'success');
+            await loadMetas();
+        } else {
+            showMessage('✗ Erro ao atualizar meta.', 'error');
+        }
+    } catch (error) {
+        showMessage('✗ Erro ao atualizar meta.', 'error');
+    }
+}
+
+async function deleteMeta(metaId) {
+    if (!confirm('Excluir esta meta?')) return;
+    try {
+        const response = await fetch(`/api/metas/${metaId}`, { method: 'DELETE' });
+        const result = await response.json();
+        if (result.success) {
+            showMessage('✓ Meta excluída.', 'success');
+            await loadMetas();
+        } else {
+            showMessage('✗ Erro ao excluir meta.', 'error');
+        }
+    } catch (error) {
+        showMessage('✗ Erro ao excluir meta.', 'error');
+    }
+}
+
+// ===================================
+// INSIGHTS INTELIGENTES
+// ===================================
+function generateInsights() {
+    const container = document.getElementById('insightsList');
+    if (!container) return;
+
+    const insights = [];
+    const hoje = new Date();
+    const mesAtualKey = mesKeyFromDate(hoje);
+    const mesAnteriorKey = mesKeyFromDate(new Date(hoje.getFullYear(), hoje.getMonth() - 1, 1));
+
+    // Totais por mês (gastos no mês da compra)
+    const porMesR = {}, porMesG = {};
+    allTransactions.forEach(t => {
+        const mk = mesKey(t.data);
+        if (!mk) return;
+        if (t.tipo === 'receita') porMesR[mk] = (porMesR[mk] || 0) + t.valor;
+        else porMesG[mk] = (porMesG[mk] || 0) + t.valor;
+    });
+
+    const gastosAtual = porMesG[mesAtualKey] || 0;
+    const gastosAnterior = porMesG[mesAnteriorKey] || 0;
+    const receitasAtual = porMesR[mesAtualKey] || 0;
+
+    // 1. Gastos vs mês anterior
+    if (gastosAnterior > 0 && gastosAtual > 0) {
+        const diff = ((gastosAtual - gastosAnterior) / gastosAnterior) * 100;
+        if (diff > 10) insights.push({ nivel: 'vermelho', texto: `Gastos aumentaram ${diff.toFixed(0)}% em relação ao mês passado (${formatCurrency(gastosAnterior)} → ${formatCurrency(gastosAtual)}).` });
+        else if (diff < -10) insights.push({ nivel: 'verde', texto: `Gastos caíram ${Math.abs(diff).toFixed(0)}% em relação ao mês passado. Continue assim!` });
+        else insights.push({ nivel: 'verde', texto: `Gastos estáveis em relação ao mês passado (${diff >= 0 ? '+' : ''}${diff.toFixed(0)}%).` });
+    }
+
+    // 2. Taxa de poupança do mês
+    if (receitasAtual > 0) {
+        const taxa = ((receitasAtual - gastosAtual) / receitasAtual) * 100;
+        if (taxa < 0) insights.push({ nivel: 'vermelho', texto: `Você gastou mais do que ganhou este mês (${taxa.toFixed(0)}% da renda).` });
+        else if (taxa < 20) insights.push({ nivel: 'amarelo', texto: `Taxa de poupança de ${taxa.toFixed(0)}% este mês — abaixo da meta de 20%.` });
+        else insights.push({ nivel: 'verde', texto: `Você está poupando ${taxa.toFixed(0)}% da renda este mês. Dentro do orçamento!` });
+    }
+
+    const snap = getDebtSnapshot();
+    const renda = getRendaMensalMedia();
+
+    // 3. Renda comprometida com parcelas
+    if (renda > 0 && snap.comprometMes > 0) {
+        const pct = (snap.comprometMes / renda) * 100;
+        if (pct > 50) insights.push({ nivel: 'vermelho', texto: `${pct.toFixed(0)}% da sua renda está comprometida com parcelas — nível crítico.` });
+        else if (pct > 30) insights.push({ nivel: 'amarelo', texto: `Sua renda comprometida com parcelas está em ${pct.toFixed(0)}% — acima do recomendado (30%).` });
+        else insights.push({ nivel: 'verde', texto: `Renda comprometida com parcelas: ${pct.toFixed(0)}% — dentro do saudável.` });
+    }
+
+    // 4. Próxima liberação de caixa
+    if (snap.grupos.length > 0) {
+        const porFim = {};
+        snap.grupos.forEach(g => {
+            const mk = mesKeyFromDate(g.dataUltima);
+            porFim[mk] = (porFim[mk] || 0) + g.valor;
+        });
+        const primeiroMes = Object.keys(porFim).sort()[0];
+        const [ano, mes] = primeiroMes.split('-').map(Number);
+        const liberaEm = new Date(ano, mes, 1); // 1º dia do mês seguinte ao fim das parcelas
+        const dias = Math.ceil((liberaEm - hoje) / 86400000);
+        if (dias > 0) insights.push({ nivel: 'verde', texto: `Em ${dias} dia(s) você libera ${formatCurrency(porFim[primeiroMes])}/mês (fim das parcelas de ${mesLabel(primeiroMes)}).` });
+
+        // 5. Previsão de quitação total
+        if (snap.dataQuitacao) {
+            const meses = (snap.dataQuitacao.getFullYear() - hoje.getFullYear()) * 12 + (snap.dataQuitacao.getMonth() - hoje.getMonth());
+            if (meses > 0) insights.push({ nivel: 'verde', texto: `Mantendo este ritmo (sem novas parcelas), você quita todas as dívidas em ${meses} mês(es) — ${mesLabel(mesKeyFromDate(snap.dataQuitacao))}.` });
+        }
+    } else {
+        insights.push({ nivel: 'verde', texto: 'Você não tem nenhuma parcela ativa. Zero dívidas parceladas! 🎉' });
+    }
+
+    // 6. Reserva de emergência
+    const reserva = (reservaMovimentos || []).reduce((sum, m) => {
+        const v = parseFloat(m.valor) || 0;
+        return sum + (m.tipo === 'retirar' ? -v : v);
+    }, 0);
+    const gastoMedio = getGastoMensalMedia();
+    if (gastoMedio > 0) {
+        const meses = reserva / gastoMedio;
+        if (meses >= 6) insights.push({ nivel: 'verde', texto: `Sua reserva cobre ${meses.toFixed(1)} meses de gastos — meta de 6 meses atingida!` });
+        else if (meses >= 1) insights.push({ nivel: 'amarelo', texto: `Sua reserva cobre ${meses.toFixed(1)} mês(es) de gastos (meta: 6 meses).` });
+        else insights.push({ nivel: 'vermelho', texto: 'Sua reserva de emergência cobre menos de 1 mês de gastos. Priorize guardar dinheiro.' });
+    }
+
+    // 7. Progresso de metas
+    const metasAtivas = (allMetas || []).filter(m => m.status === 'ativa' && !(META_CATEGORIAS[m.categoria] || {}).invertida);
+    if (metasAtivas.length > 0) {
+        let melhor = null, melhorPct = -1;
+        metasAtivas.forEach(m => {
+            const alvo = parseFloat(m.valor_alvo) || 0;
+            if (alvo <= 0) return;
+            const pct = (getMetaValorAtual(m) / alvo) * 100;
+            if (pct > melhorPct) { melhorPct = pct; melhor = m; }
+        });
+        if (melhor && melhorPct >= 100) insights.push({ nivel: 'verde', texto: `Meta "${melhor.nome}" atingida! 🎉` });
+        else if (melhor && melhorPct > 0) insights.push({ nivel: 'verde', texto: `Meta "${melhor.nome}" está ${melhorPct.toFixed(0)}% concluída.` });
+    }
+
+    const icones = { verde: '🟢', amarelo: '🟡', vermelho: '🔴' };
+    container.innerHTML = insights.length
+        ? insights.slice(0, 7).map(i => `
+            <div class="insight-item ${i.nivel}">
+                <span class="insight-icone">${icones[i.nivel]}</span>
+                <span class="insight-texto">${i.texto}</span>
+            </div>`).join('')
+        : '<p class="empty-state">Cadastre transações para gerar insights.</p>';
+}
+
+// Carrega metas junto com o restante
+document.addEventListener('DOMContentLoaded', () => {
+    loadMetas();
 });

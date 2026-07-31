@@ -1611,3 +1611,39 @@ button[type="submit"]:hover,
     color: var(--prem-text-muted) !important;
     margin: 0 4px !important;
 }
+
+/* ===================================
+   INSIGHTS INTELIGENTES
+   =================================== */
+.insights-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+}
+
+.insight-item {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 10px 12px !important;
+    border-radius: var(--prem-radius-sm) !important;
+    background: var(--prem-panel-2) !important;
+    border-left: 3px solid var(--prem-border-hover) !important;
+    font-size: 0.85rem !important;
+    color: var(--prem-text) !important;
+}
+
+.insight-item.verde    { border-left-color: var(--prem-bull) !important; }
+.insight-item.amarelo  { border-left-color: var(--prem-gold) !important; }
+.insight-item.vermelho { border-left-color: var(--prem-bear) !important; }
+
+.insight-icone {
+    flex: 0 0 auto !important;
+    font-size: 0.8rem !important;
+    line-height: 1.5 !important;
+}
+
+.insight-texto {
+    flex: 1 1 auto !important;
+    line-height: 1.5 !important;
+}
