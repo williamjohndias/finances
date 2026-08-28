@@ -1474,8 +1474,9 @@ async function loadDinheiroGuardado() {
             valor: parseFloat(data.valor || 0),
             descricao: data.descricao || 'Reserva'
         };
-        const valorEl = document.getElementById('dinheiroGuardado');
-        if (valorEl) valorEl.textContent = formatCurrency(dinheiroGuardadoData.valor);
+        // Nota: o card "Dinheiro Guardado" do Dashboard é atualizado em
+        // atualizarSaldos(), que respeita o mês filtrado. dinheiroGuardadoData
+        // aqui guarda sempre o total atual (usado nas dicas de Saúde Financeira).
     } catch (error) {
         console.error('Erro ao carregar dinheiro guardado:', error);
     }
@@ -1490,8 +1491,6 @@ async function loadReserva() {
         dinheiroGuardadoData.valor = total;
         const totalEl = document.getElementById('reservaTotal');
         if (totalEl) totalEl.textContent = formatCurrency(total);
-        const kpiEl = document.getElementById('dinheiroGuardado');
-        if (kpiEl) kpiEl.textContent = formatCurrency(total);
         renderReserva();
     } catch (error) {
         console.error('Erro ao carregar reserva:', error);
@@ -1747,13 +1746,33 @@ async function atualizarSaldos() {
         const mesParaKpi = dashboardMonth || mesAtual;
         const monthDataKpi = monthlyData[mesParaKpi] || { receitas: 0, debito: 0, faturas: 0, abatimentos: 0, reserva: 0 };
 
-        const totalReserva = reservaMovsAtual.reduce((sum, m) => sum + (m.tipo === 'retirar' ? -parseFloat(m.valor || 0) : parseFloat(m.valor || 0)), 0);
+        // Reserva: cada movimento só entra no total até o mês da sua própria data.
+        // Sem filtro de mês, considera o histórico completo (total atual).
+        const totalReserva = reservaMovsAtual.reduce((sum, m) => {
+            if (dashboardMonth) {
+                const mk = mesKey(m.data);
+                if (!mk || mk > dashboardMonth) return sum;
+            }
+            const v = parseFloat(m.valor) || 0;
+            return sum + (m.tipo === 'retirar' ? -v : v);
+        }, 0);
         const patrimonioLiquido = saldoProjetado + totalReserva;
 
         const patrimonioLiquidoEl = document.getElementById('patrimonioLiquido');
         if (patrimonioLiquidoEl) {
             patrimonioLiquidoEl.textContent = formatCurrency(patrimonioLiquido);
             patrimonioLiquidoEl.className = 'kpi-mini-value ' + (patrimonioLiquido >= 0 ? 'positive' : 'negative');
+        }
+
+        // Dinheiro Guardado: mesmo saldo de reserva usado no Patrimônio Líquido,
+        // respeitando o mês filtrado (cada movimento conta a partir da sua própria data)
+        const dinheiroGuardadoEl = document.getElementById('dinheiroGuardado');
+        if (dinheiroGuardadoEl) dinheiroGuardadoEl.textContent = formatCurrency(totalReserva);
+        const dinheiroGuardadoFooterEl = document.getElementById('dinheiroGuardadoFooter');
+        if (dinheiroGuardadoFooterEl) {
+            dinheiroGuardadoFooterEl.textContent = dashboardMonth
+                ? `Reserva até ${mesLabel(dashboardMonth)} — gerencie em Transações`
+                : 'Reserva — gerencie em Transações';
         }
 
         // Taxa de poupança do mês: (receitas - gastos) / receitas
