@@ -115,37 +115,53 @@ class PluggyTests(unittest.TestCase):
     def test_endpoint_disabled_and_authorized(self):
         class Client:
             closed = False
-            def connect_token(self):
+            def connect_token(self, binding):
+                assert binding == 'server-binding'
                 return 'temporary-token'
             def close(self):
                 self.closed = True
         provider = Client()
+        class Services:
+            def user(self, token):
+                if token != 'verified-user-token':
+                    from open_finance import FinanceError
+                    raise FinanceError(401, 'Authentication required')
+                return 'owner'
+            def store(self):
+                return self
+            def new_consent(self, owner):
+                assert owner == 'owner'
+                return {'id': 'consent', 'client_user_id': 'server-binding'}
         app = Flask(__name__)
-        register_pluggy(app, lambda: provider)
+        register_pluggy(app, lambda: provider, Services)
         browser = app.test_client()
         path = '/api/open-finance/connect-token'
         with patch.dict(os.environ, {}, clear=True):
             self.assertEqual(browser.post(path).status_code, 404)
         with patch.dict(os.environ, {'PLUGGY_ENABLED': 'true'}, clear=True):
-            self.assertEqual(browser.post(path).status_code, 503)
+            self.assertEqual(browser.post(path, headers={'Origin': 'http://localhost'}).status_code, 401)
         settings = {'PLUGGY_ENABLED': 'true', 'OPEN_FINANCE_ADMIN_TOKEN': 'a' * 40}
         with patch.dict(os.environ, settings, clear=True):
-            self.assertEqual(browser.post(path).status_code, 401)
-            response = browser.post(path, headers={'Authorization': 'Bearer ' + 'a' * 40})
+            self.assertEqual(browser.post(path, headers={'Authorization': 'Bearer ' + 'a' * 40}).status_code, 401)
+            response = browser.post(path, headers={'Authorization': 'Bearer verified-user-token'}, json={'consent': True})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json, {'accessToken': 'temporary-token'})
-            self.assertEqual(response.headers['Cache-Control'], 'no-store')
+            self.assertEqual(response.json, {'accessToken': 'temporary-token', 'consentId': 'consent'})
+            self.assertIn('no-store', response.headers['Cache-Control'])
             self.assertTrue(provider.closed)
 
     def test_endpoint_hides_provider_error(self):
         def fail():
             raise PluggyError('sensitive provider error')
         app = Flask(__name__)
-        register_pluggy(app, fail)
+        class Services:
+            def user(self, token): return 'owner'
+            def store(self): return self
+            def new_consent(self, owner): return {'id': 'id', 'client_user_id': 'binding'}
+        register_pluggy(app, fail, Services)
         with patch.dict(os.environ, {'PLUGGY_ENABLED': 'true',
                                    'OPEN_FINANCE_ADMIN_TOKEN': 'a' * 40}, clear=True):
             response = app.test_client().post('/api/open-finance/connect-token',
-                headers={'Authorization': 'Bearer ' + 'a' * 40})
+                headers={'Authorization': 'Bearer test-user'}, json={'consent': True})
         self.assertEqual(response.status_code, 502)
         self.assertNotIn(b'sensitive', response.data)
 

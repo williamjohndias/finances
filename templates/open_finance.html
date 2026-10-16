@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Open Finance — FINANCES</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/open-finance.css') }}">
+</head>
+<body>
+<main>
+    <a href="/">Voltar ao FINANCES</a>
+    <h1>Open Finance · homologação</h1>
+    <p>Origem: Pluggy / Open Finance. Estes dados estão separados do dashboard e
+       não alteram receitas, despesas, faturas ou projeções.</p>
+    <p>Confirmado pelo banco não significa conciliado. Pendências não são realizados.</p>
+    <p id="status" role="status" aria-live="polite">{{ 'Entre para consultar suas conexões.' if enabled else 'Integração desativada. Homologação ainda não concluída.' }}</p>
+    {% if enabled %}
+    <form id="login">
+        <h2>Acesso com sua conta Supabase Auth</h2>
+        <label>E-mail <input name="email" type="email" autocomplete="username" required></label>
+        <label>Senha <input name="password" type="password" autocomplete="current-password" required></label>
+        <button type="submit">Entrar</button>
+        <p>Use HTTPS. Não informe chaves de API nesta tela.</p>
+    </form>
+    <section id="inventory" hidden>
+        <button id="refresh" type="button">Atualizar consulta</button>
+        <button id="sync" type="button">Solicitar sincronização</button>
+        <button id="logout" type="button">Sair</button>
+        <h2>Conexões e consentimentos</h2>
+        <div id="connections"></div>
+        <h2>Saldos bancários em preparação</h2>
+        <p>São observações bancárias, sem soma ao saldo do FINANCES.</p>
+        <div id="accounts"></div>
+        <h2>Movimentações importadas</h2>
+        <p>Últimos 100 registros coletados. Aguardam conciliação com o histórico.</p>
+        <div id="transactions"></div>
+    </section>
+    <script src="{{ url_for('static', filename='js/open-finance.js') }}" defer></script>
+    {% endif %}
+</main>
+</body>
+</html>

@@ -1,5 +1,11 @@
 # Pluggy — primeira etapa (desativada por padrão)
 
+> Registro histórico do PR #9. A implementação da Issue #10 substitui a
+> autorização administrativa por Supabase Auth e consentimentos individuais.
+> Para configuração, testes, limites e rollback atuais, siga
+> [OPEN_FINANCE_HOMOLOGATION.md](docs/OPEN_FINANCE_HOMOLOGATION.md).
+> `OPEN_FINANCE_ADMIN_TOKEN` não é mais aceito pelo endpoint.
+
 Esta etapa prepara transporte server-side, Connect Token protegido e coleta para
 staging. Não altera dados históricos, saldos, abatimentos ou projeções. Não ativa
 sincronização automática, webhooks ou conexão bancária na interface.

@@ -1,5 +1,5 @@
 /* Service Worker — FINANCES PWA */
-const CACHE_VERSION = 'finances-v7';
+const CACHE_VERSION = 'finances-v8';
 const APP_SHELL = [
   '/',
   '/static/css/style.css?v=20260828',
@@ -34,6 +34,12 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET') return;
 
   const url = new URL(req.url);
+
+  // Bank data and authenticated views must never reach the offline cache.
+  if (url.pathname === '/open-finance' || url.pathname.startsWith('/api/open-finance/')) {
+    event.respondWith(fetch(req, { cache: 'no-store' }));
+    return;
+  }
 
   // API e navegação: rede primeiro (dados sempre frescos), cache como fallback offline
   if (url.pathname.startsWith('/api/') || req.mode === 'navigate') {
