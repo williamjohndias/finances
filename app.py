@@ -9,6 +9,9 @@ template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'template
 static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), 'templates', 'static'))
 app = Flask(__name__, template_folder=template_dir, static_folder=static_dir, static_url_path='/static')
 
+from pluggy_integration import register_pluggy
+register_pluggy(app)
+
 # Importa configurações do Supabase
 try:
     from config import SUPABASE_URL, SUPABASE_KEY
