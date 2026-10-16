@@ -9,9 +9,10 @@
 <body>
 <main>
     <a href="/">Voltar ao FINANCES</a>
-    <h1>Open Finance · homologação</h1>
-    <p>Origem: Pluggy / Open Finance. Estes dados estão separados do dashboard e
-       não alteram receitas, despesas, faturas ou projeções.</p>
+    <h1>FINANCES 2.0 · Dashboard bancário</h1>
+    <p id="environment">Ambiente: {{ mode }}. {% if mode == 'sandbox' %}Dados de teste, sem dinheiro real.{% endif %}</p>
+    <p>Origem: Pluggy / Open Finance. Realizado usa apenas dados bancários confirmados
+       e conciliados. O histórico original é preservado e não é somado novamente.</p>
     <p>Confirmado pelo banco não significa conciliado. Pendências não são realizados.</p>
     <p id="status" role="status" aria-live="polite">{{ 'Entre para consultar suas conexões.' if enabled else 'Integração desativada. Homologação ainda não concluída.' }}</p>
     {% if enabled %}
@@ -26,15 +27,51 @@
         <button id="refresh" type="button">Atualizar consulta</button>
         <button id="sync" type="button">Solicitar sincronização</button>
         <button id="logout" type="button">Sair</button>
+        <h2>Realizados, projeções e pendências</h2>
+        <label>Mês <input id="month" type="month"></label>
+        <div id="dashboard" aria-live="polite"></div>
+        <h2>Conectar bancos</h2>
+        <label><input id="consent" type="checkbox"> Autorizo a coleta das minhas contas por 30 dias.
+            O consentimento bancário será confirmado no Pluggy Connect.</label>
+        <button id="connect" type="button">Conectar banco com Pluggy</button>
+        <button id="retry-binding" type="button" hidden>Tentar vincular conexão novamente</button>
+        <p>Conexões do Meu Pluggy não são automaticamente acessíveis por este aplicativo.
+            Uma conexão existente precisa ter o mesmo vínculo de usuário e cliente.</p>
         <h2>Conexões e consentimentos</h2>
         <div id="connections"></div>
         <h2>Saldos bancários em preparação</h2>
         <p>São observações bancárias, sem soma ao saldo do FINANCES.</p>
         <div id="accounts"></div>
-        <h2>Movimentações importadas</h2>
-        <p>Últimos 100 registros coletados. Aguardam conciliação com o histórico.</p>
+        <h2>Movimentações bancárias do mês</h2>
+        <p>Sem conciliação ou com revisão alterada, permanecem pendentes e fora do realizado.</p>
         <div id="transactions"></div>
+        <form id="reconcile" hidden>
+            <h2>Conciliar movimentação</h2>
+            <p id="selected"></p>
+            <label>Tratamento <select id="decision-kind">
+                <option value="pending">Manter pendente / desfazer conciliação</option>
+                <option value="income">Receita realizada</option><option value="expense">Despesa realizada</option>
+                <option value="refund">Estorno de despesa de cartão</option>
+                <option value="own_transfer">Transferência própria (neutra)</option>
+                <option value="invoice_payment">Pagamento de fatura (neutro)</option>
+                <option value="duplicate">Duplicata de outra importação</option>
+            </select></label>
+            <label>Outra movimentação <select id="counterpart"></select></label>
+            <p>Mesmo valor não comprova vínculo. Confirme a identidade da operação antes de vincular.</p>
+            <label>Registro histórico correspondente <select id="historical"></select></label>
+            <label>Data da ocorrência recorrente (quando aplicável) <input id="occurrence" type="date"></label>
+            <label>Justificativa (sem credenciais) <input id="reason" minlength="8" maxlength="300" required></label>
+            <label><input id="save-rule" type="checkbox"> Aplicar esta classificação também a lançamentos futuros
+                desta categoria bancária, nesta conta e direção. Apenas receitas, despesas e estornos.</label>
+            <label><input id="review-confirmation" type="checkbox" required> Conferi a natureza financeira e os vínculos.</label>
+            <button type="submit">Salvar decisão auditável</button>
+        </form>
+        <h2>Projeções (não realizadas)</h2><div id="projections"></div>
+        <h2>Histórico preservado (sem soma ao realizado bancário)</h2><div id="history"></div>
+        <h2>Regras aprovadas</h2><div id="rules"></div>
+        <h2>Auditoria recente</h2><div id="audit"></div>
     </section>
+    <script src="{{ url_for('static', filename='vendor/pluggy-connect-2.14.2.js') }}" defer></script>
     <script src="{{ url_for('static', filename='js/open-finance.js') }}" defer></script>
     {% endif %}
 </main>

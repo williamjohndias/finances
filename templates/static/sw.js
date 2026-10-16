@@ -1,5 +1,5 @@
 /* Service Worker — FINANCES PWA */
-const CACHE_VERSION = 'finances-v8';
+const CACHE_VERSION = 'finances-v9';
 const APP_SHELL = [
   '/',
   '/static/css/style.css?v=20260828',
@@ -46,6 +46,7 @@ self.addEventListener('fetch', (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
+          if ((res.headers.get('Cache-Control') || '').includes('no-store') || res.redirected) return res;
           const copy = res.clone();
           caches.open(CACHE_VERSION).then((cache) => cache.put(req, copy)).catch(() => {});
           return res;

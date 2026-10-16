@@ -33,3 +33,5 @@ SQL
 sql < migrations/001_open_finance_staging.sql
 sql < migrations/002_open_finance_sync.sql
 sql < tests/open_finance_database.sql
+sql < migrations/003_open_finance_release.sql
+sql < tests/open_finance_release.sql

@@ -10,6 +10,10 @@ class PluggyError(Exception):
     """Sanitized error: provider bodies may contain credentials or bank data."""
 
 
+class PluggyNotFound(PluggyError):
+    pass
+
+
 class PluggyClient:
     def __init__(self, client_id, client_secret, transport=None, sleep=time.sleep):
         if not client_id or not client_secret:
@@ -56,6 +60,10 @@ class PluggyClient:
             if not isinstance(data, dict):
                 raise ValueError()
             return data
+        except httpx.HTTPStatusError as error:
+            if error.response.status_code == 404:
+                raise PluggyNotFound('Pluggy resource unavailable') from None
+            raise PluggyError('Pluggy request failed') from None
         except (httpx.HTTPError, ValueError):
             raise PluggyError('Pluggy request failed') from None
 
@@ -68,13 +76,32 @@ class PluggyClient:
                 raise PluggyError('Pluggy authentication failed')
         return self._request(method, path, headers={'X-API-KEY': self.api_key}, **kwargs)
 
-    def connect_token(self, client_user_id=None):
+    def connect_token(self, client_user_id=None, item_id=None):
         body = {'options': {'clientUserId': client_user_id, 'avoidDuplicates': True}} if client_user_id else {}
+        if item_id:
+            body['itemId'] = item_id
         data = self._authorized('POST', '/connect_token', json=body)
         token = data.get('accessToken')
         if not isinstance(token, str) or not token:
             raise PluggyError('Pluggy connect token unavailable')
         return token
+
+    def sandbox_connectors(self):
+        ids = []
+        for page in range(1, 101):
+            data = self._authorized('GET','/connectors',params={'sandbox':'true','countries':'BR','page':page,'pageSize':100})
+            rows, total = data.get('results'),data.get('totalPages')
+            if not isinstance(rows,list) or type(total) is not int:
+                raise PluggyError('Invalid sandbox connector response')
+            for row in rows:
+                if row.get('isSandbox') is not True or type(row.get('id')) is not int:
+                    raise PluggyError('Non-sandbox connector rejected')
+                ids.append(row['id'])
+            if total <= page:
+                if not ids:
+                    raise PluggyError('Sandbox connectors unavailable')
+                return ids
+        raise PluggyError('Sandbox connector page limit')
 
     def item(self, item_id):
         from urllib.parse import quote
@@ -82,6 +109,16 @@ class PluggyClient:
         if data.get('id') != item_id or not isinstance(data.get('clientUserId'), str):
             raise PluggyError('Invalid Pluggy item')
         return data
+
+    def transaction_missing(self, account_id, external_id):
+        from urllib.parse import quote
+        try:
+            data = self._authorized('GET','/transactions/' + quote(external_id,safe=''))
+        except PluggyNotFound:
+            return True
+        if data.get('id') != external_id or data.get('accountId') != account_id:
+            raise PluggyError('Pluggy transaction identity mismatch')
+        return False
 
     def accounts(self, item_id):
         page = 1

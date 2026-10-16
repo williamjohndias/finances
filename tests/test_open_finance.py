@@ -37,6 +37,11 @@ class MemoryStore:
     def item_status(self, job, status):
         self.status = status
 
+    def verify_scope(self, job, scope):
+        assert scope == 'sandbox'
+
+    def deletions(self, job): return []
+
     def page(self, job, account_id, rows, cursor):
         for row in rows:
             self.rows[row['external_id']] = row
@@ -46,7 +51,7 @@ class MemoryStore:
 class SyncTests(unittest.TestCase):
     def provider(self):
         client = Mock()
-        client.item.return_value = {'id': 'item', 'clientUserId': 'server-binding', 'status': 'UPDATED'}
+        client.item.return_value = {'id': 'item', 'clientUserId': 'server-binding', 'status': 'UPDATED', 'connector': {'isSandbox': True}}
         client.accounts.return_value = [{'id': 'account', 'itemId': 'item', 'type': 'BANK',
                                          'currencyCode': 'BRL', 'balance': 100}]
         return client
@@ -128,7 +133,8 @@ class RouteTests(unittest.TestCase):
         self.runtime.user.side_effect = user
         self.runtime.store.return_value = self.store
         self.client = Mock()
-        self.client.item.return_value = {'id': 'item', 'clientUserId': 'server-binding', 'connector': {'name': 'Sandbox'}}
+        self.client.item.return_value = {'id': 'item', 'clientUserId': 'server-binding', 'connector': {'name': 'Sandbox', 'isSandbox': True,'id':2}}
+        self.client.sandbox_connectors.return_value = [2]
         self.client.connect_token.return_value = 'temporary-token'
         app = Flask(__name__, template_folder=str(Path(__file__).parents[1] / 'templates'))
         register_open_finance(app, lambda: self.client, lambda: self.runtime)
@@ -173,7 +179,7 @@ class RouteTests(unittest.TestCase):
         response = self.browser.post('/api/open-finance/items', headers=self.headers,
                                      json={'itemId': 'item', 'consentId': CONSENT})
         self.assertEqual(response.status_code, 201)
-        self.store.bind.assert_called_once_with(OWNER, CONSENT, self.client.item.return_value)
+        self.store.bind.assert_called_once_with(OWNER, CONSENT, self.client.item.return_value, 'sandbox')
         self.browser.delete('/api/open-finance/consents/' + CONSENT, headers=self.headers)
         self.store.revoke.assert_called_once_with(OWNER, CONSENT)
 
@@ -205,7 +211,7 @@ class RouteTests(unittest.TestCase):
         for _ in range(2):
             response = self.browser.post(path, headers={'Authorization': 'Bearer ' + 'w' * 40}, json=body)
             self.assertEqual(response.status_code, 202)
-        self.store.webhook.assert_called_with('event', 'item')
+        self.store.webhook.assert_called_with('event', 'item',None,[])
         self.store.page.assert_not_called()
 
     def test_cookie_csrf_and_secure_session(self):
@@ -288,7 +294,7 @@ class CredentialAndTransportTests(unittest.TestCase):
 
     def test_inventory_selects_do_not_expose_provider_payload(self):
         db = Mock(); query = db.table.return_value
-        for method in ('select', 'eq', 'order', 'limit'):
+        for method in ('select', 'eq', 'order', 'limit', 'in_'):
             getattr(query, method).return_value = query
         query.execute.return_value.data = []
         SupabaseStore(db).inventory(OWNER)

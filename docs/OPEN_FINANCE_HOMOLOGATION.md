@@ -1,5 +1,8 @@
 # Issue #10 — sincronização isolada para homologação
 
+> Registro do PR #11. Para Connect, conciliação, migração 003, dashboard e ativação,
+> seguir [RELEASE_2_0.md](RELEASE_2_0.md), que substitui as limitações desta etapa.
+
 ## Estado desta entrega
 
 Código baseado no PR #9, sem merge, deploy ou acesso a bancos de produção.

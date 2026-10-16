@@ -1,5 +1,11 @@
 # 💰 FINANCES - Sistema Inteligente de Controle Financeiro
 
+> **FINANCES 2.0 — Open Finance (release candidate):** Pluggy Connect, sincronização,
+> conciliação auditável e dashboard bancário estão preparados em modo opt-in.
+> Veja [roteiro de release e homologação](docs/RELEASE_2_0.md).
+> Produção permanece desativada até validação bancária e aprovação explícita;
+> as instruções legadas abaixo não substituem esse roteiro.
+
 Sistema completo e moderno de controle financeiro pessoal com design profissional, modo escuro/claro e funcionalidades avançadas.
 
 ![Versão](https://img.shields.io/badge/vers%C3%A3o-2.0.0-blue)

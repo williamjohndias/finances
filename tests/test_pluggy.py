@@ -102,6 +102,20 @@ class PluggyTests(unittest.TestCase):
             stage_account(Client(), database, 'item', 'account')
         self.assertFalse(database.rows)
 
+    def test_sandbox_filter_rejects_real_connectors_even_if_provider_filter_fails(self):
+        client = self.client(lambda r: httpx.Response(200,json={
+            'results':[{'id':2,'isSandbox':False}], 'totalPages':1}))
+        client.api_key='synthetic-key'
+        with self.assertRaises(PluggyError): client.sandbox_connectors()
+
+    def test_deletion_requires_provider_404_and_checks_transaction_account(self):
+        client = self.client(lambda r:httpx.Response(404,json={}))
+        client.api_key='synthetic-key'
+        self.assertTrue(client.transaction_missing('account','tx'))
+        client = self.client(lambda r:httpx.Response(200,json={'id':'tx','accountId':'other'}))
+        client.api_key='synthetic-key'
+        with self.assertRaises(PluggyError): client.transaction_missing('account','tx')
+
     def test_distinct_ids_with_same_amount_not_deduplicated(self):
         class Client:
             def transactions(self, account_id):
@@ -115,6 +129,7 @@ class PluggyTests(unittest.TestCase):
     def test_endpoint_disabled_and_authorized(self):
         class Client:
             closed = False
+            def sandbox_connectors(self): return [2]
             def connect_token(self, binding):
                 assert binding == 'server-binding'
                 return 'temporary-token'
@@ -122,6 +137,7 @@ class PluggyTests(unittest.TestCase):
                 self.closed = True
         provider = Client()
         class Services:
+            def rate_limit(self, bucket, limit): return True
             def user(self, token):
                 if token != 'verified-user-token':
                     from open_finance import FinanceError
@@ -145,7 +161,7 @@ class PluggyTests(unittest.TestCase):
             self.assertEqual(browser.post(path, headers={'Authorization': 'Bearer ' + 'a' * 40}).status_code, 401)
             response = browser.post(path, headers={'Authorization': 'Bearer verified-user-token'}, json={'consent': True})
             self.assertEqual(response.status_code, 200)
-            self.assertEqual(response.json, {'accessToken': 'temporary-token', 'consentId': 'consent'})
+            self.assertEqual(response.json, {'accessToken': 'temporary-token', 'consentId': 'consent', 'includeSandbox': True,'connectorIds':[2]})
             self.assertIn('no-store', response.headers['Cache-Control'])
             self.assertTrue(provider.closed)
 
@@ -154,6 +170,7 @@ class PluggyTests(unittest.TestCase):
             raise PluggyError('sensitive provider error')
         app = Flask(__name__)
         class Services:
+            def rate_limit(self, bucket, limit): return True
             def user(self, token): return 'owner'
             def store(self): return self
             def new_consent(self, owner): return {'id': 'id', 'client_user_id': 'binding'}

@@ -43,3 +43,16 @@ Python 3.12: `python3 -m venv venv` e
 Testes: `venv/bin/python -m unittest discover -s tests -v`.
 Servidor: `venv/bin/python -m flask --app app run --no-reload --no-debugger`.
 Não confundir respostas vazias sem Supabase com integração validada.
+
+## Release 2.0
+- Instruções atuais: `docs/RELEASE_2_0.md`; 001/002/003 devem ser revisadas e
+  homologadas antes de qualquer aplicação de produção autorizada.
+- Dashboard bancário usa decisões revisionadas e auditáveis. Dados realizados
+  precisam estar POSTED, não futuros e conciliados. Não somar histórico novamente.
+- Sandbox e produção são separados por verificação server-side de isSandbox;
+  nunca renomear dados reais como fixtures. Falta de campos não significa zero.
+- Testar também `bash tests/run_postgres.sh`, `node --test tests/open-finance-ui.test.cjs`
+  e `npm run test:e2e` em `frontend/`. Usar `npm ci --ignore-scripts` e lockfile;
+  SDK oficial fixado, sem chaves no frontend. Bundle deve ser reproduzível.
+- Não reabrir APIs legadas sem proprietário durante rollback. Conservar auditoria,
+  snapshots e histórico; não gerar lançamentos fictícios para eliminar pendências.

@@ -17,6 +17,7 @@ class PluggySandboxContract(unittest.TestCase):
         item = client.item(item_id)
         # Do not include the provider response in assertion failures.
         self.assertTrue(item.get('connector', {}).get('isSandbox') is True, 'Sandbox connector required')
+        self.assertTrue(item['connector'].get('id') in client.sandbox_connectors(), 'Sandbox connector allowlist must include the fixture')
         accounts = list(client.accounts(item_id))
         self.assertTrue(bool(accounts), 'Sandbox fixture must contain an account')
         total = 0

@@ -1,5 +1,8 @@
 # Pluggy — primeira etapa (desativada por padrão)
 
+> Guia vigente para o release candidate da Issue #12:
+> [RELEASE_2_0.md](docs/RELEASE_2_0.md). As etapas abaixo são históricas.
+
 > Registro histórico do PR #9. A implementação da Issue #10 substitui a
 > autorização administrativa por Supabase Auth e consentimentos individuais.
 > Para configuração, testes, limites e rollback atuais, siga

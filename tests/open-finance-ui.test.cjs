@@ -47,9 +47,11 @@ test('UI renders hostile provider strings as text and does not persist credentia
             calls.push({ url, options });
             return { ok: true, status: 200, json: async () => ({
                 items: [{ connector: hostile, status: 'synced', provider_status: 'UPDATED' }], consents: [],
-                accounts: [{ id: hostile, kind: 'BANK', balance: 10, currency: 'BRL' }], transactions: []
+                accounts: [{ id: hostile, kind: 'BANK', balance: 10, currency: 'BRL' }], transactions: [],
+                sandbox: true,currencies: {},movements: [],projections: [],decisions: [],rules: [],legacy: [],historical_count: 0,pending_count: 0
             }) };
         },
+        setInterval() {},
         localStorage: { setItem() { throw new Error('Credential persistence'); } },
         sessionStorage: { setItem() { throw new Error('Credential persistence'); } }
     };
@@ -58,5 +60,5 @@ test('UI renders hostile provider strings as text and does not persist credentia
     assert.equal(calls[0].options.cache, 'no-store');
     assert.ok(get('connections').children[0].textContent.includes(hostile));
     assert.equal(get('inventory').hidden, false);
-    assert.ok(get('status').textContent.includes('excluídos do dashboard'));
+    assert.ok(get('status').textContent.includes('sem soma duplicada'));
 });

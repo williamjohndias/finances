@@ -14,3 +14,16 @@ jobs:
       - run: python -m unittest discover -s tests -v
       - run: bash tests/run_postgres.sh
       - run: node --test tests/open-finance-ui.test.cjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+      - run: git diff --exit-code -- templates/static/vendor
+      - run: python scripts/release_manifest.py --check
+      - run: npx playwright install --with-deps chromium
+        working-directory: frontend
+      - run: npm run test:e2e
+        working-directory: frontend

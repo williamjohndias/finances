@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, send_from_directory
+from flask import Flask, render_template, request, jsonify, send_from_directory, redirect
 from datetime import datetime, timedelta
 from calendar import monthrange
 from dateutil.relativedelta import relativedelta
@@ -11,6 +11,15 @@ app = Flask(__name__, template_folder=template_dir, static_folder=static_dir, st
 
 from pluggy_integration import register_pluggy
 register_pluggy(app)
+
+
+@app.before_request
+def protect_legacy_after_cutover():
+    # Cutover never exposes the unscoped legacy ledger through its old API.
+    # Existing rows remain untouched and available through reviewed ownership maps.
+    if os.getenv('OPEN_FINANCE_DASHBOARD') == 'true' and request.path.startswith('/api/') \
+            and not request.path.startswith('/api/open-finance/') and request.path != '/api/version':
+        return jsonify(error='Legacy API archived; use the authenticated FINANCES dashboard'), 410
 
 # Importa configurações do Supabase
 try:
@@ -202,6 +211,10 @@ def load_transactions():
 
 @app.route('/')
 def index():
+    if os.getenv('OPEN_FINANCE_DASHBOARD') == 'true':
+        response = redirect('/open-finance')
+        response.headers['Cache-Control'] = 'no-store'
+        return response
     return render_template('index.html')
 
 
