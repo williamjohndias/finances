@@ -22,7 +22,7 @@ O arquivo `config.py` já está preparado, mas você pode atualizá-lo para usar
 import os
 
 SUPABASE_URL = os.getenv('SUPABASE_URL', 'https://uagmckigwlfnlprdnfmo.supabase.co')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY', 'sb_secret_XceKRnCaZ1GaPr0m9fSlfQ_svM3lt6V')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY', '<SUPABASE_SECRET_KEY_CONFIGURADA_EM_VARIAVEIS_SEGURAS>')
 ```
 
 ### 3. Deploy

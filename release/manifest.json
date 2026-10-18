@@ -1,0 +1,16 @@
+{
+  "approval_required": true,
+  "base_commit": "45b539e63c2fa2d25084e564e72b370051050dd5",
+  "live_pluggy_validation": "pending",
+  "production_activated": false,
+  "sha256": {
+    "frontend/package-lock.json": "9795e8729c86874052ce68e52b5ea44f68dc9e7bb9d904e53b4f4f04160c695f",
+    "migrations/001_open_finance_staging.sql": "1b090390609edde9c18eee164a04125f39308d76106d3d83861d5aae6950d675",
+    "migrations/002_open_finance_sync.sql": "f887afe77b5c74fd0ba40c86454196f015656f7a0761256a408e7c22ded76ee2",
+    "migrations/003_open_finance_release.sql": "7240ed13758c76921066f6e97a07d8b16027a2e7567e7e34a1e1e5138ff7eb60",
+    "requirements.txt": "605aa0de0733d5435674afbdaae5b7dddfafc380b3933f2c6440018d90a88462",
+    "templates/static/vendor/THIRD_PARTY_NOTICES.txt": "f533d74ccbd25f420537d10ef32b7c26bc6d7ac4439a48cbbb30eaf7b4d13486",
+    "templates/static/vendor/pluggy-connect-2.14.2.js": "879e30275c0019e8fbfae62d8698c6fc325f84ca72061f0749efaa45b05ce8ab"
+  },
+  "version": "2.0.0-rc.1"
+}

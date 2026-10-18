@@ -14,7 +14,7 @@ Edite o arquivo `config.py` e verifique se as credenciais estão corretas:
 
 ```python
 SUPABASE_URL = "https://uagmckigwlfnlprdnfmo.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZ21ja2lnd2xmbmxwcmRuZm1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTQ3OTQ0NSwiZXhwIjoyMDgxMDU1NDQ1fQ.MjbOWx6iTQlSvCNdx2e5Yby21ypsEL_aqIFPGHXL9DU"
+SUPABASE_KEY = "<SUPABASE_KEY_CONFIGURADA_EM_VARIAVEIS_SEGURAS>"
 ```
 
 ### 3. Criar a Tabela no Supabase

@@ -37,7 +37,7 @@ git push origin main
 
    #### Variável 2: SUPABASE_KEY
    - **Nome:** `SUPABASE_KEY`
-   - **Valor:** `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZ21ja2lnd2xmbmxwcmRuZm1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NTQ3OTQ0NSwiZXhwIjoyMDgxMDU1NDQ1fQ.MjbOWx6iTQlSvCNdx2e5Yby21ypsEL_aqIFPGHXL9DU`
+   - **Valor:** `<SUPABASE_KEY_CONFIGURADA_EM_VARIAVEIS_SEGURAS>`
    - **Environments:** Selecione **"All Environments"** ✅
 
 5. **Salve as Variáveis:**

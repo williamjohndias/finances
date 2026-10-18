@@ -31,12 +31,12 @@ A chave pode ter dois formatos:
 
 **Formato 1 - JWT (mais comum):**
 ```
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVhZ21ja2lnd2xmbnByZG5mbW8iLCJyb2xlIjoic2VydmljZV9yb2xlIiwiaWF0IjoxNzE2NDgxOTIwLCJleHAiOjE5NzIwNTc5MjB9.xxxxx
+<SUPABASE_KEY_CONFIGURADA_EM_VARIAVEIS_SEGURAS>
 ```
 
 **Formato 2 - Nova API Key:**
 ```
-sb_secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<SUPABASE_SECRET_KEY_CONFIGURADA_EM_VARIAVEIS_SEGURAS>
 ```
 
 ### 4. No Vercel
