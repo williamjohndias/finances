@@ -13,7 +13,7 @@
 2. Vá em **Settings** → **Environment Variables**
 3. Adicione:
    - `SUPABASE_URL` = `https://uagmckigwlfnlprdnfmo.supabase.co`
-   - `SUPABASE_KEY` = `sb_secret_XceKRnCaZ1GaPr0m9fSlfQ_svM3lt6V`
+   - `SUPABASE_KEY` = `<SUPABASE_SECRET_KEY_CONFIGURADA_EM_VARIAVEIS_SEGURAS>`
 4. Faça um novo deploy
 
 ### 2. Erro na importação do app

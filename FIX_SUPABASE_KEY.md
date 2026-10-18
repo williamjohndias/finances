@@ -36,7 +36,7 @@ A chave pode ter dois formatos:
 
 **Formato 2 - Nova API Key:**
 ```
-sb_secret_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+<SUPABASE_SECRET_KEY_CONFIGURADA_EM_VARIAVEIS_SEGURAS>
 ```
 
 ### 4. No Vercel
